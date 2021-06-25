@@ -1,29 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.3;
+import "./Token.sol";
+import "./interfaces/IGovernance.sol";
 
+contract TellorStaking is Token{
 
-contract TellorStaking is TellorStorage, TellorVariables{
+    event NewStaker(address _staker);
+    event StakeWithdrawRequested(address _staker);
+    event StakeWithdrawn(address _staker);
 
     function depositStake() external{
         require(
-                balances[_staker][balances[_staker].length - 1].value >=
+                balances[msg.sender][balances[msg.sender].length - 1].value >=
                     uints[_STAKE_AMOUNT],
                 "Balance is lower than stake amount"
-            );
-            //Ensure staker is not currently staked or is locked for withdraw
-            require(
-                stakerDetails[_staker].currentStatus == 0 ||
-                    stakerDetails[_staker].currentStatus == 2,
-                "Miner is in the wrong state"
-            );
-            uints[_STAKE_COUNT] += 1;
-            stakerDetails[_staker] = StakeInfo({
-                currentStatus: 1, 
-                startDate: block.timestamp//this resets their stake start date to now
-            });
-            emit NewStake(_staker);
-        }
-        ITellor(addresses[GOVERNANCE_CONTRACT]).updateMinDisputeFee();
+        );
+        //Ensure staker is not currently staked or is locked for withdraw
+        require(
+            stakerDetails[msg.sender].currentStatus == 0 ||
+                stakerDetails[msg.sender].currentStatus == 2,
+            "Miner is in the wrong state"
+        );
+        uints[_STAKE_COUNT] += 1;
+        stakerDetails[msg.sender] = StakeInfo({
+            currentStatus: 1, 
+            startDate: block.timestamp//this resets their stake start date to now
+        });
+        emit NewStaker(msg.sender);
+        IGovernance(addresses[_GOVERNANCE_CONTRACT]).updateMinDisputeFee();
     }
 
     function requestStakingWithdraw() external {
@@ -32,7 +36,7 @@ contract TellorStaking is TellorStorage, TellorVariables{
         stakes.currentStatus = 2;
         stakes.startDate = block.timestamp - (block.timestamp % 86400);
         uints[_STAKE_COUNT] -= 1;
-        ITellor(addresses[GOVERNANCE_CONTRACT]).updateMinDisputeFee();
+        IGovernance(addresses[_GOVERNANCE_CONTRACT]).updateMinDisputeFee();
         emit StakeWithdrawRequested(msg.sender);
     }
 
@@ -52,15 +56,15 @@ contract TellorStaking is TellorStorage, TellorVariables{
         emit StakeWithdrawn(msg.sender);
     }
 
-    function changeStakingStatus(address _reporter, uint _status) external public{
-        require(msg.sender == GOVERNANCE_CONTRACT);
+    function changeStakingStatus(address _reporter, uint _status) external{
+        require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
         StakeInfo storage stakes = stakerDetails[_reporter];
         stakes.currentStatus = _status;
     }
 
-    function slashMiner(address _reporter, address _disputer) external public{
-        require(msg.sender == GOVERNANCE_CONTRACT);
-        doTransfer(_reporter,_disputer, uints[STAKE_AMOUNT]);
+    function slashMiner(address _reporter, address _disputer) external{
+        require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
+        _doTransfer(_reporter,_disputer, uints[_STAKE_AMOUNT]);
         StakeInfo storage stakes = stakerDetails[_reporter];
         stakes.currentStatus = 5;
     }

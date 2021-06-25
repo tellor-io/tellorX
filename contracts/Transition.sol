@@ -1,28 +1,37 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.3;
 
-import "./tellor3/TellorStorage";
-import "./tellor3/TellorVariables";
+import "./tellor3/TellorStorage.sol";
+import "./TellorVars.sol";
+import "./interfaces/IOracle.sol";
 
-contract Transition is TellorStorage,TellorVariables{
+contract Transition is TellorStorage,TellorVars{
 
      //links to the Oracle contract.  Allows parties (like Liquity) to continue to use the master address to acess values.
         //all parties should be reading values through this address
     
+    function init(address _governance, address _oracle, address _treasury) external{
+        //run this once migrated over.  This changes the underlying storage
+        require(msg.sender == addresses[_OWNER]);
+        uints[_STAKE_AMOUNT] = 100;
+        addresses[_GOVERNANCE_CONTRACT] = _governance;
+        addresses[_ORACLE_CONTRACT] = _oracle;
+        addresses[_TREASURY_CONTRACT] = _treasury;
+    }
+
+
     function getLastNewValueById(uint256 _requestId)
         external
         view
         returns (uint256, bool)
     {
         Request storage _request = requestDetails[_requestId];
-        uint256 _timeCount = ITellor(addresses[ORACLE_CONTRACT].getTimestampCountByID(_requestId);
-        if (getTimestampCountByID(_requestId) != 0) {
+        uint256 _timeCount =IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountByID(_requestId);
+        if (_timeCount != 0) {
             return (
                 retrieveData(
                     _requestId,
-                    ITellor(addresses[ORACLE_CONTRACT].reports(_requestId).timestamps[
-                        _timeCount - 1;
-                    ]
+                    IOracle(addresses[_ORACLE_CONTRACT]).reports(_requestId).timestamps[_timeCount- 1]
                 ),
                 true
             );
@@ -43,7 +52,7 @@ contract Transition is TellorStorage,TellorVariables{
         view
         returns (uint256)
     {
-        return uint256(ITellor(addresses[ORACLE_CONTRACT]).reports[_requestId].valuesByTimestamp[_timestamp]);
+        return uint256(IOracle(addresses[_ORACLE_CONTRACT]).reports[_requestId].valuesByTimestamp[_timestamp]);
     }
 
         /**
@@ -58,12 +67,7 @@ contract Transition is TellorStorage,TellorVariables{
         view
         returns (uint256)
     {
-        return ITellor(addresses[ORACLE_CONTRACT].getTimestampCountByID(_requestId);
-    }
-
-    function newValueTimestamps() external view returns(uint256[]){
-        //this overrides the storage so we don't get the deity back
-        ITellor(addresses[ORACLE_CONTRACT].timestamps;
+        return IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountByID(_requestId);
     }
 
      /**
@@ -74,7 +78,7 @@ contract Transition is TellorStorage,TellorVariables{
         bytes4 _function = bytes4(msg.data[0]);
         require(_function == bytes4(keccak256("beginDispute(uint256)"))||
         _function == bytes4(keccak256("vote(uint256)")) ||
-        _function == bytes4(keccak256("tallyVotes(uint256)"))
+        _function == bytes4(keccak256("tallyVotes(uint256)")) ||
         _function == bytes4(keccak256("unlockDisputeFee(uint256)"))); //should autolock out after a week (no disputes can begin past a week)
             (bool result, ) =  addr.delegatecall(msg.data);
             assembly {
@@ -87,8 +91,6 @@ contract Transition is TellorStorage,TellorVariables{
                     default {
                         return(0, returndatasize())
                     }
-            }
-        }
-       
+           }
     }
 }

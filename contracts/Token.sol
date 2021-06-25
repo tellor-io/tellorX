@@ -2,15 +2,14 @@
 pragma solidity 0.8.3;
 
 import "./tellor3/TellorStorage.sol";
-import "./tellor3/TellorVariables.sol";
-
+import "./TellorVars.sol";
 /**
  @author Tellor Inc.
  @title TellorTransfer
  @dev Contains the methods related to transfers and ERC20, its storage and hashes of tellor variables
  * that are used to save gas on transactions.
 */
-contract Token is TellorStaking, TellorStorage, TellorVariables {
+contract Token is TellorStorage,TellorVars{
     /*Events*/
     event Approval(
         address indexed _owner,
