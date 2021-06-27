@@ -31,7 +31,7 @@ contract Transition is TellorStorage,TellorVars{
             return (
                 retrieveData(
                     _requestId,
-                    IOracle(addresses[_ORACLE_CONTRACT]).reports(_requestId).timestamps[_timeCount- 1]
+                    IOracle(addresses[_ORACLE_CONTRACT]).getReportTimestampByIndex(_requestId,_timeCount- 1)
                 ),
                 true
             );
@@ -52,7 +52,7 @@ contract Transition is TellorStorage,TellorVars{
         view
         returns (uint256)
     {
-        return uint256(IOracle(addresses[_ORACLE_CONTRACT]).reports[_requestId].valuesByTimestamp[_timestamp]);
+        return sliceUint(IOracle(addresses[_ORACLE_CONTRACT]).getValueByTimestamp(_requestId, _timestamp),0);
     }
 
         /**
@@ -69,6 +69,18 @@ contract Transition is TellorStorage,TellorVars{
     {
         return IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountByID(_requestId);
     }
+
+    function sliceUint(bytes memory bs, uint start)
+    internal pure
+    returns (uint)
+{
+    require(bs.length >= start + 32, "slicing out of range");
+    uint x;
+    assembly {
+        x := mload(add(bs, add(0x20, start)))
+    }
+    return x;
+}
 
      /**
      * @dev This allows Tellor X to fallback to the old Tellor if there are current open disputes (or disputes on old Tellor values)

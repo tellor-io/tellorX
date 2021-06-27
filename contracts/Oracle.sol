@@ -2,7 +2,7 @@
 pragma solidity 0.8.3;
 
 import "./interfaces/IController.sol";
-import "./tellor3/TellorVars.sol";
+import "./TellorVars.sol";
 
 contract Oracle is TellorVars{
 
@@ -12,7 +12,7 @@ contract Oracle is TellorVars{
     uint256 public timeOfLastNewValue;
     uint256 public burned;
     uint256 public toBurn;
-    uint constant public miningLock = 12 hours;//make this changeable by governance?
+    uint public miningLock = 12 hours;//make this changeable by governance?
     mapping(uint256 => Report) reports; //ID to reports
     mapping(uint256 => uint256[]) timestampToIDs; //mapping of timestamp to IDs pushed
     mapping(address => uint256) reporterLastTimestamp;
@@ -44,7 +44,7 @@ contract Oracle is TellorVars{
     }
 
     function addNewId(bytes calldata _details) external{
-        require(msg.sender == IController(TELLOR_ADDRESS).addresses[_GOVERNANCE_CONTRACT]);
+        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
         maxID++;
         reports[maxID].details = _details;
         emit NewIdAdded(maxID,_details);
@@ -56,11 +56,10 @@ contract Oracle is TellorVars{
             "Miner can only win rewards once per 12 hours"
         );
         reporterLastTimestamp[msg.sender] == block.timestamp;
-        require(
-            IController(TELLOR_ADDRESS).stakerDetails[msg.sender].currentStatus == 1,
-            "Miner status is not staker"
-        );
+        (uint256 _status, uint256 _startDate) = IController(TELLOR_ADDRESS).getStakerInfo(msg.sender);
+        require(_status == 1,"Miner status is not staker");
         Report storage rep = reports[_id];
+        require(rep.reporterByTimestamp[block.timestamp] == address(0), "timestamp already reported for");
         rep.timestampIndex[block.timestamp] = rep.timestamps.length;
         rep.timestamps.push(block.timestamp);
         rep.timestampToBlockNum[block.timestamp] = block.number;
@@ -69,7 +68,7 @@ contract Oracle is TellorVars{
         //send tips + timeBasedReward
         uint256 _timeDiff = block.timestamp - timeOfLastNewValue;
         uint256 _reward = (_timeDiff * 5e17) / 300;//.5 TRB per 5 minutes (should we make this upgradeable)
-        if(IController(TELLOR_ADDRESS).balanceOf(address(this) < _reward)){
+        if(IController(TELLOR_ADDRESS).balanceOf(address(this)) < _reward){
             _reward = IController(TELLOR_ADDRESS).balanceOf(address(this));
         }
         uint256 _tip = tips[_id] / 2;
@@ -88,15 +87,15 @@ contract Oracle is TellorVars{
         toBurn = 0;
     }
     function removeValue(uint _id, uint256 _timestamp) external {
-        require(msg.sender == IController(TELLOR_ADDRESS).addresses[_GOVERNANCE_CONTRACT]);
+        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
         Report storage rep = reports[_id];
         uint256 _index = rep.timestampIndex[_timestamp];
         for (uint256 i = _index; i < rep.timestamps.length-1; i++){
             rep.timestamps[i] = rep.timestamps[i+1];
         }
         delete rep.timestamps[rep.timestamps.length-1];
-        rep.timestamps.length--;
-        rep.valuesByTimestamp[_timestamp] = 0;
+        rep.timestamps.pop();
+        rep.valuesByTimestamp[_timestamp] = "";
     }
 
     function verify() public returns(uint){
@@ -106,7 +105,30 @@ contract Oracle is TellorVars{
     //Getters
 
     function getTimestampCountByID(uint256 _id) external view returns(uint256){
-        return reports[_id].timestamp.length;
+        return reports[_id].timestamps.length;
+    }   
+
+    function getReportTimestampByIndex(uint256 _requestId, uint256 _index) external view returns(uint256){
+        return reports[_requestId].timestamps[_index];
     }
 
+    function getReportsSubmittedByAddress(address _reporter) external view returns(uint256){
+        return reportsSubmittedByAddress[_reporter];
+    }
+
+    function getTipsByUser(address _user) external view returns(uint256){
+        return tipsByUser[_user];
+    }
+
+    function getValueByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(bytes memory){
+        return reports[_requestId].valuesByTimestamp[_timestamp];
+    }
+
+    function getBlockNumberByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(uint256){
+        return reports[_requestId].timestampToBlockNum[_timestamp];
+    }
+
+    function getReporterByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(address){
+        return reports[_requestId].reporterByTimestamp[_timestamp];
+    }
 }

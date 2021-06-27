@@ -2,6 +2,7 @@
 pragma solidity 0.8.3;
 
 import "./TellorStaking.sol";
+import "./interfaces/IController.sol";
 import "./Transition.sol";
 
 contract Controller is TellorStaking, Transition{
@@ -46,7 +47,12 @@ contract Controller is TellorStaking, Transition{
         _doMint(_reciever, _amount);
     }
 
-    function _isValid(address _contract) internal{
+    function changeUint(bytes32 _target, uint256 _amount) external{
+        require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
+        uints[_target] = _amount;
+    }
+
+    function _isValid(address _contract) internal returns(bool){
         (bool _success, bytes memory _data) =
             address(_contract).call(
                 abi.encodeWithSelector(0xfc735e99, "") //verify() signature
@@ -55,5 +61,6 @@ contract Controller is TellorStaking, Transition{
             _success && abi.decode(_data, (uint256)) > 9000, //just an arbitrary number to ensure that the contract is valid
             "new contract is invalid"
         );
+        return true;
     }
 }

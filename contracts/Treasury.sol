@@ -2,7 +2,7 @@
 pragma solidity 0.8.3;
 
 import "./interfaces/IController.sol";
-import "./tellor3/TellorVars.sol";
+import "./TellorVars.sol";
 
 contract Treasury is TellorVars{
     uint256 public totalLocked;
@@ -13,6 +13,7 @@ contract Treasury is TellorVars{
         uint256 amount;
         uint256 rate;
         uint256 purchased;
+        uint256 duration;
         address[] owners;
         mapping(address => uint256) accounts;
         mapping(address => bool) paid;
@@ -24,16 +25,15 @@ contract Treasury is TellorVars{
 
     //_amount of TRB, _rate in bp
     function issueTreasury(uint256 _amount, uint256 _rate, uint256 _duration) external{
-        require(msg.sender == ControllerInterface(TELLOR_ADDRESS).addresses[_GOVERNANCE_CONTRACT]);
-        require(ControllerInterface(TELLOR_ADDRESS).balanceOf(address(this) - totalLocked > _amount));
+        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
+        require(IController(TELLOR_ADDRESS).balanceOf(address(this)) - totalLocked > _amount);
         totalLocked += _amount;
         treasuryCount++;
-        treasury[treasuryCount] = TreasuryDetails{
-            dateStared: block.timestamp,
-            amount: _amount,
-            rate: _rate,
-            duration: _duration
-        };
+        TreasuryDetails storage _treas = treasury[treasuryCount];
+        _treas.dateStarted = block.timestamp;
+        _treas.amount = _amount;
+        _treas.rate = _rate;
+        _treas.duration = _duration;
         emit TreasuryIssued(treasuryCount,_amount,_rate);
     }
 
@@ -44,26 +44,25 @@ contract Treasury is TellorVars{
         require(treas.dateStarted + treas.duration <= block.timestamp);
         require(!treas.paid[_investor]);
         uint256 _mintAmount = treas.accounts[_investor] * treas.rate;
-        ControllerInterface(TELLOR_ADDRESS).mint(address(this),_mintAmount);
-        ControllerInterface(TELLOR_ADDRESS).transfer(_investor,_mintAmount + treas.accounts[_investor]);
+        IController(TELLOR_ADDRESS).mint(address(this),_mintAmount);
+        IController(TELLOR_ADDRESS).transfer(_investor,_mintAmount + treas.accounts[_investor]);
         treas.paid[_investor] = true;
         emit TreasuryPaid(_investor,_mintAmount + treas.accounts[_investor]);
     }
 
     function buyTreasury(uint256 _id,uint256 _amount, address _delegate) external{
         //deposit money into a Treasury
-        require(ControllerInterface(TELLOR_ADDRESS).transferFrom(msg.sender,address(this),_amount));
-        TreasuryDetails storage treas = treasury[_id];
-        require(_amount <= treas.amount - treas.purchased);
-        treas.purchased += _amount;
-        treas.accounts[msg.sender] += _amount;      
-        treas.owners.push(msg.sender);
-        emit TreasuryPurchased();
+        require(IController(TELLOR_ADDRESS).transferFrom(msg.sender,address(this),_amount));
+        TreasuryDetails storage _treas = treasury[_id];
+        require(_amount <= _treas.amount - _treas.purchased);
+        _treas.purchased += _amount;
+        _treas.accounts[msg.sender] += _amount;      
+        _treas.owners.push(msg.sender);
+        emit TreasuryPurchased(msg.sender,_amount);
     }
 
     function getTreasuryDetails(uint256 _id) external view returns(uint256,uint256,uint256,uint256){
-        TreasuryDetails memory treas = treasury[_id];
-        return(treas.dateStarted,treas.amount,treas.rate,treas.purchased);
+        return(treasury[_id].dateStarted,treasury[_id].amount,treasury[_id].rate,treasury[_id].purchased);
     }
     
     function getTreasuryAccount(uint256 _id, address _investor) external view returns(uint256){
