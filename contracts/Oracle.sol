@@ -12,7 +12,7 @@ contract Oracle is TellorVars{
     uint256 public timeOfLastNewValue;
     uint256 public burned;
     uint256 public toBurn;
-    uint public miningLock = 12 hours;//make this changeable by governance?
+    uint256 public miningLock = 12 hours;//make this changeable by governance?
     mapping(uint256 => Report) reports; //ID to reports
     mapping(uint256 => uint256[]) timestampToIDs; //mapping of timestamp to IDs pushed
     mapping(address => uint256) reporterLastTimestamp;
@@ -24,8 +24,7 @@ contract Oracle is TellorVars{
         uint256[] timestamps; //array of all newValueTimestamps requested
         mapping(uint256 => uint256) timestampIndex;
         mapping(uint256 => uint256) timestampToBlockNum; //[apiId][minedTimestamp]=>block.number
-        mapping(uint256 => bytes) valuesByTimestamp;
-        mapping(uint256 => bool) inDispute; //checks if API id is in dispute or finalized.
+        mapping(uint256 => bytes) valueByTimestamp;
         mapping(uint256 => address) reporterByTimestamp;
     }
 
@@ -37,7 +36,7 @@ contract Oracle is TellorVars{
         require(_id != 0, "RequestId is 0");
         require(_tip != 0, "Tip should be greater than 0");
         require(_id <= maxID, "ID is out of range");
-        require(IController(TELLOR_ADDRESS).transferFrom(msg.sender,address(this),_tip));
+        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_tip));
         tips[_id] += _tip;
         tipsByUser[msg.sender] += _tip;
         emit TipAdded(msg.sender, _id, _tip, tips[_id]);
@@ -56,24 +55,25 @@ contract Oracle is TellorVars{
             "Miner can only win rewards once per 12 hours"
         );
         reporterLastTimestamp[msg.sender] == block.timestamp;
-        (uint256 _status, uint256 _startDate) = IController(TELLOR_ADDRESS).getStakerInfo(msg.sender);
+        IController _tellor = IController(TELLOR_ADDRESS);
+        (uint256 _status,) = _tellor.getStakerInfo(msg.sender);
         require(_status == 1,"Miner status is not staker");
         Report storage rep = reports[_id];
         require(rep.reporterByTimestamp[block.timestamp] == address(0), "timestamp already reported for");
         rep.timestampIndex[block.timestamp] = rep.timestamps.length;
         rep.timestamps.push(block.timestamp);
         rep.timestampToBlockNum[block.timestamp] = block.number;
-        rep.valuesByTimestamp[block.timestamp] = _value;
+        rep.valueByTimestamp[block.timestamp] = _value;
         rep.reporterByTimestamp[block.timestamp] = msg.sender;
         //send tips + timeBasedReward
         uint256 _timeDiff = block.timestamp - timeOfLastNewValue;
         uint256 _reward = (_timeDiff * 5e17) / 300;//.5 TRB per 5 minutes (should we make this upgradeable)
-        if(IController(TELLOR_ADDRESS).balanceOf(address(this)) < _reward){
-            _reward = IController(TELLOR_ADDRESS).balanceOf(address(this));
+        if(_tellor.balanceOf(address(this)) < _reward){
+            _reward = _tellor.balanceOf(address(this));
         }
         uint256 _tip = tips[_id] / 2;
         toBurn += _tip;
-        IController(TELLOR_ADDRESS).transfer(msg.sender,_reward + _tip);
+        _tellor.transfer(msg.sender,_reward + _tip);
         tips[_id] = 0;
         timeOfLastNewValue = block.timestamp;
         reportsSubmittedByAddress[msg.sender]++;
@@ -95,18 +95,35 @@ contract Oracle is TellorVars{
         }
         delete rep.timestamps[rep.timestamps.length-1];
         rep.timestamps.pop();
-        rep.valuesByTimestamp[_timestamp] = "";
+        rep.valueByTimestamp[_timestamp] = "";
     }
 
-    function verify() public returns(uint){
+    function verify() external pure returns(uint){
         return 9999;
+    }
+
+    function changeMiningLock(uint256 _newMiningLock) external{
+        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
+        miningLock = _newMiningLock;
     }
 
     //Getters
 
+    function getTipsById(uint _id) external view returns(uint256){
+        return tips[_id];
+    }
+
+    function getReportDetails(uint256 _id) external view returns(bytes memory){
+        return reports[_id].details;
+    }
+
     function getTimestampCountByID(uint256 _id) external view returns(uint256){
         return reports[_id].timestamps.length;
     }   
+
+    function getTimestampIndexByTimestamp(uint256 _id, uint256 _timestamp) external view returns(uint256){
+        return reports[_id].timestampIndex[_timestamp];
+    }
 
     function getReportTimestampByIndex(uint256 _requestId, uint256 _index) external view returns(uint256){
         return reports[_requestId].timestamps[_index];
@@ -121,7 +138,7 @@ contract Oracle is TellorVars{
     }
 
     function getValueByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(bytes memory){
-        return reports[_requestId].valuesByTimestamp[_timestamp];
+        return reports[_requestId].valueByTimestamp[_timestamp];
     }
 
     function getBlockNumberByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(uint256){

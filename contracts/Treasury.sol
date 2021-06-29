@@ -3,11 +3,13 @@ pragma solidity 0.8.3;
 
 import "./interfaces/IController.sol";
 import "./TellorVars.sol";
+import "./interfaces/IGovernance.sol";
 
 contract Treasury is TellorVars{
     uint256 public totalLocked;
     uint256 public treasuryCount;
     mapping(uint => TreasuryDetails) public treasury;
+    mapping(address => uint256) treasuryFundsByUser;
     struct TreasuryDetails{
         uint256 dateStarted;
         uint256 amount;
@@ -46,19 +48,26 @@ contract Treasury is TellorVars{
         uint256 _mintAmount = treas.accounts[_investor] * treas.rate;
         IController(TELLOR_ADDRESS).mint(address(this),_mintAmount);
         IController(TELLOR_ADDRESS).transfer(_investor,_mintAmount + treas.accounts[_investor]);
+        treasuryFundsByUser[_investor]+= treas.accounts[_investor];
         treas.paid[_investor] = true;
         emit TreasuryPaid(_investor,_mintAmount + treas.accounts[_investor]);
     }
 
-    function buyTreasury(uint256 _id,uint256 _amount, address _delegate) external{
+    function buyTreasury(uint256 _id,uint256 _amount) external{
         //deposit money into a Treasury
-        require(IController(TELLOR_ADDRESS).transferFrom(msg.sender,address(this),_amount));
+        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_amount));
+        treasuryFundsByUser[msg.sender]+=_amount;
         TreasuryDetails storage _treas = treasury[_id];
         require(_amount <= _treas.amount - _treas.purchased);
         _treas.purchased += _amount;
         _treas.accounts[msg.sender] += _amount;      
         _treas.owners.push(msg.sender);
         emit TreasuryPurchased(msg.sender,_amount);
+    }
+
+    function delegateVotingPower(address _delegate) external{
+        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
+        IGovernance(msg.sender).delegate(_delegate);
     }
 
     function getTreasuryDetails(uint256 _id) external view returns(uint256,uint256,uint256,uint256){
@@ -77,7 +86,7 @@ contract Treasury is TellorVars{
         return treasury[_id].paid[_investor];
     }
 
-    function verify() public returns(uint){
+    function verify() external pure returns(uint){
         return 9999;
     }
 }

@@ -72,6 +72,13 @@ contract Token is TellorStorage,TellorVars{
         return true;
     }
 
+
+    function approveAndTransferFrom(address _from, address _to, uint256 _amount) public returns(bool){
+        require(msg.sender == addresses[_GOVERNANCE_CONTRACT] ||
+            msg.sender == addresses[_TREASURY_CONTRACT] ||
+            msg.sender == addresses[_ORACLE_CONTRACT]);
+        _doTransfer(_from, _to, _amount);
+    }
     /**
      * @dev Gets balance of owner specified
      * @param _user is the owner address used to look up the balance

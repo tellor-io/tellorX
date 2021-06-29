@@ -7,6 +7,7 @@ interface IController{
     function addresses(bytes32 _b) external view returns(address);
     function uints(bytes32 _b) external view returns(uint256);
     function transferFrom(address _from, address _to, uint256 _amount) external returns(bool);
+    function approveAndTransferFrom(address _from, address _to, uint256 _amount) external returns(bool);
     function changeStakingStatus(address _reporter, uint256 _status) external;
     function getStakerInfo(address _reporter) external returns(uint256, uint256);
     function slashMiner(address _reporter, address _disputer) external;
