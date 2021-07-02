@@ -13,6 +13,7 @@ contract Transition is TellorStorage,TellorVars{
     function init(address _governance, address _oracle, address _treasury) external{
         //run this once migrated over.  This changes the underlying storage
         require(msg.sender == addresses[_OWNER]);
+        require(addresses[_GOVERNANCE_CONTRACT] == address(0), "Only good once");
         uints[_STAKE_AMOUNT] = 100;
         addresses[_GOVERNANCE_CONTRACT] = _governance;
         addresses[_ORACLE_CONTRACT] = _oracle;
@@ -25,7 +26,6 @@ contract Transition is TellorStorage,TellorVars{
         view
         returns (uint256, bool)
     {
-        Request storage _request = requestDetails[_requestId];
         uint256 _timeCount =IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountByID(_requestId);
         if (_timeCount != 0) {
             return (
@@ -52,7 +52,7 @@ contract Transition is TellorStorage,TellorVars{
         view
         returns (uint256)
     {
-        return sliceUint(IOracle(addresses[_ORACLE_CONTRACT]).getValueByTimestamp(_requestId, _timestamp),0);
+        return _sliceUint(IOracle(addresses[_ORACLE_CONTRACT]).getValueByTimestamp(_requestId, _timestamp),0);
     }
 
         /**
@@ -70,7 +70,7 @@ contract Transition is TellorStorage,TellorVars{
         return IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountByID(_requestId);
     }
 
-    function sliceUint(bytes memory bs, uint start)
+    function _sliceUint(bytes memory bs, uint start)
     internal pure
     returns (uint)
 {
@@ -82,6 +82,58 @@ contract Transition is TellorStorage,TellorVars{
     return x;
 }
 
+        /**
+     * @dev allows Tellor to read data from the addressVars mapping
+     * @param _data is the keccak256("variable_name") of the variable that is being accessed.
+     * These are examples of how the variables are saved within other functions:
+     * addressVars[keccak256("_owner")]
+     * addressVars[keccak256("tellorContract")]
+     * @return address of the requested variable
+     */
+    function getAddressVars(bytes32 _data) external view returns (address) {
+        return addresses[_data];
+    }
+
+        /**
+     * @dev Getter for the variables saved under the TellorStorageStruct uints variable
+     * @param _data the variable to pull from the mapping. _data = keccak256("variable_name")
+     * where variable_name is the variables/strings used to save the data in the mapping.
+     * The variables names in the TellorVariables contract
+     * @return uint of specified variable
+     */
+    function getUintVar(bytes32 _data) external view returns (uint256) {
+        return uints[_data];
+    }
+
+    /**
+     * @dev Getter for the total_supply of oracle tokens
+     * @return uint total supply
+     */
+    function totalSupply() external view returns (uint256) {
+        return uints[_TOTAL_SUPPLY];
+    }
+
+    /**
+     * @dev Allows users to access the token's name
+     */
+    function name() external pure returns (string memory) {
+        return "Tellor Tributes";
+    }
+
+    /**
+     * @dev Allows users to access the token's symbol
+     */
+    function symbol() external pure returns (string memory) {
+        return "TRB";
+    }
+
+    /**
+     * @dev Allows users to access the number of decimals
+     */
+    function decimals() external pure returns (uint8) {
+        return 18;
+    }
+    
      /**
      * @dev This allows Tellor X to fallback to the old Tellor if there are current open disputes (or disputes on old Tellor values)
     */

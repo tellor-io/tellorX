@@ -10,13 +10,14 @@ contract Governance is TellorVars{
     uint256 public voteCount;
     uint256 public disputeFee;
     mapping (address => Delegation[]) delegateInfo;
-    mapping(bytes => bool) functionApproved;
+    mapping(bytes4 => bool) functionApproved;
     mapping(bytes32 => uint[]) voteRounds;//shows if a certain vote has already started
     mapping(uint => Vote) voteInfo;
     mapping(uint => Dispute) disputeInfo;
     mapping(uint => uint) openDisputesOnId;
     mapping(uint => TypeDetails) voteInformation;// (1 - dispute, 2- upgrade proposal, 3- variable change)
     enum VoteResult {FAILED,PASSED,INVALID}
+
     struct Delegation {
         address delegate;
         uint fromBlock;
@@ -44,7 +45,7 @@ contract Governance is TellorVars{
         bool isDispute;
         uint256 invalidQuery;
         bytes data;
-        bytes voteFunction;
+        bytes4 voteFunction;
         address voteAddress; //address of contract to execute function on
         address initiator; //miner reporting the 'bad value'-pay disputeFee will get reportedMiner's stake if dispute vote passes
         mapping(address => bool) voted; //mapping of address to whether or not they voted
@@ -55,20 +56,49 @@ contract Governance is TellorVars{
         uint voteDuration;
     }
     
+    /*Events*/
     event NewDispute(uint256 _id, uint256 _requestId, uint256 _timestamp, address _reporter);
-    event NewVote(address _contract, bytes _function, bytes _data);
+    event NewVote(address _contract, bytes4 _function, bytes _data);
     event Voted(uint256 _voteId, bool _supports, address _voter, uint _voteWeight, bool _invalidQuery);
     event VoteExecuted(uint256 _id, VoteResult _result);
     event VoteTallied(uint256 _id, VoteResult _result);
+
     constructor(){
-        //set initial type details in a mapping
-        //  -- upgrade needs addy, contract to upgrade
-        //  -- mint needs addy/ uint
-        //  -- treasury needs amount, rate, duration
-        //  -- newID needs bytes details
-        //  -- addNewFunction here in governance
+        voteInformation[1].quorum = 0;
+        voteInformation[1].voteDuration = 2 days;
+        voteInformation[2].quorum = 5;
+        voteInformation[2].voteDuration = 7 days;
+        voteInformation[3].quorum = 2;
+        voteInformation[3].voteDuration = 7 days;
+        bytes4[11] memory _funcs = [
+            bytes4(0x3c46a185),//changeControllerContract(address)
+            0xe8ce51d7,//changeGovernanceContract(address)
+            0x1cbd3151,//changeOracleContract(address)
+            0xbd87e0c9,//changeTreasuryContract(address)
+            0x740358e6,//changeUint(bytes32,uint256)
+            0x40c10f19,//mint(address,uint256)
+            0xe8a230db,//addApprovedFunction(bytes)
+            0xfad40294,//changeTypeInformation(uint256,uint256,uint256)
+            0xe280e8e8,//changeMiningLock(uint256)
+            0x6274885f,//issueTreasury(uint256,uint256,uint256)
+            0xf3ff955a//delegateVotingPower(address)
+        ];
+        for(uint256 _i =0;_i< _funcs.length;_i++){
+            functionApproved[_funcs[_i]] = true;
+        }
     }
-/**
+    function addApprovedFunction(bytes4 _func) public{
+        require(msg.sender == address(this));
+        functionApproved[_func] = true;
+    }
+
+    function changeTypeInformation(uint256 _id,uint256 _quorum, uint256 _duration) public {
+        require(msg.sender == address(this));
+        voteInformation[_id].quorum = _quorum;
+        voteInformation[_id].voteDuration = _duration;
+    }
+
+    /**
      * @dev Helps initialize a dispute by assigning it a disputeId
      * when a miner returns a false/bad value on the validate array(in Tellor.ProofOfWork) it sends the
      * invalidated value information to POS voting
@@ -166,107 +196,6 @@ contract Governance is TellorVars{
         }
     }
 
-   function proposeVote(address _contract,bytes calldata _function, bytes calldata _data, uint256 _timestamp) public{
-        voteCount++;
-        uint256 _id = voteCount;
-        Vote storage _thisVote = voteInfo[_id];
-        if(_timestamp == 0){
-            _timestamp = block.timestamp;
-        }
-        bytes32 _hash = keccak256(abi.encodePacked(_contract,_function,_data,_timestamp));
-        voteRounds[_hash].push(_id);
-        if (voteRounds[_hash].length > 1) {
-            uint256 _prevId = voteRounds[_hash][voteRounds[_hash].length - 2];
-            require(block.timestamp - voteInfo[_prevId].tallyDate < 1 days);//1 day for new disputes
-        } 
-        _thisVote.identifierHash = _hash;
-        uint256 _fee = 100e18 * 2**(voteRounds[_hash].length - 1);
-        //should we add a way to not need to approve here?
-        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee)); //This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
-        _thisVote.voteRound = voteRounds[_hash].length;
-        _thisVote.startDate = block.timestamp;
-        _thisVote.blockNumber = block.number;
-        _thisVote.fee = _fee;
-        _thisVote.data = _data;
-        _thisVote.voteFunction = _function;
-        _thisVote.voteAddress = _contract;
-        _thisVote.initiator = msg.sender;
-        require(_contract == TELLOR_ADDRESS || 
-            _contract == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT) ||
-            _contract == IController(TELLOR_ADDRESS).addresses(_TREASURY_CONTRACT) ||
-            _contract == IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT)
-        );
-        require(functionApproved[_function]);
-        emit NewVote(_contract,_function,_data);
-    }
-    function vote(uint256 _id, bool _supports, bool _invalidQuery) external{
-        require(delegateOfAt(msg.sender, voteInfo[_id].blockNumber) == address(0), "the vote should not be delegated");
-        _vote(msg.sender,_id,_supports,_invalidQuery);
-    }
-
-    function voteFor(address[] calldata _addys,uint256 _id, bool _supports, bool _invalidQuery) external{
-        for(uint _i=0;_i<_addys.length;_i++){
-            require(delegateOfAt(_addys[_i],voteInfo[_id].blockNumber)== msg.sender);
-            _vote(_addys[_i],_id,_supports,_invalidQuery);
-        }
-    }
-
-    function _vote(address _voter, uint256 _id, bool _supports, bool _invalidQuery) internal {
-        require(_id <= voteCount, "vote does not exist");
-        Vote storage _thisVote = voteInfo[_id];
-        require(_thisVote.tallyDate == 0, "the vote has already been tallied");
-        IController _controller = IController(TELLOR_ADDRESS);
-        uint256 voteWeight = _controller.balanceOfAt(_voter,_thisVote.blockNumber);
-        IOracle _oracle = IOracle(_controller.addresses(_ORACLE_CONTRACT));
-        voteWeight +=  _oracle.getReportsSubmittedByAddress(_voter);
-        voteWeight += _oracle.getTipsByUser(_voter)/2;
-        (uint256 _status,) = _controller.getStakerInfo(_voter);
-        require(_status != 3);
-        require(_thisVote.voted[_voter] != true, "Sender has already voted");
-        require(voteWeight != 0, "User balance is 0");
-        _thisVote.voted[_voter] = true;
-        if(_thisVote.isDispute && _invalidQuery){
-            _thisVote.invalidQuery += voteWeight;
-        } else if(_supports) {
-            _thisVote.doesSupport += voteWeight;
-        } else {
-            _thisVote.against += voteWeight;
-        }
-        emit Voted(_id, _supports, _voter, voteWeight,_invalidQuery);
-    }
-
-    /**
-     * @dev tallies the votes and begins the 1 day challenge period
-     * @param _id is the dispute id
-     */
-    function tallyVotes(uint256 _id) external {
-        Vote storage _thisVote = voteInfo[_id];
-        require(_thisVote.executed == false, "Dispute has been already executed");
-        require(_thisVote.tallyDate == 0, "vote should not already be tallied");
-        require(
-            block.timestamp -_thisVote.startDate > voteInformation[_thisVote.voteType].voteDuration,
-            "Time for voting haven't elapsed"
-        );
-        if(_thisVote.invalidQuery > _thisVote.doesSupport && _thisVote.invalidQuery > _thisVote.against){
-            _thisVote.result = VoteResult.INVALID;
-        }
-        else if (_thisVote.doesSupport > _thisVote.against) {
-                if (_thisVote.doesSupport >= ((IController(TELLOR_ADDRESS).uints(_TOTAL_SUPPLY) * voteInformation[_thisVote.voteType].quorum) / 100)) {
-                _thisVote.result = VoteResult.PASSED;
-                Dispute storage _thisDispute = disputeInfo[_id];
-                (uint256 _status,) = IController(TELLOR_ADDRESS).getStakerInfo(_thisDispute.reportedMiner);
-                if(_thisVote.isDispute && _status == 3){
-                        IController(TELLOR_ADDRESS).changeStakingStatus(_thisDispute.reportedMiner,4);
-                }
-            }
-        }
-        else{
-            _thisVote.result = VoteResult.FAILED;
-        }
-        _thisVote.tallyDate = block.timestamp;
-        emit VoteTallied(_id, _thisVote.result);
-    }
-
     function executeVote(uint256 _id) external{
         Vote storage _thisVote = voteInfo[_id];
         require(_id < voteCount);
@@ -315,6 +244,72 @@ contract Governance is TellorVars{
         }
     }
 
+   function proposeVote(address _contract,bytes4 _function, bytes calldata _data, uint256 _timestamp) public{
+        voteCount++;
+        uint256 _id = voteCount;
+        Vote storage _thisVote = voteInfo[_id];
+        if(_timestamp == 0){
+            _timestamp = block.timestamp;
+        }
+        bytes32 _hash = keccak256(abi.encodePacked(_contract,_function,_data,_timestamp));
+        voteRounds[_hash].push(_id);
+        if (voteRounds[_hash].length > 1) {
+            uint256 _prevId = voteRounds[_hash][voteRounds[_hash].length - 2];
+            require(block.timestamp - voteInfo[_prevId].tallyDate < 1 days);//1 day for new disputes
+        } 
+        _thisVote.identifierHash = _hash;
+        uint256 _fee = 100e18 * 2**(voteRounds[_hash].length - 1);
+        //should we add a way to not need to approve here?
+        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee)); //This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
+        _thisVote.voteRound = voteRounds[_hash].length;
+        _thisVote.startDate = block.timestamp;
+        _thisVote.blockNumber = block.number;
+        _thisVote.fee = _fee;
+        _thisVote.data = _data;
+        _thisVote.voteFunction = _function;
+        _thisVote.voteAddress = _contract;
+        _thisVote.initiator = msg.sender;
+        require(_contract == TELLOR_ADDRESS || 
+            _contract == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT) ||
+            _contract == IController(TELLOR_ADDRESS).addresses(_TREASURY_CONTRACT) ||
+            _contract == IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT)
+        );
+        require(functionApproved[_function]);
+        emit NewVote(_contract,_function,_data);
+    }
+
+        /**
+     * @dev tallies the votes and begins the 1 day challenge period
+     * @param _id is the dispute id
+     */
+    function tallyVotes(uint256 _id) external {
+        Vote storage _thisVote = voteInfo[_id];
+        require(_thisVote.executed == false, "Dispute has been already executed");
+        require(_thisVote.tallyDate == 0, "vote should not already be tallied");
+        require(
+            block.timestamp -_thisVote.startDate > voteInformation[_thisVote.voteType].voteDuration,
+            "Time for voting haven't elapsed"
+        );
+        if(_thisVote.invalidQuery > _thisVote.doesSupport && _thisVote.invalidQuery > _thisVote.against){
+            _thisVote.result = VoteResult.INVALID;
+        }
+        else if (_thisVote.doesSupport > _thisVote.against) {
+                if (_thisVote.doesSupport >= ((IController(TELLOR_ADDRESS).uints(_TOTAL_SUPPLY) * voteInformation[_thisVote.voteType].quorum) / 100)) {
+                _thisVote.result = VoteResult.PASSED;
+                Dispute storage _thisDispute = disputeInfo[_id];
+                (uint256 _status,) = IController(TELLOR_ADDRESS).getStakerInfo(_thisDispute.reportedMiner);
+                if(_thisVote.isDispute && _status == 3){
+                        IController(TELLOR_ADDRESS).changeStakingStatus(_thisDispute.reportedMiner,4);
+                }
+            }
+        }
+        else{
+            _thisVote.result = VoteResult.FAILED;
+        }
+        _thisVote.tallyDate = block.timestamp;
+        emit VoteTallied(_id, _thisVote.result);
+    }
+
         /**
      * @dev This function updates the minimum dispute fee as a function of the amount
      * of staked miners
@@ -336,6 +331,45 @@ contract Governance is TellorVars{
         return 9999;
     }
 
+
+    function vote(uint256 _id, bool _supports, bool _invalidQuery) external{
+        require(delegateOfAt(msg.sender, voteInfo[_id].blockNumber) == address(0), "the vote should not be delegated");
+        _vote(msg.sender,_id,_supports,_invalidQuery);
+    }
+
+    function voteFor(address[] calldata _addys,uint256 _id, bool _supports, bool _invalidQuery) external{
+        for(uint _i=0;_i<_addys.length;_i++){
+            require(delegateOfAt(_addys[_i],voteInfo[_id].blockNumber)== msg.sender);
+            _vote(_addys[_i],_id,_supports,_invalidQuery);
+        }
+    }
+
+    function _vote(address _voter, uint256 _id, bool _supports, bool _invalidQuery) internal {
+        require(_id <= voteCount, "vote does not exist");
+        Vote storage _thisVote = voteInfo[_id];
+        require(_thisVote.tallyDate == 0, "the vote has already been tallied");
+        IController _controller = IController(TELLOR_ADDRESS);
+        uint256 voteWeight = _controller.balanceOfAt(_voter,_thisVote.blockNumber);
+        IOracle _oracle = IOracle(_controller.addresses(_ORACLE_CONTRACT));
+        voteWeight +=  _oracle.getReportsSubmittedByAddress(_voter);
+        voteWeight += _oracle.getTipsByUser(_voter)/2;
+        (uint256 _status,) = _controller.getStakerInfo(_voter);
+        require(_status != 3);
+        require(_thisVote.voted[_voter] != true, "Sender has already voted");
+        require(voteWeight != 0, "User balance is 0");
+        _thisVote.voted[_voter] = true;
+        if(_thisVote.isDispute && _invalidQuery){
+            _thisVote.invalidQuery += voteWeight;
+        } else if(_supports) {
+            _thisVote.doesSupport += voteWeight;
+        } else {
+            _thisVote.against += voteWeight;
+        }
+        emit Voted(_id, _supports, _voter, voteWeight,_invalidQuery);
+    }
+
+
+
     function _min(uint256 a, uint256 b) internal pure returns (uint256) {
         return a < b ? a : b;
     }
@@ -343,12 +377,12 @@ contract Governance is TellorVars{
     function _max(uint256 a, uint256 b) internal pure returns (uint256) {
         return a > b ? a : b;
     }
-
+    /*Getters*/
     function getDelegateInfo(address _holder) external view returns(address,uint){
         return (delegateOfAt(_holder,block.number), delegateInfo[_holder][delegateInfo[_holder].length-1].fromBlock);
     }
 
-    function isFunctionApproved(bytes memory _func) external view returns(bool){
+    function isFunctionApproved(bytes4 _func) external view returns(bool){
         return functionApproved[_func];
     }
 
@@ -357,11 +391,11 @@ contract Governance is TellorVars{
     }
 
     function getVoteInfo(uint256 _id) external view returns(bytes32,uint256[9] memory,bool[2] memory,
-                                                            VoteResult,bytes[2] memory,address[2] memory){
+                                                            VoteResult,bytes memory,bytes4,address[2] memory){
         Vote storage _v = voteInfo[_id];
         return (_v.identifierHash,[_v.voteType,_v.voteRound,_v.startDate,_v.blockNumber,_v.fee,
         _v.tallyDate,_v.doesSupport,_v.against,_v.invalidQuery],[_v.executed,_v.isDispute],_v.result,
-        [_v.data,_v.voteFunction],[_v.voteAddress,_v.initiator]);
+        _v.data,_v.voteFunction,[_v.voteAddress,_v.initiator]);
     }
 
 

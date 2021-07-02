@@ -7,6 +7,15 @@ import "./Transition.sol";
 
 contract Controller is TellorStaking, Transition{
 
+    function changeControllerContract(address _newController) external{
+        require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
+        require(_isValid(_newController));
+        addresses[_TELLOR_CONTRACT] = _newController;//name _TELLOR_CONTRACT is hardcoded in
+        assembly {
+            sstore(_EIP_SLOT, _newController)
+        }
+    }
+    
     function changeGovernanceContract(address _newGovernance) external{
         require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
         require(_isValid(_newGovernance));
@@ -27,14 +36,11 @@ contract Controller is TellorStaking, Transition{
 
     }
 
-    function changeControllerContract(address _newController) external{
+    function changeUint(bytes32 _target, uint256 _amount) external{
         require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
-        require(_isValid(_newController));
-        addresses[_TELLOR_CONTRACT] = _newController;//name _TELLOR_CONTRACT is hardcoded in
-        assembly {
-            sstore(_EIP_SLOT, _newController)
-        }
+        uints[_target] = _amount;
     }
+
 
     function migrate() external{
         require(!migrated[msg.sender], "Already migrated");
@@ -42,14 +48,9 @@ contract Controller is TellorStaking, Transition{
         migrated[msg.sender] = true;
     }
 
-    function mint(address _reciever, uint _amount) external{
+    function mint(address _reciever, uint256 _amount) external{
         require(msg.sender == addresses[_GOVERNANCE_CONTRACT] || msg.sender == addresses[_TREASURY_CONTRACT]);
         _doMint(_reciever, _amount);
-    }
-
-    function changeUint(bytes32 _target, uint256 _amount) external{
-        require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
-        uints[_target] = _amount;
     }
 
     function _isValid(address _contract) internal returns(bool){

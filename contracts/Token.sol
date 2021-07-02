@@ -78,6 +78,7 @@ contract Token is TellorStorage,TellorVars{
             msg.sender == addresses[_TREASURY_CONTRACT] ||
             msg.sender == addresses[_ORACLE_CONTRACT]);
         _doTransfer(_from, _to, _amount);
+        return true;
     }
     /**
      * @dev Gets balance of owner specified
