@@ -1,5 +1,7 @@
 const web3 = require('web3');
 const BN = web3.utils.BN;
+const hash = web3.utils.keccak256;
+var assert = require('assert');
 
 advanceTimeAndBlock = async (time) => {
     await advanceTime(time);
@@ -74,6 +76,7 @@ advanceTime = (time) => {
 module.exports = {
   stakeAmount: new BN(web3.utils.toWei("500", "ether")),
   timeTarget: 240,
+  hash,
   zeroAddress:"0x0000000000000000000000000000000000000000",
   to18, 
   maxUint256: new BN("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"),
