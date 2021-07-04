@@ -13,6 +13,13 @@ describe("TellorX Function Tests", function() {
   beforeEach("deploy and setup TellorX", async function() {
     accounts = await ethers.getSigners();
     await hre.network.provider.request({
+      method: "hardhat_reset",
+      params: [{forking: {
+            jsonRpcUrl: hre.config.networks.hardhat.forking.url,
+            blockNumber:12762660
+          },},],
+      });
+    await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
       params: [DEV_WALLET]}
     )
@@ -52,4 +59,27 @@ describe("TellorX Function Tests", function() {
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
     h.expectThrow(tellor.init(oracle.address,oracle.address,oracle.address));
   });
+  it("Governance.sol - constructor()", async function() {
+    let vars = await governance.getTypeDetails(1);
+    expect(vars[0] == 0 , "quorum on type 1 should be correct")
+    expect(vars[1] == 86400 * 2 , "vote Duration on type 1 should be correct")
+    vars = await governance.getTypeDetails(2);
+    expect(vars[0] == 5 , "quorum on type 2 should be correct")
+    expect(vars[1] == 86400 * 7 , "vote Duration on type 2 should be correct")
+    vars = await governance.getTypeDetails(3);
+    expect(vars[0] == 2, "quorum on type 3 should be correct")
+    expect(vars[1] == 86400 * 7 , "vote Duration on type 3 should be correct")
+    let initFuncs = [0x3c46a185,0xe8ce51d7,0x1cbd3151,0xbd87e0c9, 0x740358e6,
+      0x40c10f19,0xe8a230db,0xfad40294,0xe280e8e8,0x6274885f,0xf3ff955a];
+    for(let _i =0;_i< initFuncs.length;_i++){
+      res = await governance.isFunctionApproved(initFuncs[_i])
+      expect(res == true, "Function should be approved")
+    }
+  });
+  // it("Controller.sol - changeControllerContract()", async function() {
+  //   //onlyGovernance,
+  //   //require isValid
+  //   //properly changes contract
+  // }
+  
 });

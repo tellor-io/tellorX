@@ -32,6 +32,13 @@ contract Oracle is TellorVars{
     event NewReport(uint256 _id, uint256 _time, bytes _value, uint256 _reward);
     event NewIdAdded(uint256 _id, bytes _details);
 
+    function addNewId(bytes calldata _details) external{
+        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
+        maxID++;
+        reports[maxID].details = _details;
+        emit NewIdAdded(maxID,_details);
+    }
+
     function addTip(uint256 _id, uint256 _tip) external{
         require(_id != 0, "RequestId is 0");
         require(_tip != 0, "Tip should be greater than 0");
@@ -42,11 +49,28 @@ contract Oracle is TellorVars{
         emit TipAdded(msg.sender, _id, _tip, tips[_id]);
     }
 
-    function addNewId(bytes calldata _details) external{
+    //a function to clean up the totalSupply
+    function burnTips() external{
+        burned += toBurn;
+        IController(TELLOR_ADDRESS).burn(toBurn);
+        toBurn = 0;
+    }
+
+    function changeMiningLock(uint256 _newMiningLock) external{
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
-        maxID++;
-        reports[maxID].details = _details;
-        emit NewIdAdded(maxID,_details);
+        miningLock = _newMiningLock;
+    }
+
+    function removeValue(uint _id, uint256 _timestamp) external {
+        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
+        Report storage rep = reports[_id];
+        uint256 _index = rep.timestampIndex[_timestamp];
+        for (uint256 i = _index; i < rep.timestamps.length-1; i++){
+            rep.timestamps[i] = rep.timestamps[i+1];
+        }
+        delete rep.timestamps[rep.timestamps.length-1];
+        rep.timestamps.pop();
+        rep.valueByTimestamp[_timestamp] = "";
     }
 
     function submitValue(uint256 _id, bytes calldata _value) external{
@@ -80,57 +104,41 @@ contract Oracle is TellorVars{
         emit NewReport(_id, block.timestamp, _value,_tip + _reward);
     }
 
-    //a function to clean up the totalSupply
-    function burnTips() external{
-        burned += toBurn;
-        IController(TELLOR_ADDRESS).burn(toBurn);
-        toBurn = 0;
-    }
-    function removeValue(uint _id, uint256 _timestamp) external {
-        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
-        Report storage rep = reports[_id];
-        uint256 _index = rep.timestampIndex[_timestamp];
-        for (uint256 i = _index; i < rep.timestamps.length-1; i++){
-            rep.timestamps[i] = rep.timestamps[i+1];
-        }
-        delete rep.timestamps[rep.timestamps.length-1];
-        rep.timestamps.pop();
-        rep.valueByTimestamp[_timestamp] = "";
-    }
-
     function verify() external pure returns(uint){
         return 9999;
     }
 
-    function changeMiningLock(uint256 _newMiningLock) external{
-        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
-        miningLock = _newMiningLock;
-    }
-
     //Getters
-
-    function getTipsById(uint _id) external view returns(uint256){
-        return tips[_id];
+    function getBlockNumberByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(uint256){
+        return reports[_requestId].timestampToBlockNum[_timestamp];
     }
 
     function getReportDetails(uint256 _id) external view returns(bytes memory){
         return reports[_id].details;
+    }
+    
+    function getReporterByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(address){
+        return reports[_requestId].reporterByTimestamp[_timestamp];
+    }
+
+    function getReportsSubmittedByAddress(address _reporter) external view returns(uint256){
+        return reportsSubmittedByAddress[_reporter];
     }
 
     function getTimestampCountByID(uint256 _id) external view returns(uint256){
         return reports[_id].timestamps.length;
     }   
 
-    function getTimestampIndexByTimestamp(uint256 _id, uint256 _timestamp) external view returns(uint256){
-        return reports[_id].timestampIndex[_timestamp];
-    }
-
     function getReportTimestampByIndex(uint256 _requestId, uint256 _index) external view returns(uint256){
         return reports[_requestId].timestamps[_index];
     }
 
-    function getReportsSubmittedByAddress(address _reporter) external view returns(uint256){
-        return reportsSubmittedByAddress[_reporter];
+    function getTimestampIndexByTimestamp(uint256 _id, uint256 _timestamp) external view returns(uint256){
+        return reports[_id].timestampIndex[_timestamp];
+    }
+
+    function getTipsById(uint _id) external view returns(uint256){
+        return tips[_id];
     }
 
     function getTipsByUser(address _user) external view returns(uint256){
@@ -139,13 +147,5 @@ contract Oracle is TellorVars{
 
     function getValueByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(bytes memory){
         return reports[_requestId].valueByTimestamp[_timestamp];
-    }
-
-    function getBlockNumberByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(uint256){
-        return reports[_requestId].timestampToBlockNum[_timestamp];
-    }
-
-    function getReporterByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(address){
-        return reports[_requestId].reporterByTimestamp[_timestamp];
     }
 }

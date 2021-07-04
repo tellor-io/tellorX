@@ -80,6 +80,7 @@ contract Token is TellorStorage,TellorVars{
         _doTransfer(_from, _to, _amount);
         return true;
     }
+
     /**
      * @dev Gets balance of owner specified
      * @param _user is the owner address used to look up the balance
@@ -125,6 +126,10 @@ contract Token is TellorStorage,TellorVars{
         }
     }
 
+    function burn(uint256 _amount) external{
+        _doBurn(msg.sender, _amount);
+    }
+    
     /**
      * @dev Allows for a transfer of tokens to _to
      * @param _to The address to send tokens to
@@ -212,10 +217,6 @@ contract Token is TellorStorage,TellorVars{
         uints[_TOTAL_SUPPLY] += _amount;
         _updateBalanceAtNow(_to, previousBalance + _sizedAmount);
         emit Transfer(address(0), _to, _amount);
-    }
-
-    function burn(uint256 _amount) external{
-        _doBurn(msg.sender, _amount);
     }
 
     /**

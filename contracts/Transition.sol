@@ -40,6 +40,20 @@ contract Transition is TellorStorage,TellorVars{
         }
     }
 
+    /**
+     * @dev Counts the number of values that have been submitted for the request
+     * if called for the currentRequest being mined it can tell you how many miners have submitted a value for that
+     * request so far
+     * @param _requestId the requestId to look up
+     * @return uint count of the number of values received for the requestId
+     */
+    function getNewValueCountbyRequestId(uint256 _requestId)
+        external
+        view
+        returns (uint256)
+    {
+        return IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountByID(_requestId);
+    }
 
     /**
      * @dev Retrieve value from oracle based on timestamp
@@ -55,34 +69,15 @@ contract Transition is TellorStorage,TellorVars{
         return _sliceUint(IOracle(addresses[_ORACLE_CONTRACT]).getValueByTimestamp(_requestId, _timestamp),0);
     }
 
-        /**
-     * @dev Counts the number of values that have been submitted for the request
-     * if called for the currentRequest being mined it can tell you how many miners have submitted a value for that
-     * request so far
-     * @param _requestId the requestId to look up
-     * @return uint count of the number of values received for the requestId
+    //Getters
+    /**
+     * @dev Allows users to access the number of decimals
      */
-    function getNewValueCountbyRequestId(uint256 _requestId)
-        external
-        view
-        returns (uint256)
-    {
-        return IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountByID(_requestId);
+    function decimals() external pure returns (uint8) {
+        return 18;
     }
-
-    function _sliceUint(bytes memory bs, uint start)
-    internal pure
-    returns (uint)
-{
-    require(bs.length >= start + 32, "slicing out of range");
-    uint x;
-    assembly {
-        x := mload(add(bs, add(0x20, start)))
-    }
-    return x;
-}
-
-        /**
+    
+    /**
      * @dev allows Tellor to read data from the addressVars mapping
      * @param _data is the keccak256("variable_name") of the variable that is being accessed.
      * These are examples of how the variables are saved within other functions:
@@ -94,7 +89,7 @@ contract Transition is TellorStorage,TellorVars{
         return addresses[_data];
     }
 
-        /**
+    /**
      * @dev Getter for the variables saved under the TellorStorageStruct uints variable
      * @param _data the variable to pull from the mapping. _data = keccak256("variable_name")
      * where variable_name is the variables/strings used to save the data in the mapping.
@@ -103,14 +98,6 @@ contract Transition is TellorStorage,TellorVars{
      */
     function getUintVar(bytes32 _data) external view returns (uint256) {
         return uints[_data];
-    }
-
-    /**
-     * @dev Getter for the total_supply of oracle tokens
-     * @return uint total supply
-     */
-    function totalSupply() external view returns (uint256) {
-        return uints[_TOTAL_SUPPLY];
     }
 
     /**
@@ -126,17 +113,18 @@ contract Transition is TellorStorage,TellorVars{
     function symbol() external pure returns (string memory) {
         return "TRB";
     }
-
+    
     /**
-     * @dev Allows users to access the number of decimals
+     * @dev Getter for the total_supply of oracle tokens
+     * @return uint total supply
      */
-    function decimals() external pure returns (uint8) {
-        return 18;
+    function totalSupply() external view returns (uint256) {
+        return uints[_TOTAL_SUPPLY];
     }
     
-     /**
+    /**
      * @dev This allows Tellor X to fallback to the old Tellor if there are current open disputes (or disputes on old Tellor values)
-    */
+     */
     fallback() external {
         address addr = 0xdDB59729045d2292eeb8Ff96c46B8db53B88Daa2;//hardcode this in?
         bytes4 _function = bytes4(msg.data[0]);
@@ -156,5 +144,13 @@ contract Transition is TellorStorage,TellorVars{
                         return(0, returndatasize())
                     }
            }
+    }
+
+    //Internal    
+    function _sliceUint(bytes memory bs, uint start) internal pure returns (uint256 _x){
+        require(bs.length >= start + 32, "slicing out of range");
+        assembly {
+            _x := mload(add(bs, add(0x20, start)))
+        }
     }
 }

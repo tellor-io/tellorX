@@ -15,7 +15,7 @@ contract Governance is TellorVars{
     mapping(uint => Vote) voteInfo;
     mapping(uint => Dispute) disputeInfo;
     mapping(uint => uint) openDisputesOnId;
-    mapping(uint => TypeDetails) voteInformation;// (1 - dispute, 2- upgrade proposal, 3- variable change)
+    mapping(uint => TypeDetails) voteTypes;// (1 - dispute, 2- upgrade proposal, 3- variable change)
     enum VoteResult {FAILED,PASSED,INVALID}
 
     struct Delegation {
@@ -64,12 +64,12 @@ contract Governance is TellorVars{
     event VoteTallied(uint256 _id, VoteResult _result);
 
     constructor(){
-        voteInformation[1].quorum = 0;
-        voteInformation[1].voteDuration = 2 days;
-        voteInformation[2].quorum = 5;
-        voteInformation[2].voteDuration = 7 days;
-        voteInformation[3].quorum = 2;
-        voteInformation[3].voteDuration = 7 days;
+        voteTypes[1].quorum = 0;
+        voteTypes[1].voteDuration = 2 days;
+        voteTypes[2].quorum = 5;
+        voteTypes[2].voteDuration = 7 days;
+        voteTypes[3].quorum = 2;
+        voteTypes[3].voteDuration = 7 days;
         bytes4[11] memory _funcs = [
             bytes4(0x3c46a185),//changeControllerContract(address)
             0xe8ce51d7,//changeGovernanceContract(address)
@@ -94,8 +94,8 @@ contract Governance is TellorVars{
 
     function changeTypeInformation(uint256 _id,uint256 _quorum, uint256 _duration) public {
         require(msg.sender == address(this));
-        voteInformation[_id].quorum = _quorum;
-        voteInformation[_id].voteDuration = _duration;
+        voteTypes[_id].quorum = _quorum;
+        voteTypes[_id].voteDuration = _duration;
     }
 
     /**
@@ -287,14 +287,14 @@ contract Governance is TellorVars{
         require(_thisVote.executed == false, "Dispute has been already executed");
         require(_thisVote.tallyDate == 0, "vote should not already be tallied");
         require(
-            block.timestamp -_thisVote.startDate > voteInformation[_thisVote.voteType].voteDuration,
+            block.timestamp -_thisVote.startDate > voteTypes[_thisVote.voteType].voteDuration,
             "Time for voting haven't elapsed"
         );
         if(_thisVote.invalidQuery > _thisVote.doesSupport && _thisVote.invalidQuery > _thisVote.against){
             _thisVote.result = VoteResult.INVALID;
         }
         else if (_thisVote.doesSupport > _thisVote.against) {
-                if (_thisVote.doesSupport >= ((IController(TELLOR_ADDRESS).uints(_TOTAL_SUPPLY) * voteInformation[_thisVote.voteType].quorum) / 100)) {
+                if (_thisVote.doesSupport >= ((IController(TELLOR_ADDRESS).uints(_TOTAL_SUPPLY) * voteTypes[_thisVote.voteType].quorum) / 100)) {
                 _thisVote.result = VoteResult.PASSED;
                 Dispute storage _thisDispute = disputeInfo[_id];
                 (uint256 _status,) = IController(TELLOR_ADDRESS).getStakerInfo(_thisDispute.reportedMiner);
@@ -344,6 +344,45 @@ contract Governance is TellorVars{
         }
     }
 
+    /*Getters*/
+    function didVote(uint256 _id, address _voter) external view returns(bool){
+        return voteInfo[_id].voted[_voter];
+    }
+    
+    function getDelegateInfo(address _holder) external view returns(address,uint){
+        return (delegateOfAt(_holder,block.number), delegateInfo[_holder][delegateInfo[_holder].length-1].fromBlock);
+    }
+
+    function getDisputeInfo(uint256 _id) external view returns(uint256,uint256,bytes memory, address){
+        Dispute storage _d = disputeInfo[_id];
+        return (_d.requestId,_d.timestamp,_d.value,_d.reportedMiner);
+    }
+
+    function getOpenDisputesOnId(uint256 _id) external view returns(uint256){
+        return openDisputesOnId[_id];
+    }
+
+    function getTypeDetails(uint256 _type) external view returns(uint256, uint256){
+        return (voteTypes[_type].quorum, voteTypes[_type].voteDuration);
+    }
+
+    function getVoteInfo(uint256 _id) external view returns(bytes32,uint256[9] memory,bool[2] memory,
+                                                            VoteResult,bytes memory,bytes4,address[2] memory){
+        Vote storage _v = voteInfo[_id];
+        return (_v.identifierHash,[_v.voteType,_v.voteRound,_v.startDate,_v.blockNumber,_v.fee,
+        _v.tallyDate,_v.doesSupport,_v.against,_v.invalidQuery],[_v.executed,_v.isDispute],_v.result,
+        _v.data,_v.voteFunction,[_v.voteAddress,_v.initiator]);
+    }
+
+    function getVoteRounds(bytes32 _hash) external view returns(uint256[] memory){
+        return voteRounds[_hash];
+    }
+
+    function isFunctionApproved(bytes4 _func) external view returns(bool){
+        return functionApproved[_func];
+    }
+
+    //Internal
     function _vote(address _voter, uint256 _id, bool _supports, bool _invalidQuery) internal {
         require(_id <= voteCount, "vote does not exist");
         Vote storage _thisVote = voteInfo[_id];
@@ -368,8 +407,6 @@ contract Governance is TellorVars{
         emit Voted(_id, _supports, _voter, voteWeight,_invalidQuery);
     }
 
-
-
     function _min(uint256 a, uint256 b) internal pure returns (uint256) {
         return a < b ? a : b;
     }
@@ -377,44 +414,4 @@ contract Governance is TellorVars{
     function _max(uint256 a, uint256 b) internal pure returns (uint256) {
         return a > b ? a : b;
     }
-    /*Getters*/
-    function getDelegateInfo(address _holder) external view returns(address,uint){
-        return (delegateOfAt(_holder,block.number), delegateInfo[_holder][delegateInfo[_holder].length-1].fromBlock);
-    }
-
-    function isFunctionApproved(bytes4 _func) external view returns(bool){
-        return functionApproved[_func];
-    }
-
-    function getVoteRounds(bytes32 _hash) external view returns(uint256[] memory){
-        return voteRounds[_hash];
-    }
-
-    function getVoteInfo(uint256 _id) external view returns(bytes32,uint256[9] memory,bool[2] memory,
-                                                            VoteResult,bytes memory,bytes4,address[2] memory){
-        Vote storage _v = voteInfo[_id];
-        return (_v.identifierHash,[_v.voteType,_v.voteRound,_v.startDate,_v.blockNumber,_v.fee,
-        _v.tallyDate,_v.doesSupport,_v.against,_v.invalidQuery],[_v.executed,_v.isDispute],_v.result,
-        _v.data,_v.voteFunction,[_v.voteAddress,_v.initiator]);
-    }
-
-
-    function getDisputeInfo(uint256 _id) external view returns(uint256,uint256,bytes memory, address){
-        Dispute storage _d = disputeInfo[_id];
-        return (_d.requestId,_d.timestamp,_d.value,_d.reportedMiner);
-    }
-
-    function getOpenDisputesOnId(uint256 _id) external view returns(uint256){
-        return openDisputesOnId[_id];
-    }
-
-    function getTypeDetails(uint256 _type) external view returns(uint256, uint256){
-        return (voteInformation[_type].quorum, voteInformation[_type].voteDuration);
-    }
-
-    function didVote(uint256 _id, address _voter) external view returns(bool){
-        return voteInfo[_id].voted[_voter];
-    }
-
-
 }
