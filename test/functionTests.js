@@ -53,7 +53,7 @@ describe("TellorX Function Tests", function() {
       method: "hardhat_impersonateAccount",
       params: [governance.address]}
     )
-    accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("1.0")});
+    await accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("1.0")});
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("Transition.sol - init()", async function() {
