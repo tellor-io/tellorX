@@ -33,7 +33,7 @@ contract Oracle is TellorVars{
     event NewIdAdded(uint256 _id, bytes _details);
 
     function addNewId(bytes calldata _details) external{
-        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
+        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT) , "only governance contract may call");
         maxID++;
         reports[maxID].details = _details;
         emit NewIdAdded(maxID,_details);
@@ -43,7 +43,7 @@ contract Oracle is TellorVars{
         require(_id != 0, "RequestId is 0");
         require(_tip != 0, "Tip should be greater than 0");
         require(_id <= maxID, "ID is out of range");
-        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_tip));
+        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_tip), "tip must be paid");
         tips[_id] += _tip;
         tipsByUser[msg.sender] += _tip;
         emit TipAdded(msg.sender, _id, _tip, tips[_id]);
@@ -62,7 +62,7 @@ contract Oracle is TellorVars{
     }
 
     function removeValue(uint _id, uint256 _timestamp) external {
-        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
+        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT), "caller must be the governance contract");
         Report storage rep = reports[_id];
         uint256 _index = rep.timestampIndex[_timestamp];
         for (uint256 i = _index; i < rep.timestamps.length-1; i++){

@@ -198,7 +198,7 @@ contract Governance is TellorVars{
 
     function executeVote(uint256 _id) external{
         Vote storage _thisVote = voteInfo[_id];
-        require(_id < voteCount);
+        require(_id < voteCount, "vote ID must be valid");
         require(!_thisVote.executed, "Vote has been executed");
         require(_thisVote.tallyDate > 0, "Vote must be tallied");
         require(voteRounds[_thisVote.identifierHash].length == _thisVote.voteRound, "must be the final vote");
@@ -244,7 +244,7 @@ contract Governance is TellorVars{
         }
     }
 
-   function proposeVote(address _contract,bytes4 _function, bytes calldata _data, uint256 _timestamp) public{
+   function proposeVote(address _contract, bytes4 _function, bytes calldata _data, uint256 _timestamp) external{
         voteCount++;
         uint256 _id = voteCount;
         Vote storage _thisVote = voteInfo[_id];
@@ -260,7 +260,7 @@ contract Governance is TellorVars{
         _thisVote.identifierHash = _hash;
         uint256 _fee = 100e18 * 2**(voteRounds[_hash].length - 1);
         //should we add a way to not need to approve here?
-        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee)); //This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
+        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee), "fee must be paid"); //This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
         _thisVote.voteRound = voteRounds[_hash].length;
         _thisVote.startDate = block.timestamp;
         _thisVote.blockNumber = block.number;
@@ -272,9 +272,9 @@ contract Governance is TellorVars{
         require(_contract == TELLOR_ADDRESS || 
             _contract == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT) ||
             _contract == IController(TELLOR_ADDRESS).addresses(_TREASURY_CONTRACT) ||
-            _contract == IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT)
+            _contract == IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT), "must interact with the Tellor system"
         );
-        require(functionApproved[_function]);
+        require(functionApproved[_function], "function must be approved");
         emit NewVote(_contract,_function,_data);
     }
 
@@ -314,7 +314,7 @@ contract Governance is TellorVars{
      * @dev This function updates the minimum dispute fee as a function of the amount
      * of staked miners
      */
-    function updateMinDisputeFee() public {
+    function updateMinDisputeFee() external{
         uint256 _stakeAmt = IController(TELLOR_ADDRESS).uints(_STAKE_AMOUNT);
         uint256 _trgtMiners = IController(TELLOR_ADDRESS).uints(_TARGET_MINERS);
         disputeFee = _max(

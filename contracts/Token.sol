@@ -64,7 +64,7 @@ contract Token is TellorStorage,TellorVars{
      * @param _amount amount the spender is being approved for
      * @return true if spender approved successfully
      */
-    function approve(address _spender, uint256 _amount) public returns (bool) {
+    function approve(address _spender, uint256 _amount) external returns (bool) {
         require(_spender != address(0), "ERC20: approve to the zero address");
 
         _allowances[msg.sender][_spender] = _amount;
@@ -73,7 +73,7 @@ contract Token is TellorStorage,TellorVars{
     }
 
 
-    function approveAndTransferFrom(address _from, address _to, uint256 _amount) public returns(bool){
+    function approveAndTransferFrom(address _from, address _to, uint256 _amount) external returns(bool){
         require(msg.sender == addresses[_GOVERNANCE_CONTRACT] ||
             msg.sender == addresses[_TREASURY_CONTRACT] ||
             msg.sender == addresses[_ORACLE_CONTRACT]);
@@ -136,7 +136,7 @@ contract Token is TellorStorage,TellorVars{
      * @param _amount The amount of tokens to send
      */
     function transfer(address _to, uint256 _amount)
-        public
+        external
         returns (bool success)
     {
         _doTransfer(msg.sender, _to, _amount);
@@ -154,7 +154,7 @@ contract Token is TellorStorage,TellorVars{
         address _from,
         address _to,
         uint256 _amount
-    ) public returns (bool success) {
+    ) external returns (bool success) {
         require(
             _allowances[_from][msg.sender] >= _amount,
             "Allowance is wrong"
