@@ -1,6 +1,7 @@
 const { AbiCoder } = require("@ethersproject/abi");
 const { expect } = require("chai");
 const h = require("./helpers/helpers");
+var assert = require('assert');
 
 describe("TellorX Function Tests - Controller", function() {
 
@@ -57,9 +58,10 @@ describe("TellorX Function Tests - Controller", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("Transition.sol - init()", async function() {
-    expect(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == governance.address, "Governance Address should be correct");
-    expect(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")) == treasury.address, "Governance Address should be correct");
-    expect(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == oracle.address, "Governance Address should be correct");
+    assert(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == governance.address, "Governance Address should be correct");
+    assert(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")) == treasury.address, "Governance Address should be correct");
+    assert(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == oracle.address, "Governance Address should be correct");
+    assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) - h.to18(100) == 0, "stake amount should peroperly change");
     h.expectThrow(tellor.init(oracle.address,oracle.address,oracle.address))
     newController = await cfac.deploy();
     await master.changeTellorContract(newController.address);
@@ -74,7 +76,7 @@ describe("TellorX Function Tests - Controller", function() {
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
     h.expectThrow(tellor.changeControllerContract(accounts[3].address));//require isValid
     await tellor.changeControllerContract(newController.address)
-    expect(await tellor.getAddressVars(h.hash("_TELLOR_CONTRACT")) == newController.address, "Controller Address should be correct");
+    assert(await tellor.getAddressVars(h.hash("_TELLOR_CONTRACT")) == newController.address, "Controller Address should be correct");
   });
   it("Controller.sol - changeGovernanceContract()", async function() {
     newGovernance = await gfac.deploy();
@@ -84,7 +86,7 @@ describe("TellorX Function Tests - Controller", function() {
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
     h.expectThrow(tellor.changeGovernanceContract(accounts[3].address));//require isValid
     await tellor.changeGovernanceContract(newGovernance.address)
-    expect(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == newGovernance.address, "Governance Address should be correct");
+    assert(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == newGovernance.address, "Governance Address should be correct");
   });
   it("Controller.sol - changeOracleContract()", async function() {
     newOracle = await ofac.deploy();
@@ -94,7 +96,7 @@ describe("TellorX Function Tests - Controller", function() {
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
     h.expectThrow(tellor.changeOracleContract(accounts[3].address));//require isValid
     await tellor.changeOracleContract(newOracle.address)
-    expect(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == newOracle.address, "Governance Address should be correct");
+    assert(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == newOracle.address, "Governance Address should be correct");
   });
   it("Controller.sol - changeTreasuryContract()", async function() {
     newTreasury = await tfac.deploy();
@@ -104,6 +106,13 @@ describe("TellorX Function Tests - Controller", function() {
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
     h.expectThrow(tellor.changeTreasuryContract(accounts[3].address));//require isValid
     await tellor.changeTreasuryContract(newTreasury.address)
-    expect(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")) == newTreasury.address, "Governance Address should be correct");
+    assert(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")) == newTreasury.address, "Governance Address should be correct");
+  });
+  it("Controller.sol - changeUint()", async function() {
+    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
+    h.expectThrow(tellor.changeUint(h.hash("_STAKE_AMOUNT"),333));//should fail, onlygovernance
+    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
+    await tellor.changeUint(h.hash("_STAKE_AMOUNT"),333)
+    assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) == 333, "Uint should peroperly change");
   });
 });

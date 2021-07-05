@@ -14,7 +14,7 @@ contract Transition is TellorStorage,TellorVars{
         //run this once migrated over.  This changes the underlying storage
         require(msg.sender == addresses[_OWNER]);
         require(addresses[_GOVERNANCE_CONTRACT] == address(0), "Only good once");
-        uints[_STAKE_AMOUNT] = 100;
+        uints[_STAKE_AMOUNT] = 100e18;
         addresses[_GOVERNANCE_CONTRACT] = _governance;
         addresses[_ORACLE_CONTRACT] = _oracle;
         addresses[_TREASURY_CONTRACT] = _treasury;
