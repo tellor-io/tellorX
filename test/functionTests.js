@@ -9,6 +9,7 @@ describe("TellorX Function Tests", function() {
     let accounts = null
     let tellor = null
     let cfac = null
+    let govSigner = null
   
   beforeEach("deploy and setup TellorX", async function() {
     accounts = await ethers.getSigners();
@@ -48,6 +49,12 @@ describe("TellorX Function Tests", function() {
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, devWallet);
     await tellor.deployed();
     await tellor.init(governance.address,oracle.address,treasury.address)
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [governance.address]}
+    )
+    accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("1.0")});
+    govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("Transition.sol - init()", async function() {
     expect(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == governance.address, "Governance Address should be correct");
@@ -76,10 +83,14 @@ describe("TellorX Function Tests", function() {
       expect(res == true, "Function should be approved")
     }
   });
-  // it("Controller.sol - changeControllerContract()", async function() {
-  //   //onlyGovernance,
-  //   //require isValid
-  //   //properly changes contract
-  // }
-  
+  it("Controller.sol - changeControllerContract()", async function() {
+    newController = await cfac.deploy();
+    await newController.deployed();
+    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
+    h.expectThrow(tellor.changeControllerContract(newController.address));//should fail, onlygovernance
+    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
+    h.expectThrow(tellor.changeControllerContract(accounts[3].address));//require isValid
+    await tellor.changeControllerContract(newController.address)
+    expect(await tellor.getAddressVars(h.hash("_TELLOR_CONTRACT")) == newController.address, "Controller Address should be correct");
+  });
 });
