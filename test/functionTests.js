@@ -30,7 +30,7 @@ describe("TellorX Function Tests", function() {
         //run init in Controller
 
     oldTellorInstance = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor", tellorMaster)
-    let gfac = await ethers.getContractFactory("contracts/Governance.sol:Governance");
+    let gfac = await ethers.getContractFactory("contracts/testing/TestGovernance.sol:TestGovernance");
     let ofac = await ethers.getContractFactory("contracts/Oracle.sol:Oracle");
     let tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury");
     cfac = await ethers.getContractFactory("contracts/Controller.sol:Controller");
