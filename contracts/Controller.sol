@@ -53,6 +53,10 @@ contract Controller is TellorStaking, Transition{
         _doMint(_reciever, _amount);
     }
 
+    function verify() external pure returns(uint){
+        return 9999;
+    }
+
     function _isValid(address _contract) internal returns(bool){
         (bool _success, bytes memory _data) =
             address(_contract).call(
