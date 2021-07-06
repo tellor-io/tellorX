@@ -34,7 +34,7 @@ describe("TellorX Function Tests - Controller", function() {
     gfac = await ethers.getContractFactory("contracts/testing/TestGovernance.sol:TestGovernance");
     ofac = await ethers.getContractFactory("contracts/Oracle.sol:Oracle");
     tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury");
-    cfac = await ethers.getContractFactory("contracts/Controller.sol:Controller");
+    cfac = await ethers.getContractFactory("contracts/TestController.sol:TestController");
     governance = await gfac.deploy();
     oracle = await ofac.deploy();
     treasury = await tfac.deploy();
@@ -114,5 +114,16 @@ describe("TellorX Function Tests - Controller", function() {
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
     await tellor.changeUint(h.hash("_STAKE_AMOUNT"),333)
     assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) == 333, "Uint should peroperly change");
+  });
+  it("Controller.sol - migrate()", async function() {
+    let tofac = await ethers.getContractFactory("contracts/testing/TestToken.sol:TestToken");
+    let token = await tofac.deploy();
+    await token.deployed()
+    await token.mint(accounts[1], 500)
+    await tellor.changeAddressVar(h.hash("_OLD_TELLOR"), token.address)
+    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    await tellor.migrate();
+    h.expectThrow(tellor.migrate());//should fail if run twice
+    assert(await tellor.balanceOf(accounts[1] == 500, "migration should work correctly"))
   });
 });
