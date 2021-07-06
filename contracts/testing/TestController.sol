@@ -7,10 +7,6 @@ contract TestController is Controller{
     receive() external payable {
         emit Received(msg.sender, msg.value);
     }
-    //allows the contract to recieve funds for gas via harhdat-impersonate account
-    fallback() external payable{
-        emit Received(msg.sender, msg.value);
-    }
 
     function changeAddressVar(bytes32 _id, address _addy) external {
         addresses[_id] = _addy;

@@ -89,4 +89,6 @@ interface ITellor{
     function getTreasuryAccount(uint256 _id, address _investor) external view returns(uint256);
     function getTreasuryOwners(uint256 _id) external view returns(address[] memory);
     function wasPaid(uint256 _id, address _investor) external view returns(bool);
+    //Test functions
+    function changeAddressVar(bytes32 _id, address _addy) external;
 }

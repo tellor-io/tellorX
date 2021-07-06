@@ -34,7 +34,7 @@ describe("TellorX Function Tests - Controller", function() {
     gfac = await ethers.getContractFactory("contracts/testing/TestGovernance.sol:TestGovernance");
     ofac = await ethers.getContractFactory("contracts/Oracle.sol:Oracle");
     tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury");
-    cfac = await ethers.getContractFactory("contracts/TestController.sol:TestController");
+    cfac = await ethers.getContractFactory("contracts/testing/TestController.sol:TestController");
     governance = await gfac.deploy();
     oracle = await ofac.deploy();
     treasury = await tfac.deploy();
@@ -119,11 +119,33 @@ describe("TellorX Function Tests - Controller", function() {
     let tofac = await ethers.getContractFactory("contracts/testing/TestToken.sol:TestToken");
     let token = await tofac.deploy();
     await token.deployed()
-    await token.mint(accounts[1], 500)
+    await token.mint(accounts[1].address, 500)
     await tellor.changeAddressVar(h.hash("_OLD_TELLOR"), token.address)
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellor.migrate();
     h.expectThrow(tellor.migrate());//should fail if run twice
-    assert(await tellor.balanceOf(accounts[1] == 500, "migration should work correctly"))
+    assert(await tellor.balanceOf(accounts[1].address) == 500, "migration should work correctly")
+  });
+  it("Controller.sol - mint()", async function() {
+    let initSupply = await tellor.totalSupply();
+    h.expectThrow(tellor.mint(accounts[3].address,500));//require onlyGovernance
+    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
+    await tellor.mint(accounts[3].address,h.to18(500))
+    assert(await tellor.balanceOf(accounts[3].address) - h.to18(500) == 0, "balance should change correctly");
+    let finSupply =  await tellor.totalSupply();
+    assert(finSupply - h.to18(500) == initSupply, "Total supply should change correctly")
+  });
+  it("Controller.sol - verify()", async function() {
+    assert(await tellor.verify() > 9000, "Contract should properly verify")
+  });
+  it("Controller.sol - _isValid()", async function() {
+    let tofac = await ethers.getContractFactory("contracts/testing/TestToken.sol:TestToken");
+    let token = await tofac.deploy();
+    await token.deployed()
+    newController = await cfac.deploy();
+    await newController.deployed();
+    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
+    h.expectThrow(tellor.changeControllerContract(token.address));//require isValid
+    await tellor.changeControllerContract(newController.address)
   });
 });
