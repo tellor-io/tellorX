@@ -14,25 +14,11 @@ const takeFifteen = async () => {
 await advanceTime(60 * 18);
 };
   
-advanceTime = (time) => {
-    return new Promise((resolve, reject) => {
-      web3.currentProvider.send(
-        {
-          jsonrpc: "2.0",
-          method: "evm_increaseTime",
-          params: [time],
-          id: new Date().getTime(),
-        },
-        (err, result) => {
-          if (err) {
-            return reject(err);
-          }
-          return resolve(result);
-        }
-      );
-    });
-  };
-  
+
+advanceTime = async (time) =>{
+  await network.provider.send("evm_increaseTime", [time])
+  await network.provider.send("evm_mine")
+}
   advanceBlock = () => {
     return new Promise((resolve, reject) => {
       web3.currentProvider.send(

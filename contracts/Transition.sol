@@ -38,6 +38,7 @@ contract Transition is TellorStorage,TellorVars{
         } else {
             return (0, false);
         }
+        //maybe check internal storage
     }
 
     /**
@@ -53,6 +54,7 @@ contract Transition is TellorStorage,TellorVars{
         returns (uint256)
     {
         return IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountByID(_requestId);
+        //maybe check internal storage
     }
 
     /**
@@ -67,6 +69,7 @@ contract Transition is TellorStorage,TellorVars{
         returns (uint256)
     {
         return _sliceUint(IOracle(addresses[_ORACLE_CONTRACT]).getValueByTimestamp(_requestId, _timestamp),0);
+        //maybe check internal storage if timestamp before switch
     }
 
     //Getters

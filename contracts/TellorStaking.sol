@@ -2,6 +2,7 @@
 pragma solidity 0.8.3;
 import "./Token.sol";
 import "./interfaces/IGovernance.sol";
+import "hardhat/console.sol";
 
 contract TellorStaking is Token{
 
@@ -44,6 +45,18 @@ contract TellorStaking is Token{
         uints[_STAKE_COUNT] -= 1;
         IGovernance(addresses[_GOVERNANCE_CONTRACT]).updateMinDisputeFee();
         emit StakeWithdrawRequested(msg.sender);
+    }
+
+    function slashMiner(address _reporter, address _disputer) external{
+
+        if(balanceOf(_reporter) >= uints[_STAKE_AMOUNT]){
+            _doTransfer(_reporter,_disputer,uints[_STAKE_AMOUNT]);
+        }
+        //in case we increase stake amount over their balance
+        else if(balanceOf(_reporter) > 0){
+            _doTransfer(_reporter,_disputer,balanceOf(_reporter));
+        }
+        stakerDetails[_reporter].currentStatus = 5;
     }
 
     function withdrawStake() external {

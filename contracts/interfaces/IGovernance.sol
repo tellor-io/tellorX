@@ -3,7 +3,7 @@ pragma solidity 0.8.3;
 
 interface IGovernance{
     enum VoteResult {FAILED,PASSED,INVALID}
-    function addApprovedFunction(bytes4 _func) external;
+    function setApprovedFunction(bytes4 _func, bool _val) external;
     function changeTypeInformation(uint256 _id,uint256 _quorum, uint256 _duration) external;
     function beginDispute(uint256 _requestId,uint256 _timestamp) external;
     function delegate(address _delegate) external;

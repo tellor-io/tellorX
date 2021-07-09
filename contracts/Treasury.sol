@@ -45,6 +45,7 @@ contract Treasury is TellorVars{
     //_amount of TRB, _rate in bp
     function issueTreasury(uint256 _amount, uint256 _rate, uint256 _duration) external{
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
+        //make sure the treasury contract has funds to pay
         require(IController(TELLOR_ADDRESS).balanceOf(address(this)) - totalLocked > _amount);
         totalLocked += _amount;
         treasuryCount++;

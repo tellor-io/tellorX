@@ -9,9 +9,8 @@ contract Oracle is TellorVars{
     uint256[] public timestamps;
     uint256 public maxID;
     mapping(uint256 => uint256) public tips;
-    uint256 public timeOfLastNewValue;
-    uint256 public burned;
-    uint256 public toBurn;
+    uint256 tipsInContract;
+    uint256 public timeOfLastNewValue = block.timestamp;
     uint256 public miningLock = 12 hours;//make this changeable by governance?
     mapping(uint256 => Report) reports; //ID to reports
     mapping(uint256 => uint256[]) timestampToIDs; //mapping of timestamp to IDs pushed
@@ -32,6 +31,10 @@ contract Oracle is TellorVars{
     event NewReport(uint256 _id, uint256 _time, bytes _value, uint256 _reward);
     event NewIdAdded(uint256 _id, bytes _details);
 
+    constructor(){
+        //add initial ID's
+    }
+
     function addNewId(bytes calldata _details) external{
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT) , "only governance contract may call");
         maxID++;
@@ -44,16 +47,12 @@ contract Oracle is TellorVars{
         require(_tip != 0, "Tip should be greater than 0");
         require(_id <= maxID, "ID is out of range");
         require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_tip), "tip must be paid");
+        _tip = _tip/2;
+        IController(TELLOR_ADDRESS).burn(_tip);
         tips[_id] += _tip;
         tipsByUser[msg.sender] += _tip;
+        tipsInContract += _tip;
         emit TipAdded(msg.sender, _id, _tip, tips[_id]);
-    }
-
-    //a function to clean up the totalSupply
-    function burnTips() external{
-        burned += toBurn;
-        IController(TELLOR_ADDRESS).burn(toBurn);
-        toBurn = 0;
     }
 
     function changeMiningLock(uint256 _newMiningLock) external{
@@ -74,14 +73,18 @@ contract Oracle is TellorVars{
     }
 
     function submitValue(uint256 _id, bytes calldata _value) external{
+        require(_id != 0, "RequestId is 0");
+        require(_id <= maxID, "ID is out of range");
         require(
             block.timestamp - reporterLastTimestamp[msg.sender]  > miningLock,
-            "Miner can only win rewards once per 12 hours"
+            "Reporter can only win rewards once per 12 hours"
         );
         reporterLastTimestamp[msg.sender] == block.timestamp;
         IController _tellor = IController(TELLOR_ADDRESS);
         (uint256 _status,) = _tellor.getStakerInfo(msg.sender);
-        require(_status == 1,"Miner status is not staker");
+        require(_status == 1,"Reporter status is not staker");
+        //this check is in case the stake amount increases
+        require(_tellor.balanceOf(msg.sender) >= _tellor.uints(_STAKE_AMOUNT), "balance must be greater than stake amount");
         Report storage rep = reports[_id];
         require(rep.reporterByTimestamp[block.timestamp] == address(0), "timestamp already reported for");
         rep.timestampIndex[block.timestamp] = rep.timestamps.length;
@@ -91,13 +94,15 @@ contract Oracle is TellorVars{
         rep.reporterByTimestamp[block.timestamp] = msg.sender;
         //send tips + timeBasedReward
         uint256 _timeDiff = block.timestamp - timeOfLastNewValue;
+        uint256 _tip = tips[_id];
         uint256 _reward = (_timeDiff * 5e17) / 300;//.5 TRB per 5 minutes (should we make this upgradeable)
-        if(_tellor.balanceOf(address(this)) < _reward){
-            _reward = _tellor.balanceOf(address(this));
+        if(_tellor.balanceOf(address(this)) < _reward + tipsInContract){
+            _reward = _tellor.balanceOf(address(this)) - tipsInContract;
         }
-        uint256 _tip = tips[_id] / 2;
-        toBurn += _tip;
-        _tellor.transfer(msg.sender,_reward + _tip);
+        tipsInContract -= _tip;
+        if(_reward + _tip > 0){
+            _tellor.transfer(msg.sender,_reward + _tip);
+        }
         tips[_id] = 0;
         timeOfLastNewValue = block.timestamp;
         reportsSubmittedByAddress[msg.sender]++;
