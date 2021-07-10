@@ -246,7 +246,8 @@ contract Governance is TellorVars{
         _thisVote.identifierHash = _hash;
         uint256 _fee = 10e18 * 2**(voteRounds[_hash].length - 1);
         //should we add a way to not need to approve here?
-        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee), "fee must be paid"); //This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
+        //This is the fee to do anything (just 10 tokens flat, no refunds.  Goes up quickly to prevent spamming)
+        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee), "fee must be paid"); 
         _thisVote.voteRound = voteRounds[_hash].length;
         _thisVote.startDate = block.timestamp;
         _thisVote.blockNumber = block.number;
@@ -367,6 +368,7 @@ contract Governance is TellorVars{
         _v.tallyDate,_v.doesSupport,_v.against,_v.invalidQuery],[_v.executed,_v.isDispute],_v.result,
         _v.data,_v.voteFunction,[_v.voteAddress,_v.initiator]);
     }
+
 
     function getVoteRounds(bytes32 _hash) external view returns(uint256[] memory){
         return voteRounds[_hash];
