@@ -193,36 +193,59 @@ describe("TellorX Function Tests - Governance", function() {
 //     await governance.executeVote(3)
 //     assert(voteVars[2][0] == true, "vote should be executed")
 //   });
-  it("proposeVote()", async function() {
-    let newController = await cfac.deploy();
-    await newController.deployed();
-    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
-    await h.expectThrow(governance.proposeVote(tellorMaster,0x3c46a185,newController.address,0));//doesn't have money
+  // it("proposeVote()", async function() {
+  //   let newController = await cfac.deploy();
+  //   await newController.deployed();
+  //   governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
+  //   await h.expectThrow(governance.proposeVote(tellorMaster,0x3c46a185,newController.address,0));//doesn't have money
+  //   await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
+  //   await h.expectThrow(governance.proposeVote(accounts[2].address,0x3c46a185,newController.address,0));//require contract must be one in the system
+  //   await h.expectThrow(governance.proposeVote(tellorMaster,0x3c46a222,newController.address,0));//require function must be approved
+  //   await governance.proposeVote(tellorMaster,0x3c46a185,newController.address,0)
+  //   let blocky = await ethers.provider.getBlock();
+  //   let voteVars = await governance.getVoteInfo(1)
+  //   let _hash = ethers.utils.solidityKeccak256(['address','bytes4','bytes','uint256'], [tellorMaster,0x3c46a185,newController.address,blocky.timestamp])
+  //   assert(voteVars[0] == _hash, "identifier hash should be correct")
+  //   assert(voteVars[1][0] == 1, "vote round should be 1")
+  //   assert(voteVars[1][1] >= blocky.timestamp , "vote start date should be correct")
+  //   assert(voteVars[1][2] > 0, "vote block number should be greater than 0")
+  //   assert(voteVars[1][3] ==  web3.utils.toWei("10") , "fee should be correct")
+  //   assert(voteVars[1][4] == 0, "tallyDate should be 0")
+  //   assert(voteVars[4] - newController.address == 0, "vote data should be correct")
+  //   assert(voteVars[5] == 0x3c46a185, "vote function should be correct")
+  //   assert(voteVars[6][0] - tellorMaster == 0, "vote contract address should be correct")
+  //   assert(voteVars[6][1] - accounts[1].address == 0, "vote initiator address should be correct")
+  //   await h.advanceTime(86400 * 8)
+  //   await governance.tallyVotes(1)
+  //   await h.advanceTime(86400 * 3)
+  //   await h.expectThrow(governance.proposeVote(tellorMaster,0x3c46a185,newController.address,blocky.timestamp))//require 1 day for new votes
+  //   });
+  it("tallyVotes()", async function() {
+    oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, govSigner);
+    await oracle.addNewId(1)
+    await oracle.addNewId(2)
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
-    await h.expectThrow(governance.proposeVote(accounts[2].address,0x3c46a185,newController.address,0));//require contract must be one in the system
-    await h.expectThrow(governance.proposeVote(tellorMaster,0x3c46a222,newController.address,0));//require function must be approved
-    await governance.proposeVote(tellorMaster,0x3c46a185,newController.address,0)
-    let blocky = await ethers.provider.getBlock();
-    let voteVars = await governance.getVoteInfo(1)
-    let _hash = ethers.utils.solidityKeccak256(['address','bytes4','bytes','uint256'], [tellorMaster,0x3c46a185,newController.address,blocky.timestamp])
-    assert(voteVars[0] == _hash, "identifier hash should be correct")
-    assert(voteVars[1][0] == 1, "vote round should be 1")
-    assert(voteVars[1][1] >= blocky.timestamp , "vote start date should be correct")
-    assert(voteVars[1][2] > 0, "vote block number should be greater than 0")
-    assert(voteVars[1][3] ==  web3.utils.toWei("10") , "fee should be correct")
-    assert(voteVars[1][4] == 0, "tallyDate should be 0")
-    assert(voteVars[4] - newController.address == 0, "vote data should be correct")
-    assert(voteVars[5] == 0x3c46a185, "vote function should be correct")
-    assert(voteVars[6][0] - tellorMaster == 0, "vote contract address should be correct")
-    assert(voteVars[6][1] - accounts[1].address == 0, "vote initiator address should be correct")
-    await h.advanceTime(86400 * 8)
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    await tellorUser.depositStake();
+    oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
+    await oracle.submitValue(1,300);
+    let _t = await oracle.getReportTimestampByIndex(1,0);
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
+    teamGovernance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, devWallet);
+    await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
+    await governance.beginDispute(1,_t);
+    await teamGovernance.vote(1,true,false);
+    await h.expectThrow(governance.tallyVotes(1));//time for voting hasn't elapsed
+    await h.advanceTime(86400 * 2.5)
     await governance.tallyVotes(1)
-    await h.advanceTime(86400 * 3)
-    await h.expectThrow(governance.proposeVote(tellorMaster,0x3c46a185,newController.address,blocky.timestamp))//require 1 day for new votes
-    });
-//   it("tallyVotes()", async function() {
-//     assert(0==1)
-//   });
+    await h.expectThrow(governance.tallyVotes(1));//already tallied
+    let voteVars = await governance.getVoteInfo(1)
+    assert(voteVars[3] - 1 == 0, "result should be correct")
+    assert(voteVars[1][4] > _t, "tally date should be correct")
+    await h.advanceTime(86400 * 2.5)
+    await governance.executeVote(1)
+    h.expectThrow(governance.tallyVotes(1));//already executed
+  });
 //   it("updateMinDisputeFee()", async function() {
 //     assert(0==1)
 //   });
