@@ -8,18 +8,17 @@ contract Oracle is TellorVars{
 
     uint256[] public timestamps;
     uint256 public maxID;
-    mapping(uint256 => uint256) public tips;
+    mapping(bytes32 => uint256) public tips;
     uint256 tipsInContract;
     uint256 public timeOfLastNewValue = block.timestamp;
     uint256 public miningLock = 12 hours;//make this changeable by governance?
-    mapping(uint256 => Report) reports; //ID to reports
-    mapping(uint256 => uint256[]) timestampToIDs; //mapping of timestamp to IDs pushed
+    mapping(bytes32 => Report) reports; //ID to reports
+    mapping(uint256 => bytes32[]) timestampToIDs; //mapping of timestamp to IDs pushed
     mapping(address => uint256) reporterLastTimestamp;
     mapping(address => uint256) reportsSubmittedByAddress;
     mapping(address => uint256) tipsByUser;//mapping of a user to the amount of tips they've paid
 
     struct Report {
-        bytes details;
         uint256[] timestamps; //array of all newValueTimestamps requested
         mapping(uint256 => uint256) timestampIndex;
         mapping(uint256 => uint256) timestampToBlockNum; //[apiId][minedTimestamp]=>block.number
@@ -27,25 +26,11 @@ contract Oracle is TellorVars{
         mapping(uint256 => address) reporterByTimestamp;
     }
 
-    event TipAdded(address _user, uint256 _id,uint256 _tip, uint256 _totalTip);
-    event NewReport(uint256 _id, uint256 _time, bytes _value, uint256 _reward);
-    event NewIdAdded(uint256 _id, bytes _details);
+    event TipAdded(address _user, bytes32 _id,uint256 _tip, uint256 _totalTip);
+    event NewReport(bytes32 _id, uint256 _time, bytes _value, uint256 _reward);
 
-    constructor(){
-        //add initial ID's
-    }
-
-    function addNewId(bytes calldata _details) external{
-        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT) , "only governance contract may call");
-        maxID++;
-        reports[maxID].details = _details;
-        emit NewIdAdded(maxID,_details);
-    }
-
-    function addTip(uint256 _id, uint256 _tip) external{
-        require(_id != 0, "RequestId is 0");
+    function addTip(bytes32 _id, uint256 _tip) external{
         require(_tip != 0, "Tip should be greater than 0");
-        require(_id <= maxID, "ID is out of range");
         require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_tip), "tip must be paid");
         _tip = _tip/2;
         IController(TELLOR_ADDRESS).burn(_tip);
@@ -60,7 +45,7 @@ contract Oracle is TellorVars{
         miningLock = _newMiningLock;
     }
 
-    function removeValue(uint _id, uint256 _timestamp) external {
+    function removeValue(bytes32 _id, uint256 _timestamp) external {
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT), "caller must be the governance contract");
         Report storage rep = reports[_id];
         uint256 _index = rep.timestampIndex[_timestamp];
@@ -72,9 +57,7 @@ contract Oracle is TellorVars{
         rep.valueByTimestamp[_timestamp] = "";
     }
 
-    function submitValue(uint256 _id, bytes calldata _value) external{
-        require(_id != 0, "RequestId is 0");
-        require(_id <= maxID, "ID is out of range");
+    function submitValue(bytes32 _id, bytes calldata _value) external{
         require(
             block.timestamp - reporterLastTimestamp[msg.sender]  > miningLock,
             "Reporter can only win rewards once per 12 hours"
@@ -114,35 +97,31 @@ contract Oracle is TellorVars{
     }
 
     //Getters
-    function getBlockNumberByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(uint256){
-        return reports[_requestId].timestampToBlockNum[_timestamp];
-    }
-
-    function getReportDetails(uint256 _id) external view returns(bytes memory){
-        return reports[_id].details;
+    function getBlockNumberByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(uint256){
+        return reports[_id].timestampToBlockNum[_timestamp];
     }
     
-    function getReporterByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(address){
-        return reports[_requestId].reporterByTimestamp[_timestamp];
+    function getReporterByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(address){
+        return reports[_id].reporterByTimestamp[_timestamp];
     }
 
     function getReportsSubmittedByAddress(address _reporter) external view returns(uint256){
         return reportsSubmittedByAddress[_reporter];
     }
 
-    function getTimestampCountByID(uint256 _id) external view returns(uint256){
+    function getTimestampCountByID(bytes32 _id) external view returns(uint256){
         return reports[_id].timestamps.length;
     }   
 
-    function getReportTimestampByIndex(uint256 _requestId, uint256 _index) external view returns(uint256){
-        return reports[_requestId].timestamps[_index];
+    function getReportTimestampByIndex(bytes32 _id, uint256 _index) external view returns(uint256){
+        return reports[_id].timestamps[_index];
     }
 
-    function getTimestampIndexByTimestamp(uint256 _id, uint256 _timestamp) external view returns(uint256){
+    function getTimestampIndexByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(uint256){
         return reports[_id].timestampIndex[_timestamp];
     }
 
-    function getTipsById(uint _id) external view returns(uint256){
+    function getTipsById(bytes32 _id) external view returns(uint256){
         return tips[_id];
     }
 
@@ -150,7 +129,7 @@ contract Oracle is TellorVars{
         return tipsByUser[_user];
     }
 
-    function getValueByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns(bytes memory){
-        return reports[_requestId].valueByTimestamp[_timestamp];
+    function getValueByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(bytes memory){
+        return reports[_id].valueByTimestamp[_timestamp];
     }
 }
