@@ -11,4 +11,8 @@ contract TestController is Controller{
     function changeAddressVar(bytes32 _id, address _addy) external {
         addresses[_id] = _addy;
     }
+
+    function mint(address _to, uint _amount) external {
+       _doMint(_to, _amount);
+    }
 }
