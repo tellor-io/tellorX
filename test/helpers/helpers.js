@@ -58,6 +58,10 @@ advanceTime = async (time) =>{
   function to18(n) {
     return ethers.BigNumber.from(n).mul(ethers.BigNumber.from(10).pow(18))
   }
+
+  function tob32(n){
+    return ethers.utils.formatBytes32String(n)
+  }
   
 module.exports = {
   stakeAmount: new BN(web3.utils.toWei("500", "ether")),
@@ -65,6 +69,7 @@ module.exports = {
   hash,
   zeroAddress:"0x0000000000000000000000000000000000000000",
   to18, 
+  tob32,
   maxUint256: new BN("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"),
   advanceTime,
   advanceBlock,

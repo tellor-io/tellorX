@@ -15,7 +15,7 @@ contract Governance is TellorVars{
     mapping(bytes32 => uint[]) voteRounds;//shows if a certain vote has already started
     mapping(uint => Vote) voteInfo;
     mapping(uint => Dispute) disputeInfo;
-    mapping(uint => uint) openDisputesOnId;
+    mapping(bytes32 => uint) openDisputesOnId;
     enum VoteResult {FAILED,PASSED,INVALID}
 
     struct Delegation {
@@ -24,7 +24,7 @@ contract Governance is TellorVars{
     }
 
     struct Dispute {
-        uint requestId;
+        bytes32 requestId;
         uint timestamp;
         bytes value;
         address reportedMiner; //miner who submitted the 'bad value' will get disputeFee if dispute vote fails
@@ -51,7 +51,7 @@ contract Governance is TellorVars{
     }
 
     /*Events*/
-    event NewDispute(uint256 _id, uint256 _requestId, uint256 _timestamp, address _reporter);
+    event NewDispute(uint256 _id, bytes32 _requestId, uint256 _timestamp, address _reporter);
     event NewVote(address _contract, bytes4 _function, bytes _data);
     event Voted(uint256 _voteId, bool _supports, address _voter, uint _voteWeight, bool _invalidQuery);
     event VoteExecuted(uint256 _id, VoteResult _result);
@@ -82,7 +82,7 @@ contract Governance is TellorVars{
      * @param _requestId being disputed
      * @param _timestamp being disputed
      */
-    function beginDispute(uint256 _requestId,uint256 _timestamp) external {
+    function beginDispute(bytes32 _requestId,uint256 _timestamp) external {
         address _oracle = IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT);
         require(IOracle(_oracle).getBlockNumberByTimestamp(_requestId, _timestamp) != 0, "Mined block is 0");
         address _reporter = IOracle(_oracle).getReporterByTimestamp(_requestId,_timestamp);
@@ -112,7 +112,7 @@ contract Governance is TellorVars{
         uint256 _fee;
         if(voteRounds[_hash].length == 1){
             _fee = disputeFee * 2**(openDisputesOnId[_requestId] - 1);
-            IOracle(_oracle).removeValue(_id,_timestamp);
+            IOracle(_oracle).removeValue(_requestId,_timestamp);
         }
         else{
             _fee = disputeFee * 2**(voteRounds[_hash].length - 1);
@@ -315,14 +315,17 @@ contract Governance is TellorVars{
     function updateMinDisputeFee() external{
         uint256 _stakeAmt = IController(TELLOR_ADDRESS).uints(_STAKE_AMOUNT);
         uint256 _trgtMiners = IController(TELLOR_ADDRESS).uints(_TARGET_MINERS);
-        disputeFee = _max(
-            15e18,
-            (_stakeAmt -
-                ((_stakeAmt *
-                    (_min(_trgtMiners, IController(TELLOR_ADDRESS).uints(_STAKE_COUNT)) * 1000)) /
-                    _trgtMiners) /
-                1000)
-        );
+        uint256 _stakeCount = IController(TELLOR_ADDRESS).uints(_STAKE_COUNT);
+        uint256 _reducer;
+        if(_stakeCount > 0){
+            _reducer = (_stakeAmt * (_min(_trgtMiners, _stakeCount) * 1000)/_trgtMiners)/1000;
+        }
+        if(_reducer >= _stakeAmt){
+            disputeFee = 15e18;
+        }
+        else{
+            disputeFee = _stakeAmt - _reducer;
+        }
     }
 
     function verify() external pure returns(uint){
@@ -351,12 +354,12 @@ contract Governance is TellorVars{
         return (delegateOfAt(_holder,block.number), delegateInfo[_holder][delegateInfo[_holder].length-1].fromBlock);
     }
 
-    function getDisputeInfo(uint256 _id) external view returns(uint256,uint256,bytes memory, address){
+    function getDisputeInfo(uint256 _id) external view returns(bytes32,uint256,bytes memory, address){
         Dispute storage _d = disputeInfo[_id];
         return (_d.requestId,_d.timestamp,_d.value,_d.reportedMiner);
     }
 
-    function getOpenDisputesOnId(uint256 _id) external view returns(uint256){
+    function getOpenDisputesOnId(bytes32 _id) external view returns(uint256){
         return openDisputesOnId[_id];
     }
 
@@ -405,9 +408,5 @@ contract Governance is TellorVars{
 
     function _min(uint256 a, uint256 b) internal pure returns (uint256) {
         return a < b ? a : b;
-    }
-
-    function _max(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a > b ? a : b;
     }
 }

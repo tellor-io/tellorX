@@ -5,7 +5,7 @@ interface IGovernance{
     enum VoteResult {FAILED,PASSED,INVALID}
     function setApprovedFunction(bytes4 _func, bool _val) external;
     function changeTypeInformation(uint256 _id,uint256 _quorum, uint256 _duration) external;
-    function beginDispute(uint256 _requestId,uint256 _timestamp) external;
+    function beginDispute(bytes32 _id,uint256 _timestamp) external;
     function delegate(address _delegate) external;
     function delegateOfAt(address _user, uint256 _blockNumber) external view returns (address);
     function executeVote(uint256 _id) external;
