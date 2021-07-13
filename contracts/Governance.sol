@@ -389,10 +389,10 @@ contract Governance is TellorVars{
         IController _controller = IController(TELLOR_ADDRESS);
         uint256 voteWeight = _controller.balanceOfAt(_voter,_thisVote.blockNumber);
         IOracle _oracle = IOracle(_controller.addresses(_ORACLE_CONTRACT));
-        voteWeight +=  _oracle.getReportsSubmittedByAddress(_voter);
+        voteWeight +=  _oracle.getReportsSubmittedByAddress(_voter) * 1e18;
         voteWeight += _oracle.getTipsByUser(_voter);
         (uint256 _status,) = _controller.getStakerInfo(_voter);
-        require(_status != 3);
+        require(_status != 3, "Cannot vote if being disputed");
         require(_thisVote.voted[_voter] != true, "Sender has already voted");
         require(voteWeight != 0, "User balance is 0");
         _thisVote.voted[_voter] = true;
