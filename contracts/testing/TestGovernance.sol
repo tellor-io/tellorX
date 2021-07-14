@@ -11,4 +11,8 @@ contract TestGovernance is Governance{
     fallback() external payable{
         emit Received(msg.sender, msg.value);
     }
+
+    function testMin(uint256 a, uint256 b) external pure returns (uint256){
+        return _min(a,b);
+    }
 }
