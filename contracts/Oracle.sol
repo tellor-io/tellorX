@@ -9,7 +9,7 @@ contract Oracle is TellorVars{
     uint256[] public timestamps;
     uint256 public maxID;
     mapping(bytes32 => uint256) public tips;
-    uint256 tipsInContract;
+    uint256 public tipsInContract;
     uint256 public timeOfLastNewValue = block.timestamp;
     uint256 public miningLock = 12 hours;//make this changeable by governance?
     mapping(bytes32 => Report) reports; //ID to reports
@@ -30,7 +30,7 @@ contract Oracle is TellorVars{
     event NewReport(bytes32 _id, uint256 _time, bytes _value, uint256 _reward);
 
     function addTip(bytes32 _id, uint256 _tip) external{
-        require(_tip != 0, "Tip should be greater than 0");
+        require(_tip > 1, "Tip should be greater than 1");
         require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_tip), "tip must be paid");
         _tip = _tip/2;
         IController(TELLOR_ADDRESS).burn(_tip);
@@ -62,7 +62,7 @@ contract Oracle is TellorVars{
             block.timestamp - reporterLastTimestamp[msg.sender]  > miningLock,
             "Reporter can only win rewards once per 12 hours"
         );
-        reporterLastTimestamp[msg.sender] == block.timestamp;
+        reporterLastTimestamp[msg.sender] = block.timestamp;
         IController _tellor = IController(TELLOR_ADDRESS);
         (uint256 _status,) = _tellor.getStakerInfo(msg.sender);
         require(_status == 1,"Reporter status is not staker");
@@ -109,7 +109,7 @@ contract Oracle is TellorVars{
         return reportsSubmittedByAddress[_reporter];
     }
 
-    function getTimestampCountByID(bytes32 _id) external view returns(uint256){
+    function getTimestampCountById(bytes32 _id) external view returns(uint256){
         return reports[_id].timestamps.length;
     }   
 

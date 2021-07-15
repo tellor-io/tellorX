@@ -250,7 +250,7 @@ describe("TellorX Function Tests - Governance", function() {
     assert(await governance.disputeFee() - await master.getUintVar(h.hash("_STAKE_AMOUNT")) == 0, "Dispute Fee should be stake")
   });
   it("verify()", async function() {
-    assert(await tellor.verify() > 9000, "Contract should properly verify")
+    assert(await governance.verify() > 9000, "Contract should properly verify")
   });
   it("vote()", async function() {
     let newController = await cfac.deploy();
