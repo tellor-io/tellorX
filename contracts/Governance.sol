@@ -74,6 +74,7 @@ contract Governance is TellorVars{
         for(uint256 _i =0;_i< _funcs.length;_i++){
             functionApproved[_funcs[_i]] = true;
         }
+        updateMinDisputeFee();
     }
     /**
      * @dev Helps initialize a dispute by assigning it a disputeId
@@ -312,7 +313,7 @@ contract Governance is TellorVars{
      * @dev This function updates the minimum dispute fee as a function of the amount
      * of staked miners
      */
-    function updateMinDisputeFee() external{
+    function updateMinDisputeFee() public{
         uint256 _stakeAmt = IController(TELLOR_ADDRESS).uints(_STAKE_AMOUNT);
         uint256 _trgtMiners = IController(TELLOR_ADDRESS).uints(_TARGET_MINERS);
         uint256 _stakeCount = IController(TELLOR_ADDRESS).uints(_STAKE_COUNT);

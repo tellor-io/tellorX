@@ -41,7 +41,7 @@ contract TellorStaking is Token{
         StakeInfo storage stakes = stakerDetails[msg.sender];
         require(stakes.currentStatus == 1, "Miner is not staked");
         stakes.currentStatus = 2;
-        stakes.startDate = block.timestamp - (block.timestamp % 86400);
+        stakes.startDate = block.timestamp;
         uints[_STAKE_COUNT] -= 1;
         IGovernance(addresses[_GOVERNANCE_CONTRACT]).updateMinDisputeFee();
         emit StakeWithdrawRequested(msg.sender);
