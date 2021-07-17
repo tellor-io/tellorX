@@ -88,16 +88,54 @@ describe("TellorX Function Tests - TellorStaking", function() {
     assert(await tellor.getUintVar(h.hash("_STAKE_COUNT"))*1 + 1 - iStakeCount * 1 == 0, "stake count should peroperly change");
     assert(await governance.disputeFee()*1 - 1*iDispFee > 0, "dispute Fee should go back to the same")
   });
-//   it("withdrawStake", async function() {
-//     assert(0==1)
-//   });
-//   it("changeStakingStatus", async function() {
-//     assert(0==1)
-//   });
-//   it("slashMiner", async function() {
-//     assert(0==1)
-//   });
-//   it("getStakerInfo", async function() {
-//     assert(0==1)
-//   });
+  it("withdrawStake", async function() {
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    await h.expectThrow(tellorUser.withdrawStake());//not staked
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
+    await tellorUser.depositStake();
+    await h.expectThrow(tellorUser.withdrawStake());//has not requestedWithdraw
+    await tellorUser.requestStakingWithdraw()
+    await h.expectThrow(tellorUser.withdrawStake());//7 days hasn't passed
+    await h.advanceTime(86400*7)
+    await tellorUser.withdrawStake();
+    let blocky = await ethers.provider.getBlock();
+    let vars = await tellor.getStakerInfo(accounts[1].address)
+    assert(vars[0]* 1 == 0, "status should be correct")
+  });
+  it("changeStakingStatus", async function() {
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
+    let initBal = await tellor.balanceOf(accounts[1].address)
+    await tellorUser.depositStake();
+    admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
+    await admin.changeStakingStatus(accounts[1].address,2);
+    let vars = await tellor.getStakerInfo(accounts[1].address)
+    assert(vars[0] - 2 == 0, "status should be correct")
+    await admin.changeStakingStatus(accounts[1].address,5);
+    vars = await tellor.getStakerInfo(accounts[1].address)
+    assert(vars[0] - 5 == 0, "status should be correct")
+  });
+  it("slashMiner", async function() {
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
+    let initBal = await tellor.balanceOf(accounts[1].address)
+    await tellorUser.depositStake();
+    admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
+    await admin.slashMiner(accounts[1].address, accounts[2].address)
+    let blocky = await ethers.provider.getBlock();
+    let vars = await tellor.getStakerInfo(accounts[1].address)
+    assert(vars[0] - 5 == 0, "status should be correct")
+    assert(initBal - await tellor.balanceOf(accounts[1].address) - web3.utils.toWei("100") == 0, "miner should lose stake")
+    assert(await tellor.balanceOf(accounts[2].address) - web3.utils.toWei("100") == 0, "disputer should gain stake")
+  });
+  it("getStakerInfo", async function() {
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
+    await tellorUser.depositStake();
+    await tellorUser.requestStakingWithdraw()
+    let blocky = await ethers.provider.getBlock();
+    let vars = await tellor.getStakerInfo(accounts[1].address)
+    assert(vars[1] -blocky.timestamp == 0, "timestamp should be correct")
+    assert(vars[0] - 2 == 0, "status should be correct")
+  });
 });

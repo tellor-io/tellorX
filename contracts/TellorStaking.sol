@@ -61,12 +61,7 @@ contract TellorStaking is Token{
 
     function withdrawStake() external {
         StakeInfo storage _s = stakerDetails[msg.sender];
-        //Require staker is locked for withdraw(currentStatus ==2) and 7 days has passed
-        require(
-            block.timestamp - (block.timestamp % 86400) - _s.startDate >=
-                7 days,
-            "7 days didn't pass"
-        );
+        require(block.timestamp - _s.startDate >=  7 days,"7 days didn't pass");
         require(_s.currentStatus == 2,"Reporter not locked for withdrawal");
         _s.currentStatus = 0;
         emit StakeWithdrawn(msg.sender);
