@@ -4,6 +4,7 @@ pragma solidity 0.8.3;
 import "./TellorVars.sol";
 import "./interfaces/IOracle.sol";
 import "./interfaces/IController.sol";
+import "./interfaces/ITreasury.sol";
 import "hardhat/console.sol";
 
 contract Governance is TellorVars{
@@ -390,6 +391,8 @@ contract Governance is TellorVars{
         IController _controller = IController(TELLOR_ADDRESS);
         uint256 voteWeight = _controller.balanceOfAt(_voter,_thisVote.blockNumber);
         IOracle _oracle = IOracle(_controller.addresses(_ORACLE_CONTRACT));
+        ITreasury _treasury = ITreasury(_controller.addresses(_TREASURY_CONTRACT));
+        voteWeight += _treasury.getTreasuryFundsByUser(_voter);
         voteWeight +=  _oracle.getReportsSubmittedByAddress(_voter) * 1e18;
         voteWeight += _oracle.getTipsByUser(_voter);
         (uint256 _status,) = _controller.getStakerInfo(_voter);

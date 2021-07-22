@@ -4,6 +4,7 @@ pragma solidity 0.8.3;
 import "./interfaces/IController.sol";
 import "./TellorVars.sol";
 import "./interfaces/IGovernance.sol";
+import "hardhat/console.sol";
 
 contract Treasury is TellorVars{
     uint256 public totalLocked;
@@ -34,6 +35,7 @@ contract Treasury is TellorVars{
         _treas.purchased += _amount;
         _treas.accounts[msg.sender] += _amount;      
         _treas.owners.push(msg.sender);
+        totalLocked += _amount;
         emit TreasuryPurchased(msg.sender,_amount);
     }
     
@@ -45,9 +47,6 @@ contract Treasury is TellorVars{
     //_amount of TRB, _rate in bp
     function issueTreasury(uint256 _amount, uint256 _rate, uint256 _duration) external{
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
-        //make sure the treasury contract has funds to pay
-        require(IController(TELLOR_ADDRESS).balanceOf(address(this)) - totalLocked > _amount);
-        totalLocked += _amount;
         treasuryCount++;
         TreasuryDetails storage _treas = treasury[treasuryCount];
         _treas.dateStarted = block.timestamp;
@@ -58,13 +57,14 @@ contract Treasury is TellorVars{
     }
 
     function payTreasury(address _investor,uint256 _id) external{
-        //calculate number of votes in governance contract when issue
+        //calculate number of votes in governance contract when issued
         TreasuryDetails storage treas = treasury[_id];
         require(_id < treasuryCount);
         require(treas.dateStarted + treas.duration <= block.timestamp);
         require(!treas.paid[_investor]);
         uint256 _mintAmount = treas.accounts[_investor] * treas.rate;
         IController(TELLOR_ADDRESS).mint(address(this),_mintAmount);
+        totalLocked -= treas.accounts[_investor];
         IController(TELLOR_ADDRESS).transfer(_investor,_mintAmount + treas.accounts[_investor]);
         treasuryFundsByUser[_investor]+= treas.accounts[_investor];
         treas.paid[_investor] = true;
@@ -78,6 +78,10 @@ contract Treasury is TellorVars{
     
     function getTreasuryDetails(uint256 _id) external view returns(uint256,uint256,uint256,uint256){
         return(treasury[_id].dateStarted,treasury[_id].amount,treasury[_id].rate,treasury[_id].purchased);
+    }
+
+    function getTreasuryFundsByUser(address _user) external view returns(uint256){
+        return treasuryFundsByUser[_user];
     }
 
     function getTreasuryOwners(uint256 _id) external view returns(address[] memory){

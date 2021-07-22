@@ -127,9 +127,18 @@ describe("TellorX Function Tests - Oracle", function() {
     assert(await oracle.verify() > 9000, "Contract should properly verify")
   });
   it("changeMiningLock()", async function() {
+    oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
+    await h.expectThrow(oracle.changeTimeBasedReward(web3.utils.toWei("1")))//must be admin
     admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, govSigner);
     await admin.changeMiningLock(86400)
     assert(await oracle.miningLock() - 86400 == 0, "mining lock should be changed")
+  });
+  it("changeTimeBasedReward()", async function() {
+    oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
+    await h.expectThrow(oracle.changeTimeBasedReward(web3.utils.toWei("1")))//must be governance
+    admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, govSigner);
+    await admin.changeTimeBasedReward(web3.utils.toWei("1"))
+    assert(await oracle.timeBasedReward() - web3.utils.toWei("1") == 0, "tbr should be changed")
   });
   it("getTipsById()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
@@ -226,6 +235,21 @@ describe("TellorX Function Tests - Oracle", function() {
     let blocky = await ethers.provider.getBlock();
     await oracle2.submitValue( ethers.utils.formatBytes32String("1"),150);
     assert(await oracle.getValueByTimestamp(ethers.utils.formatBytes32String("1"),blocky.timestamp) - 5550 == 0, "value should be correct")
+  });
+
+  it("getCurrentValue()", async function() {
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
+    await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    await tellorUser.depositStake();
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
+    await tellorUser.depositStake();
+    oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
+    oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
+    await oracle.submitValue( ethers.utils.formatBytes32String("1"),5550);
+    let blocky = await ethers.provider.getBlock();
+    await oracle2.submitValue( ethers.utils.formatBytes32String("1"),150);
+    assert(await oracle.getCurrentValue(ethers.utils.formatBytes32String("1")) - 150 == 0, "value should be correct")
   });
   it("getBlockNumberByTimestamp()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));

@@ -39,4 +39,13 @@ interface IController{
     function changeStakingStatus(address _reporter, uint _status) external;
     function slashMiner(address _reporter, address _disputer) external;
     function getStakerInfo(address _staker) external view returns (uint256, uint256);
+    function getTimestampbyRequestIDandIndex(uint256 _requestID, uint256 _index) external view returns (uint256);
+    //in order to call fallback function
+    function beginDispute(uint256 _requestId, uint256 _timestamp,uint256 _minerIndex) external;
+    function unlockDisputeFee(uint256 _disputeId) external;
+    function vote(uint256 _disputeId, bool _supportsDispute) external;
+    function tallyVotes(uint256 _disputeId) external;
+    //test functions
+    function addTip(uint,uint) external;
+    function getNewCurrentVariables()external view returns (bytes32 _c,uint256[5] memory _r,uint256 _d,uint256 _t);
 }

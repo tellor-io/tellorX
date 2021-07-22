@@ -57,17 +57,6 @@ describe("TellorX Function Tests - Controller", function() {
     await accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("1.0")});
     govSigner = await ethers.provider.getSigner(governance.address);
   });
-  it("Transition.sol - init()", async function() {
-    assert(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == governance.address, "Governance Address should be correct");
-    assert(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")) == treasury.address, "Governance Address should be correct");
-    assert(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == oracle.address, "Governance Address should be correct");
-    assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) - h.to18(100) == 0, "stake amount should peroperly change");
-    h.expectThrow(tellor.init(oracle.address,oracle.address,oracle.address))
-    newController = await cfac.deploy();
-    await master.changeTellorContract(newController.address);
-    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
-    h.expectThrow(tellor.init(oracle.address,oracle.address,oracle.address));
-  });
   it("changeControllerContract()", async function() {
     newController = await cfac.deploy();
     await newController.deployed();
