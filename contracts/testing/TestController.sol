@@ -2,6 +2,8 @@
 pragma solidity 0.8.3;
 
 import "../Controller.sol";
+import "hardhat/console.sol";
+
 contract TestController is Controller{
     event Received(address, uint);
     receive() external payable {
@@ -12,7 +14,7 @@ contract TestController is Controller{
         addresses[_id] = _addy;
     }
 
-    function mint(address _to, uint _amount) external {
-       _doMint(_to, _amount);
+    function sliceUintTest(bytes memory bs) external pure returns (uint256){
+       return _sliceUint(bs);
     }
 }

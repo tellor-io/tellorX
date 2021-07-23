@@ -49,7 +49,7 @@ contract Controller is TellorStaking, Transition{
     }
 
     function mint(address _reciever, uint256 _amount) external{
-        require(msg.sender == addresses[_GOVERNANCE_CONTRACT] || msg.sender == addresses[_TREASURY_CONTRACT]);
+        require(msg.sender == addresses[_GOVERNANCE_CONTRACT] || msg.sender == addresses[_TREASURY_CONTRACT], "must be admin");
         _doMint(_reciever, _amount);
     }
 

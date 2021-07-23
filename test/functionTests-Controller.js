@@ -57,18 +57,7 @@ describe("TellorX Function Tests - Controller", function() {
     await accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("1.0")});
     govSigner = await ethers.provider.getSigner(governance.address);
   });
-  it("Transition.sol - init()", async function() {
-    assert(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == governance.address, "Governance Address should be correct");
-    assert(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")) == treasury.address, "Governance Address should be correct");
-    assert(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == oracle.address, "Governance Address should be correct");
-    assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) - h.to18(100) == 0, "stake amount should peroperly change");
-    h.expectThrow(tellor.init(oracle.address,oracle.address,oracle.address))
-    newController = await cfac.deploy();
-    await master.changeTellorContract(newController.address);
-    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
-    h.expectThrow(tellor.init(oracle.address,oracle.address,oracle.address));
-  });
-  it("Controller.sol - changeControllerContract()", async function() {
+  it("changeControllerContract()", async function() {
     newController = await cfac.deploy();
     await newController.deployed();
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
@@ -78,7 +67,7 @@ describe("TellorX Function Tests - Controller", function() {
     await tellor.changeControllerContract(newController.address)
     assert(await tellor.getAddressVars(h.hash("_TELLOR_CONTRACT")) == newController.address, "Controller Address should be correct");
   });
-  it("Controller.sol - changeGovernanceContract()", async function() {
+  it("changeGovernanceContract()", async function() {
     newGovernance = await gfac.deploy();
     await newGovernance.deployed();
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
@@ -88,7 +77,7 @@ describe("TellorX Function Tests - Controller", function() {
     await tellor.changeGovernanceContract(newGovernance.address)
     assert(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == newGovernance.address, "Governance Address should be correct");
   });
-  it("Controller.sol - changeOracleContract()", async function() {
+  it("changeOracleContract()", async function() {
     newOracle = await ofac.deploy();
     await newOracle.deployed();
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
@@ -98,7 +87,7 @@ describe("TellorX Function Tests - Controller", function() {
     await tellor.changeOracleContract(newOracle.address)
     assert(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == newOracle.address, "Governance Address should be correct");
   });
-  it("Controller.sol - changeTreasuryContract()", async function() {
+  it("changeTreasuryContract()", async function() {
     newTreasury = await tfac.deploy();
     await newTreasury.deployed();
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
@@ -108,14 +97,14 @@ describe("TellorX Function Tests - Controller", function() {
     await tellor.changeTreasuryContract(newTreasury.address)
     assert(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")) == newTreasury.address, "Governance Address should be correct");
   });
-  it("Controller.sol - changeUint()", async function() {
+  it("changeUint()", async function() {
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
     h.expectThrow(tellor.changeUint(h.hash("_STAKE_AMOUNT"),333));//should fail, onlygovernance
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
     await tellor.changeUint(h.hash("_STAKE_AMOUNT"),333)
     assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) == 333, "Uint should peroperly change");
   });
-  it("Controller.sol - migrate()", async function() {
+  it("migrate()", async function() {
     let tofac = await ethers.getContractFactory("contracts/testing/TestToken.sol:TestToken");
     let token = await tofac.deploy();
     await token.deployed()
@@ -126,7 +115,7 @@ describe("TellorX Function Tests - Controller", function() {
     h.expectThrow(tellor.migrate());//should fail if run twice
     assert(await tellor.balanceOf(accounts[1].address) == 500, "migration should work correctly")
   });
-  it("Controller.sol - mint()", async function() {
+  it("mint()", async function() {
     let initSupply = await tellor.totalSupply();
     h.expectThrow(tellor.mint(accounts[3].address,500));//require onlyGovernance
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
@@ -135,10 +124,10 @@ describe("TellorX Function Tests - Controller", function() {
     let finSupply =  await tellor.totalSupply();
     assert(finSupply - h.to18(500) == initSupply, "Total supply should change correctly")
   });
-  it("Controller.sol - verify()", async function() {
+  it("verify()", async function() {
     assert(await tellor.verify() > 9000, "Contract should properly verify")
   });
-  it("Controller.sol - _isValid()", async function() {
+  it("_isValid()", async function() {
     let tofac = await ethers.getContractFactory("contracts/testing/TestToken.sol:TestToken");
     let token = await tofac.deploy();
     await token.deployed()

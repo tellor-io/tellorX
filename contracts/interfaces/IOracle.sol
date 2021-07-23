@@ -15,7 +15,9 @@ interface IOracle{
     function burnTips() external;
     function verify() external pure returns(uint);
     function changeMiningLock(uint256 _newMiningLock) external;
+    function changeTimeBasedReward(uint256 _newTimeBasedReward) external;
     function getTipsById(bytes32 _id) external view returns(uint256);
-    function getTimestampCountByID(bytes32 _id) external view returns(uint256);
+    function getTimestampCountById(bytes32 _id) external view returns(uint256);
     function getTimestampIndexByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(uint256);
+    function getCurrentValue(bytes32 _id) external view returns(bytes memory);
 }

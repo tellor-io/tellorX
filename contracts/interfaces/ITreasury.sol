@@ -9,6 +9,7 @@ interface ITreasury{
     function getTreasuryDetails(uint256 _id) external view returns(uint256,uint256,uint256,uint256);
     function getTreasuryAccount(uint256 _id, address _investor) external view returns(uint256);
     function getTreasuryOwners(uint256 _id) external view returns(address[] memory);
+    function getTreasuryFundsByUser(address _user) external view returns(uint256);
     function wasPaid(uint256 _id, address _investor) external view returns(bool);
     function verify() external pure returns(uint);
 }

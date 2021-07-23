@@ -3,6 +3,7 @@ const { expect } = require("chai");
 const h = require("./helpers/helpers");
 var assert = require('assert');
 const web3 = require('web3');
+const fetch = require('node-fetch')
 
 describe("TellorX Function Tests - Governance", function() {
 
@@ -12,14 +13,22 @@ describe("TellorX Function Tests - Governance", function() {
     let tellor = null
     let cfac,ofac,tfac,gfac,devWallet
     let govSigner = null
+    let run = 0;
+    let mainnetBlock = 0;
   
   beforeEach("deploy and setup TellorX", async function() {
+    if(run == 0){
+      const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
+      mainnetBlock = directors.height - 10;
+      console.log("     Forking from block: ",mainnetBlock)
+      run = 1;
+    }
     accounts = await ethers.getSigners();
     await hre.network.provider.request({
       method: "hardhat_reset",
       params: [{forking: {
             jsonRpcUrl: hre.config.networks.hardhat.forking.url,
-            blockNumber:12762660
+            blockNumber: mainnetBlock
           },},],
       });
     await hre.network.provider.request({
@@ -250,7 +259,7 @@ describe("TellorX Function Tests - Governance", function() {
     assert(await governance.disputeFee() - await master.getUintVar(h.hash("_STAKE_AMOUNT")) == 0, "Dispute Fee should be stake")
   });
   it("verify()", async function() {
-    assert(await tellor.verify() > 9000, "Contract should properly verify")
+    assert(await governance.verify() > 9000, "Contract should properly verify")
   });
   it("vote()", async function() {
     let newController = await cfac.deploy();
@@ -334,6 +343,21 @@ describe("TellorX Function Tests - Governance", function() {
     assert(voteVars[1][5] - await tellor.balanceOf(accounts[2].address) == 0, "does Support should be account 2 balance")
     assert(voteVars[1][6] - h.to18(105) == 0, "against should be right")
     assert(voteVars[1][7] - 5 == 0, "invalidQuery should be right")
+    await oracle6.submitValue( ethers.utils.formatBytes32String("44"),30110);
+    _t = await oracle.getReportTimestampByIndex(h.tob32("44"),0);
+    treasury = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[7]);
+    admintreasury = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, govSigner);
+    admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
+    await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
+    await admin.mint(accounts[7].address,web3.utils.toWei("500"))
+    await admintreasury.issueTreasury(web3.utils.toWei("1000"),10,86400*100);
+    await treasury.buyTreasury(1,web3.utils.toWei("500"))
+    await governance.beginDispute(h.tob32("44"),_t);
+    governance7= await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[7]);
+    await governance7.vote(2,true,false);//500 in treasury purchased
+    voteVars = await governance.getVoteInfo(2)
+    assert(await tellor.balanceOf(accounts[7].address) == 0, "should have no actual TRB balance")
+    assert(voteVars[1][5] - web3.utils.toWei("500")== 0, "vote changes properly with treasury input")
   });
   it("_min", async function() {
     assert(await governance.testMin(2,3) == 2, "minimum should be correct")

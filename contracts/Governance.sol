@@ -4,6 +4,7 @@ pragma solidity 0.8.3;
 import "./TellorVars.sol";
 import "./interfaces/IOracle.sol";
 import "./interfaces/IController.sol";
+import "./interfaces/ITreasury.sol";
 import "hardhat/console.sol";
 
 contract Governance is TellorVars{
@@ -74,6 +75,7 @@ contract Governance is TellorVars{
         for(uint256 _i =0;_i< _funcs.length;_i++){
             functionApproved[_funcs[_i]] = true;
         }
+        updateMinDisputeFee();
     }
     /**
      * @dev Helps initialize a dispute by assigning it a disputeId
@@ -312,7 +314,7 @@ contract Governance is TellorVars{
      * @dev This function updates the minimum dispute fee as a function of the amount
      * of staked miners
      */
-    function updateMinDisputeFee() external{
+    function updateMinDisputeFee() public{
         uint256 _stakeAmt = IController(TELLOR_ADDRESS).uints(_STAKE_AMOUNT);
         uint256 _trgtMiners = IController(TELLOR_ADDRESS).uints(_TARGET_MINERS);
         uint256 _stakeCount = IController(TELLOR_ADDRESS).uints(_STAKE_COUNT);
@@ -389,6 +391,8 @@ contract Governance is TellorVars{
         IController _controller = IController(TELLOR_ADDRESS);
         uint256 voteWeight = _controller.balanceOfAt(_voter,_thisVote.blockNumber);
         IOracle _oracle = IOracle(_controller.addresses(_ORACLE_CONTRACT));
+        ITreasury _treasury = ITreasury(_controller.addresses(_TREASURY_CONTRACT));
+        voteWeight += _treasury.getTreasuryFundsByUser(_voter);
         voteWeight +=  _oracle.getReportsSubmittedByAddress(_voter) * 1e18;
         voteWeight += _oracle.getTipsByUser(_voter);
         (uint256 _status,) = _controller.getStakerInfo(_voter);
