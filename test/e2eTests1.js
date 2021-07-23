@@ -2,6 +2,7 @@ const { AbiCoder } = require("@ethersproject/abi");
 const { expect } = require("chai");
 const h = require("./helpers/helpers");
 var assert = require('assert');
+const web3 = require('web3');
 
 describe("End-to-End Tests - One", function() {
 
@@ -58,6 +59,7 @@ describe("End-to-End Tests - One", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("Mine 2 values on 50 different ID's", async function() {
+    this.timeout(100000)
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
     await tellor.transfer(accounts[3].address,web3.utils.toWei("200"));
@@ -69,32 +71,32 @@ describe("End-to-End Tests - One", function() {
         await h.expectThrow(oracle.submitValue(h.uintTob32(1),150));//must be staked
         await tellorUser.depositStake();
     }
-    let _count,_i = 1;
-    while(_count <= 100){
+    let blockTimes = [0]
+    let blocky, _id;
+    for(_count=1; _count <= 100;_count++){
         if(_count > 50){
             _id = _count - 50;
         }
         else{
             _id = _count;
         }
-        if(_i == 5){
-            _i = 1;
-        }
+        _i = _count % 4 + 1
         oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[_i]);
-        await oracle.addTip(_id,_count)
-        await oracle.submitValue(h.uintTob32(_id), _count * 1000)
+        await oracle.addTip(h.uintTob32(_id),_count*100)
+        await oracle.submitValue(h.uintTob32(_id), (_count * 1000))
+        blocky = await ethers.provider.getBlock();
+        blockTimes.push(blocky.timestamp)
         await h.expectThrow(oracle.submitValue( ethers.utils.formatBytes32String("1"),150));//cannot submit twice in 12 hours
         await h.advanceTime(86400)
-        _i++
-        _count++
     }
-    _count = 1;
     assert(await oracle.tipsInContract() == 0, "the tip should have been paid out")
-    while(_count <= 50){
-        _count++
-        assert(await oracle.getValueByTimestamp(ethers.utils.formatBytes32String("1"),blocky.timestamp) - 150 == 0, "value should be correct")
+    let _time;
+    for(_count=1; _count <= 50;_count++){
+        _time = blockTimes[_count]
+        assert(await oracle.getValueByTimestamp(h.uintTob32(_count),_time)- _count * 1000 == 0, "value should be correct")
         assert(await oracle.getTipsById(h.uintTob32(_count)) == 0, "tips should be zeroed")
-        assert(await oracle.getTimestampCountById(h.uintTob32(_count))) - 2 == 0, "timestamp count should be correct")  
+        assert(await oracle.getTimestampCountById(h.uintTob32(_count)) - 2 == 0, "timestamp count should be correct")  
+        _count++
     }
     for(i = 1;i<5;i++){
         assert(await oracle.getReportsSubmittedByAddress(accounts[i].address) - 25 == 0, "reports by address should be correct")

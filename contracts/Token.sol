@@ -27,7 +27,7 @@ contract Token is TellorStorage,TellorVars{
      * @return Returns the remaining allowance of tokens granted to the _spender from the _user
     */
     function allowance(address _user, address _spender)
-        public
+        external
         view
         returns (uint256)
     {

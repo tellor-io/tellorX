@@ -278,10 +278,10 @@ contract Governance is TellorVars{
      */
     function tallyVotes(uint256 _id) external {
         Vote storage _thisVote = voteInfo[_id];
-        require(_thisVote.executed == false, "Dispute has been already executed");
+        require(!_thisVote.executed, "Dispute has been already executed");
         require(_thisVote.tallyDate == 0, "vote should not already be tallied");
         uint256 _duration = 2 days;
-        uint256 _quorum;
+        uint256 _quorum = 0;
         if(!_thisVote.isDispute){
             _duration = 7 days;
             _quorum = 5;
@@ -397,8 +397,8 @@ contract Governance is TellorVars{
         voteWeight += _oracle.getTipsByUser(_voter);
         (uint256 _status,) = _controller.getStakerInfo(_voter);
         require(_status != 3, "Cannot vote if being disputed");
-        require(_thisVote.voted[_voter] != true, "Sender has already voted");
-        require(voteWeight != 0, "User balance is 0");
+        require(!_thisVote.voted[_voter], "Sender has already voted");
+        require(voteWeight > 0, "User balance is 0");
         _thisVote.voted[_voter] = true;
         if(_thisVote.isDispute && _invalidQuery){
             _thisVote.invalidQuery += voteWeight;

@@ -7,14 +7,12 @@ import "./TellorVars.sol";
 contract Oracle is TellorVars{
 
     uint256[] public timestamps;
-    uint256 public maxID;
     mapping(bytes32 => uint256) public tips;
     uint256 public tipsInContract;
     uint256 public timeOfLastNewValue = block.timestamp;
     uint256 public miningLock = 12 hours;//make this changeable by governance?
     uint256 public timeBasedReward = 5e17;
     mapping(bytes32 => Report) reports; //ID to reports
-    mapping(uint256 => bytes32[]) timestampToIDs; //mapping of timestamp to IDs pushed
     mapping(address => uint256) reporterLastTimestamp;
     mapping(address => uint256) reportsSubmittedByAddress;
     mapping(address => uint256) tipsByUser;//mapping of a user to the amount of tips they've paid
@@ -29,6 +27,8 @@ contract Oracle is TellorVars{
 
     event TipAdded(address _user, bytes32 _id,uint256 _tip, uint256 _totalTip);
     event NewReport(bytes32 _id, uint256 _time, bytes _value, uint256 _reward);
+    event MiningLockChanged(uint _newMiningLock);
+    event TimeBasedRewardsChanged(uint _newTimeBasedReward);
 
     function addTip(bytes32 _id, uint256 _tip) external{
         require(_tip > 1, "Tip should be greater than 1");
@@ -44,11 +44,13 @@ contract Oracle is TellorVars{
     function changeMiningLock(uint256 _newMiningLock) external{
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
         miningLock = _newMiningLock;
+        emit MiningLockChanged(_newMiningLock);
     }
 
     function changeTimeBasedReward(uint256 _newTimeBasedReward) external{
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
         timeBasedReward = _newTimeBasedReward;
+        emit TimeBasedRewardsChanged(_newTimeBasedReward);
     }
 
     function removeValue(bytes32 _id, uint256 _timestamp) external {
