@@ -11,15 +11,21 @@ contract Treasury is TellorVars{
     uint256 public treasuryCount;
     mapping(uint => TreasuryDetails) public treasury;
     mapping(address => uint256) treasuryFundsByUser;
+
+    struct TreasuryUser{
+        uint amount;
+        bool paid;
+        uint startVoteCount;
+    }
     struct TreasuryDetails{
         uint256 dateStarted;
-        uint256 amount;
+        uint256 totalAmount;
         uint256 rate;
         uint256 purchased;
         uint256 duration;
+        uint256 endVoteCount;
         address[] owners;
-        mapping(address => uint256) accounts;
-        mapping(address => bool) paid;
+        mapping(address => TreasuryUser) accounts;
     }
 
     event TreasuryIssued(uint256 _id,uint256 _amount,uint256 _rate);
@@ -31,9 +37,11 @@ contract Treasury is TellorVars{
         require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_amount));
         treasuryFundsByUser[msg.sender]+=_amount;
         TreasuryDetails storage _treas = treasury[_id];
-        require(_amount <= _treas.amount - _treas.purchased);
+        require(_amount <= _treas.totalAmount - _treas.purchased);
+        address governanceContract = IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT);
+        _treas.accounts[msg.sender].startVoteCount = IGovernance(governanceContract).getVoteCount();
         _treas.purchased += _amount;
-        _treas.accounts[msg.sender] += _amount;      
+        _treas.accounts[msg.sender].amount += _amount;      
         _treas.owners.push(msg.sender);
         totalLocked += _amount;
         emit TreasuryPurchased(msg.sender,_amount);
@@ -45,15 +53,15 @@ contract Treasury is TellorVars{
     }
     
     //_amount of TRB, _rate in bp
-    function issueTreasury(uint256 _amount, uint256 _rate, uint256 _duration) external{
+    function issueTreasury(uint256 _totalAmount, uint256 _rate, uint256 _duration) external{
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
         treasuryCount++;
         TreasuryDetails storage _treas = treasury[treasuryCount];
         _treas.dateStarted = block.timestamp;
-        _treas.amount = _amount;
+        _treas.totalAmount = _totalAmount;
         _treas.rate = _rate;
         _treas.duration = _duration;
-        emit TreasuryIssued(treasuryCount,_amount,_rate);
+        emit TreasuryIssued(treasuryCount,_totalAmount,_rate);
     }
 
     function payTreasury(address _investor,uint256 _id) external{
@@ -61,13 +69,13 @@ contract Treasury is TellorVars{
         TreasuryDetails storage treas = treasury[_id];
         require(_id < treasuryCount);
         require(treas.dateStarted + treas.duration <= block.timestamp);
-        require(!treas.paid[_investor]);
+        require(!treas.accounts[_investor].paid);
         uint256 _mintAmount = treas.accounts[_investor] * treas.rate;
         IController(TELLOR_ADDRESS).mint(address(this),_mintAmount);
         totalLocked -= treas.accounts[_investor];
         IController(TELLOR_ADDRESS).transfer(_investor,_mintAmount + treas.accounts[_investor]);
-        treasuryFundsByUser[_investor]+= treas.accounts[_investor];
-        treas.paid[_investor] = true;
+        treasuryFundsByUser[_investor]+= treas.accounts[_investor].amount;
+        treas.accounts[_investor].paid = true;
         emit TreasuryPaid(_investor,_mintAmount + treas.accounts[_investor]);
     }
 
