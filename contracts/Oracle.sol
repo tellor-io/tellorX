@@ -125,6 +125,9 @@ contract Oracle is TellorVars{
         return reports[_id].timestamps[_index];
     }
 
+    function getTimeOfLastNewValue() external view returns(uint256){
+        return timeOfLastNewValue;
+    }
     function getTimestampIndexByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(uint256){
         return reports[_id].timestampIndex[_timestamp];
     }
