@@ -33,17 +33,17 @@ contract Treasury is TellorVars{
         TreasuryDetails storage _treas = treasury[_id];
         require(_amount <= _treas.amount - _treas.purchased);
         _treas.purchased += _amount;
-        _treas.accounts[msg.sender] += _amount;      
+        _treas.accounts[msg.sender] += _amount;
         _treas.owners.push(msg.sender);
         totalLocked += _amount;
         emit TreasuryPurchased(msg.sender,_amount);
     }
-    
+
     function delegateVotingPower(address _delegate) external{
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
         IGovernance(msg.sender).delegate(_delegate);
     }
-    
+
     //_amount of TRB, _rate in bp
     function issueTreasury(uint256 _amount, uint256 _rate, uint256 _duration) external{
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
@@ -59,14 +59,14 @@ contract Treasury is TellorVars{
     function payTreasury(address _investor,uint256 _id) external{
         //calculate number of votes in governance contract when issued
         TreasuryDetails storage treas = treasury[_id];
-        require(_id < treasuryCount);
+        require(_id <= treasuryCount);
         require(treas.dateStarted + treas.duration <= block.timestamp);
         require(!treas.paid[_investor]);
-        uint256 _mintAmount = treas.accounts[_investor] * treas.rate;
+        uint256 _mintAmount = treas.accounts[_investor] * treas.rate / 10000;
         IController(TELLOR_ADDRESS).mint(address(this),_mintAmount);
         totalLocked -= treas.accounts[_investor];
         IController(TELLOR_ADDRESS).transfer(_investor,_mintAmount + treas.accounts[_investor]);
-        treasuryFundsByUser[_investor]+= treas.accounts[_investor];
+        treasuryFundsByUser[_investor]-= treas.accounts[_investor];
         treas.paid[_investor] = true;
         emit TreasuryPaid(_investor,_mintAmount + treas.accounts[_investor]);
     }
@@ -75,7 +75,7 @@ contract Treasury is TellorVars{
     function getTreasuryAccount(uint256 _id, address _investor) external view returns(uint256){
         return (treasury[_id].accounts[_investor]);
     }
-    
+
     function getTreasuryDetails(uint256 _id) external view returns(uint256,uint256,uint256,uint256){
         return(treasury[_id].dateStarted,treasury[_id].amount,treasury[_id].rate,treasury[_id].purchased);
     }
@@ -91,7 +91,7 @@ contract Treasury is TellorVars{
     function verify() external pure returns(uint){
         return 9999;
     }
-    
+
     function wasPaid(uint256 _id, address _investor) external view returns(bool){
         return treasury[_id].paid[_investor];
     }
