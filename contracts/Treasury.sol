@@ -13,9 +13,9 @@ contract Treasury is TellorVars{
     mapping(address => uint256) treasuryFundsByUser;
 
     struct TreasuryUser{
-        uint amount;
+        uint256 amount;
+        uint256 startVoteCount;
         bool paid;
-        uint startVoteCount;
     }
     struct TreasuryDetails{
         uint256 dateStarted;
@@ -70,22 +70,42 @@ contract Treasury is TellorVars{
         require(_id < treasuryCount);
         require(treas.dateStarted + treas.duration <= block.timestamp);
         require(!treas.accounts[_investor].paid);
-        uint256 _mintAmount = treas.accounts[_investor] * treas.rate;
+        //calculate non-voting penalty (treasury holders have to vote)
+        uint256 numVotesParticipated;
+        uint256 votesSinceTreasury;
+        address governanceContract = IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT);
+        //Add up number of votes _investor has participated in
+        for(
+            uint256 voteCount = treas.accounts[_investor].startVoteCount;
+            voteCount <= treas.endVoteCount;
+            voteCount++
+        ) {
+            bool voted = IGovernance(governanceContract).didVote(voteCount, _investor);
+            if (voted) {
+                numVotesParticipated++;
+            }
+            votesSinceTreasury++;
+        }
+        uint256 _mintAmount = treas.accounts[_investor].amount * treas.rate * numVotesParticipated / votesSinceTreasury;
         IController(TELLOR_ADDRESS).mint(address(this),_mintAmount);
-        totalLocked -= treas.accounts[_investor];
-        IController(TELLOR_ADDRESS).transfer(_investor,_mintAmount + treas.accounts[_investor]);
+        totalLocked -= treas.accounts[_investor].amount;
+        IController(TELLOR_ADDRESS).transfer(_investor,_mintAmount + treas.accounts[_investor].amount);
         treasuryFundsByUser[_investor]+= treas.accounts[_investor].amount;
         treas.accounts[_investor].paid = true;
-        emit TreasuryPaid(_investor,_mintAmount + treas.accounts[_investor]);
+        emit TreasuryPaid(_investor,_mintAmount + treas.accounts[_investor].amount);
     }
 
     //Getters
-    function getTreasuryAccount(uint256 _id, address _investor) external view returns(uint256){
-        return (treasury[_id].accounts[_investor]);
+    function getTreasuryAccount(uint256 _id, address _investor) external view returns(uint256, uint256, bool){
+        return (
+            treasury[_id].accounts[_investor].amount,
+            treasury[_id].accounts[_investor].startVoteCount,
+            treasury[_id].accounts[_investor].paid
+        );
     }
     
     function getTreasuryDetails(uint256 _id) external view returns(uint256,uint256,uint256,uint256){
-        return(treasury[_id].dateStarted,treasury[_id].amount,treasury[_id].rate,treasury[_id].purchased);
+        return(treasury[_id].dateStarted,treasury[_id].totalAmount,treasury[_id].rate,treasury[_id].purchased);
     }
 
     function getTreasuryFundsByUser(address _user) external view returns(uint256){
@@ -101,6 +121,6 @@ contract Treasury is TellorVars{
     }
     
     function wasPaid(uint256 _id, address _investor) external view returns(bool){
-        return treasury[_id].paid[_investor];
+        return treasury[_id].accounts[_investor].paid;
     }
 }
