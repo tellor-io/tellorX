@@ -46,12 +46,12 @@ contract Treasury is TellorVars{
         totalLocked += _amount;
         emit TreasuryPurchased(msg.sender,_amount);
     }
-    
+
     function delegateVotingPower(address _delegate) external{
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
         IGovernance(msg.sender).delegate(_delegate);
     }
-    
+
     //_amount of TRB, _rate in bp
     function issueTreasury(uint256 _totalAmount, uint256 _rate, uint256 _duration) external{
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT));
@@ -67,7 +67,7 @@ contract Treasury is TellorVars{
     function payTreasury(address _investor,uint256 _id) external{
         //calculate number of votes in governance contract when issued
         TreasuryDetails storage treas = treasury[_id];
-        require(_id < treasuryCount);
+        require(_id <= treasuryCount);
         require(treas.dateStarted + treas.duration <= block.timestamp);
         require(!treas.accounts[_investor].paid);
         //calculate non-voting penalty (treasury holders have to vote)
@@ -103,7 +103,7 @@ contract Treasury is TellorVars{
             treasury[_id].accounts[_investor].paid
         );
     }
-    
+
     function getTreasuryDetails(uint256 _id) external view returns(uint256,uint256,uint256,uint256){
         return(treasury[_id].dateStarted,treasury[_id].totalAmount,treasury[_id].rate,treasury[_id].purchased);
     }
@@ -119,7 +119,7 @@ contract Treasury is TellorVars{
     function verify() external pure returns(uint){
         return 9999;
     }
-    
+
     function wasPaid(uint256 _id, address _investor) external view returns(bool){
         return treasury[_id].accounts[_investor].paid;
     }
