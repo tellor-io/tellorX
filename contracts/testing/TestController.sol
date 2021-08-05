@@ -14,7 +14,7 @@ contract TestController is Controller{
         addresses[_id] = _addy;
     }
 
-    function mint(address _to, uint _amount) external {
-       _doMint(_to, _amount);
+    function sliceUintTest(bytes memory bs) external pure returns (uint256){
+       return _sliceUint(bs);
     }
 }
