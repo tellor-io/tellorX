@@ -388,6 +388,9 @@ contract Governance is TellorVars{
     function _vote(address _voter, uint256 _id, bool _supports, bool _invalidQuery) internal {
         require(_id <= voteCount, "vote does not exist");
         Vote storage _thisVote = voteInfo[_id];
+        if( _thisVote.isDispute){
+            require(!_thisVote.executed, "Dispute has been already executed");
+        }
         require(_thisVote.tallyDate == 0, "the vote has already been tallied");
         IController _controller = IController(TELLOR_ADDRESS);
         uint256 voteWeight = _controller.balanceOfAt(_voter,_thisVote.blockNumber);
