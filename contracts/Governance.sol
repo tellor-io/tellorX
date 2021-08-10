@@ -88,13 +88,12 @@ contract Governance is TellorVars{
         address _oracle = IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT);
         require(IOracle(_oracle).getBlockNumberByTimestamp(_requestId, _timestamp) != 0, "Mined block is 0");
         address _reporter = IOracle(_oracle).getReporterByTimestamp(_requestId,_timestamp);
-        bytes32 _hash = keccak256(abi.encodePacked(_requestId, _timestamp, _reporter));
+        bytes32 _hash = keccak256(abi.encodePacked(_requestId, _timestamp));
         voteCount++;
         uint256 _id = voteCount;
         voteRounds[_hash].push(_id);
         if (voteRounds[_hash].length > 1) {
             uint256 _prevId = voteRounds[_hash][voteRounds[_hash].length - 2];
-            require(block.timestamp - voteInfo[_prevId].startDate > 12 hours, "this dispute is still open");
             require(block.timestamp - voteInfo[_prevId].tallyDate < 1 days, "new dispute round must be started within a day");
         } else {
             require(block.timestamp - _timestamp < IOracle(_oracle).miningLock(), "Dispute must be started within 12 hours...same variable as mining lock");
