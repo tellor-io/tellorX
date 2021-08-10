@@ -259,4 +259,5 @@ interface ITellor {
         external
         view
         returns (uint256[5] memory _max, uint256[5] memory _index);
+    function mint(address _to, uint amount) external;
 }

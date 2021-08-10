@@ -8,6 +8,6 @@ contract TestToken is Token{
         emit Received(msg.sender, msg.value);
     }
     function mint(address _to, uint _amount) external {
-        _doMint(_to, _amount);
+       _doMint(_to, _amount);
     }
 }
