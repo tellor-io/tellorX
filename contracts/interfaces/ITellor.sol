@@ -41,6 +41,7 @@ interface ITellor{
     function slashMiner(address _reporter, address _disputer) external;
     function getStakerInfo(address _staker) external view returns (uint256, uint256);
     function getTimestampbyRequestIDandIndex(uint256 _requestID, uint256 _index) external view returns (uint256);
+    function getNewCurrentVariables()external view returns (bytes32 _c,uint256[5] memory _r,uint256 _d,uint256 _t);
     //Governance
     enum VoteResult {FAILED,PASSED,INVALID}
     function setApprovedFunction(bytes4 _func, bool _val) external;
@@ -81,6 +82,7 @@ interface ITellor{
     function getTimestampCountById(bytes32 _id) external view returns(uint256);
     function getTimestampIndexByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(uint256);
     function getCurrentValue(bytes32 _id) external view returns(bytes memory);
+    function getTimeOfLastNewValue() external view returns(uint256);
     //Treasury
     function issueTreasury(uint256 _amount, uint256 _rate, uint256 _duration) external;
     function payTreasury(address _investor,uint256 _id) external;

@@ -142,7 +142,7 @@ describe("TellorX Function Tests - Transition", function() {
     await h.advanceTime(86400 * 2.5)
     await tellorUser.unlockDisputeFee(newId);
     await h.expectThrow(tellorUser.addTip(1,5))
-    await h.expectThrow(tellorUser.getNewCurrentVariables())
+    await h.expectThrow(tellorUser.getNewVariablesOnDeck())
   }).timeout(40000);
   it("name()", async function() {
     assert(await tellor.name() == "Tellor Tributes", "name should be correct")

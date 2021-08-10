@@ -20,4 +20,5 @@ interface IOracle{
     function getTimestampCountById(bytes32 _id) external view returns(uint256);
     function getTimestampIndexByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(uint256);
     function getCurrentValue(bytes32 _id) external view returns(bytes memory);
+    function getTimeOfLastNewValue() external view returns(uint256);
 }

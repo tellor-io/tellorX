@@ -40,6 +40,7 @@ interface IController{
     function slashMiner(address _reporter, address _disputer) external;
     function getStakerInfo(address _staker) external view returns (uint256, uint256);
     function getTimestampbyRequestIDandIndex(uint256 _requestID, uint256 _index) external view returns (uint256);
+    function getNewCurrentVariables()external view returns (bytes32 _c,uint256[5] memory _r,uint256 _d,uint256 _t);
     //in order to call fallback function
     function beginDispute(uint256 _requestId, uint256 _timestamp,uint256 _minerIndex) external;
     function unlockDisputeFee(uint256 _disputeId) external;
@@ -47,5 +48,5 @@ interface IController{
     function tallyVotes(uint256 _disputeId) external;
     //test functions
     function addTip(uint,uint) external;
-    function getNewCurrentVariables()external view returns (bytes32 _c,uint256[5] memory _r,uint256 _d,uint256 _t);
+    function getNewVariablesOnDeck() external view returns (uint256[5] memory idsOnDeck, uint256[5] memory tipsOnDeck);
 }
