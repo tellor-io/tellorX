@@ -290,7 +290,7 @@ contract Governance is TellorVars{
             block.timestamp -_thisVote.startDate > _duration,
             "Time for voting haven't elapsed"
         );
-        if(_thisVote.invalidQuery > _thisVote.doesSupport && _thisVote.invalidQuery > _thisVote.against){
+        if(_thisVote.invalidQuery >= _thisVote.doesSupport && _thisVote.invalidQuery >= _thisVote.against){
             _thisVote.result = VoteResult.INVALID;
         }
         else if (_thisVote.doesSupport > _thisVote.against) {
@@ -365,7 +365,9 @@ contract Governance is TellorVars{
         return openDisputesOnId[_id];
     }
 
-
+    function getVoteCount() external view returns(uint256) {
+        return voteCount;
+    }
     function getVoteInfo(uint256 _id) external view returns(bytes32,uint256[8] memory,bool[2] memory,
                                                             VoteResult,bytes memory,bytes4,address[2] memory){
         Vote storage _v = voteInfo[_id];

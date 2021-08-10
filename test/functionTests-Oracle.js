@@ -283,4 +283,13 @@ describe("TellorX Function Tests - Oracle", function() {
     assert(await oracle.getReporterByTimestamp(ethers.utils.formatBytes32String("1"),blocky.timestamp) == accounts[1].address, "reporter should be correct")
     assert(await oracle.getReporterByTimestamp(ethers.utils.formatBytes32String("1"),blocky2.timestamp) == accounts[2].address, "reporter2 should be correct")
   });
+  it("getTimeOfLastNewValue()", async function() {
+    await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
+    await tellorUser.depositStake();
+    oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
+    await oracle2.submitValue( ethers.utils.formatBytes32String("2"),150);//clear inflationary rewards
+    let blocky = await ethers.provider.getBlock();
+    assert(await oracle.getTimeOfLastNewValue() - blocky.timestamp == 0, "blockNumber should be correct")
+  });
 });

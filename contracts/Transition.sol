@@ -166,6 +166,17 @@ contract Transition is TellorStorage,TellorVars{
     function totalSupply() external view returns (uint256) {
         return uints[_TOTAL_SUPPLY];
     }
+
+    
+    /**
+     * @dev this function is solely for the parachute contract
+     */
+    function getNewCurrentVariables() external view returns (bytes32 _c,uint256[5] memory _r,uint256 _diff,uint256 _tip){
+        _r = [uint256(1),uint256(1),uint256(1),uint256(1),uint256(1)];
+        _diff = 0;
+        _tip = 0;
+        _c = keccak256(abi.encode(IOracle(addresses[_ORACLE_CONTRACT]).getTimeOfLastNewValue()));
+    }
     
     /**
      * @dev This allows Tellor X to fallback to the old Tellor if there are current open disputes (or disputes on old Tellor values)
