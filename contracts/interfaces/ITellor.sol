@@ -94,4 +94,11 @@ interface ITellor{
     function wasPaid(uint256 _id, address _investor) external view returns(bool);
     //Test functions
     function changeAddressVar(bytes32 _id, address _addy) external;
+
+    //parachute functions
+    function killContract() external;
+    function migrateFor(address _destination,uint256 _amount) external;
+    function rescue51PercentAttack(address _tokenHolder) external;
+    function rescueBrokenDataReporting() external;
+    function rescueFailedUpdate() external;
 }

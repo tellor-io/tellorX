@@ -110,7 +110,7 @@ describe("TellorX Function Tests - Treasury", function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     admin = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, govSigner);
     await admin.issueTreasury(web3.utils.toWei("400"), 200, 100);
-    assert(await treasury.getTreasuryAccount(1, accounts[1].address) == web3.utils.toWei("0"), "Treasury account balance should be correct");
+    assert(await treasury.getTreasuryAccount(1, accounts[1].address) *1 == 0, "Treasury account balance should be correct");
     await tellorUser.buyTreasury(1, web3.utils.toWei("200"));
     assert(await treasury.getTreasuryAccount(1, accounts[1].address) == web3.utils.toWei("200"), "Treasury account balance should be correct");
   });
@@ -153,6 +153,7 @@ describe("TellorX Function Tests - Treasury", function() {
     await admin.issueTreasury(web3.utils.toWei("400"), 200, 100);
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     await tellorUser.buyTreasury(1, web3.utils.toWei("200"));
+    console.log("here")
     assert(await treasury.wasPaid(1, accounts[1].address) == false, "Was paid should be correct");
     await h.advanceTime(100);
     await tellorUser.payTreasury(accounts[1].address, 1);
