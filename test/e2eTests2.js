@@ -95,19 +95,27 @@ describe("End-to-End Tests - Two", function() {
     console.log(7)
     //disputer opens dispute within 12 hours of submission
     await governance.connect(disputer1).beginDispute(requestId, timestamp)
-    console.log(8)
-    //disputer can't open up dispute onbeginDispute
-    //an open vote for a disputed requestId+timestamp+reporter
-    //for 12 hours after vote is opened
-    await network.provider.send("evm_increaseTime", [3600 * 13]) //13 hours
+    let voteCount = await governance.voteCount()
+    //elapse time (a week forward) to 
+    await network.provider.send("evm_increaseTime", [3600 * 24 * 7]) //1 week
     await network.provider.send("evm_mine")
+    //voter votes
+    expect(
+      await governance.connect(v1).vote(voteCount, true, false),
+      "voter was able to vote on finished dispute"
+    )
+    //tally votes
+    await governance.tallyVotes(voteCount)
+    console.log(8)
+    //execute vote
+    await governance.executeVote(voteCount)
     // await expect(
     await    governance.connect(disputer1).beginDispute(requestId, timestamp),
         // "account disputed "
         // ).to.be.reverted
     console.log(9)
     //pass time, everyone votes
-    let voteCount = await governance.voteCount()
+    voteCount = await governance.voteCount()
     console.log(10)
     expect(
       await governance.connect(v1).vote(voteCount, true, false),
@@ -137,6 +145,7 @@ describe("End-to-End Tests - Two", function() {
       //mint tokens to dummy voters
       let devBalance = await tellor.balanceOf(DEV_WALLET)
       await tellor.connect(devWallet).transfer(v1.address, devBalance)
+      await tellor.connect(devWallet).mint(v1.address, 200000)
 
       //propose vote setup
       let f = await ethers.utils.keccak256(ethers.utils.toUtf8Bytes("changeTreasuryContract(address)"))
@@ -154,10 +163,27 @@ describe("End-to-End Tests - Two", function() {
         timestamp
       )
 
+      let voteCount = await governance.voteCount()
+
       //dummy accounts vote
+      await governance.connect(v1).vote(voteCount, true, false)
+
+      //elapse time (a week forward) to 
+      await h.advanceTime(604800)
 
       //tally vote
+      await governance.tallyVotes(voteCount)
+
+      //elapse time (a week forward) to 
+      await h.advanceTime(1186400)
 
       //execute vote
-  })
+      await governance.executeVote(voteCount)
+
+      let voteVars = await governance.getVoteInfo(voteCount)
+
+      console.log(treasury.address)
+      console.log(voteVars[3])
+      console.log(voteVars[4])
+    })
 });
