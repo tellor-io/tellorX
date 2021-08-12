@@ -75,17 +75,20 @@ contract Treasury is TellorVars{
         uint256 votesSinceTreasury;
         address governanceContract = IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT);
         //Add up number of votes _investor has participated in
-        for(
-            uint256 voteCount = treas.accounts[_investor].startVoteCount;
-            voteCount <= treas.endVoteCount;
-            voteCount++
-        ) {
-            bool voted = IGovernance(governanceContract).didVote(voteCount, _investor);
-            if (voted) {
-                numVotesParticipated++;
+        if(treas.endVoteCount > treas.accounts[_investor].startVoteCount){
+            for(
+                uint256 voteCount = treas.accounts[_investor].startVoteCount;
+                voteCount < treas.endVoteCount;
+                voteCount++
+            ) {
+                bool voted = IGovernance(governanceContract).didVote(voteCount + 1, _investor);
+                if (voted) {
+                    numVotesParticipated++;
+                }
+                votesSinceTreasury++;
             }
-            votesSinceTreasury++;
         }
+        console.log(votesSinceTreasury);
         uint256 _mintAmount = treas.accounts[_investor].amount * treas.rate;
         if(votesSinceTreasury > 0){
             _mintAmount = _mintAmount *numVotesParticipated / votesSinceTreasury;

@@ -100,6 +100,7 @@ describe("TellorX Function Tests - Treasury", function() {
     await tellorUser.buyTreasury(1, web3.utils.toWei("200"));
     await h.expectThrow(tellorUser.payTreasury(accounts[1].address, 1));//treasury locked
     await h.advanceTime(100);
+    console.log("here")
     await tellorUser.payTreasury(accounts[1].address, 1);
     assert(await treasury.getTreasuryFundsByUser(accounts[1].address) == web3.utils.toWei("0"), "User treasury funds should be zero");
     await h.expectThrow(tellorUser.payTreasury(accounts[1].address, 1));//treasury already paid to user
