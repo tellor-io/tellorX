@@ -202,8 +202,9 @@ contract Governance is TellorVars{
             IController _controller = IController(TELLOR_ADDRESS);
             uint256 _i;
             uint256 _voteID;
-            
-            if(_thisVote.result == VoteResult.PASSED){
+            (uint _currentStatus, ) = IController(TELLOR_ADDRESS).getStakerInfo(_thisDispute.reportedMiner);
+            if(_thisVote.result == VoteResult.PASSED && _currentStatus == 4){
+                _controller.changeStakingStatus(_thisDispute.reportedMiner, 5);
                 for(_i=voteRounds[_thisVote.identifierHash].length;_i>0;_i--){
                     _voteID = voteRounds[_thisVote.identifierHash][_i-1];
                     _thisVote = voteInfo[_voteID];

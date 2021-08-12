@@ -91,69 +91,72 @@ describe("End-to-End Tests - Two", function() {
     let disputedValue = keccak256("0x"+n.toString(16))
 
     //mint miner tokens
-    console.log(1)
-    await tellor.connect(devWallet).transfer(reporter.address, BigInt(100E18))
-    console.log(2)
+    
+    await tellor.connect(devWallet).transfer(reporter.address, BigInt(101E18))
+    
     //mint disputers their dispute fees
     await tellor.connect(devWallet).transfer(disputer1.address, BigInt(200E18))
-    console.log(3)
+    
     await tellor.connect(devWallet).transfer(disputer2.address, BigInt(200E18))
-    console.log(4)
+    
     //mint voter big voting balance
     let devBalance = await tellor.balanceOf(DEV_WALLET)
     await tellor.connect(devWallet).transfer(v1.address, devBalance)
 
-    console.log(5)
+    
     //stake miner
     await tellor.connect(reporter).depositStake()
 
-    console.log(6)
+    
     //miner submits bad value
     await oracle.connect(reporter).submitValue(requestId, disputedValue)
     let currentBlock = await ethers.provider.getBlock()
     let timestamp = currentBlock.timestamp
-    console.log(7)
+    
     //disputer opens dispute within 12 hours of submission
     await governance.connect(disputer1).beginDispute(requestId, timestamp)
     let voteCount = await governance.voteCount()
     //elapse time (a week forward) to 
+    console.log(1)
     await network.provider.send("evm_increaseTime", [3600 * 24 * 7]) //1 week
     await network.provider.send("evm_mine")
     //voter votes
-    expect(
-      await governance.connect(v1).vote(voteCount, true, false),
-      "voter was able to vote on finished dispute"
-    )
+    await governance.connect(v1).vote(voteCount, true, false)
+    console.log(2)
     //tally votes
     await governance.tallyVotes(voteCount)
-    console.log(8)
+    console.log(3)
     //elapse time (a week forward) to 
     await network.provider.send("evm_increaseTime", [3600 * 24 * 7]) //1 week
     await network.provider.send("evm_mine")
     //execute vote
     await governance.executeVote(voteCount)
-
+    console.log(4)
+    await expect(
+      governance.connect(v1).vote(voteCount, true, false),
+      "voter was able to vote on finished dispute"
+    ).to.be.reverted
     //check vote data
     
-
-    // await expect(
-    await    governance.connect(disputer1).beginDispute(requestId, timestamp),
+    console.log(5)
+    await expect(
+        governance.connect(disputer1).beginDispute(requestId, timestamp),
         // "account disputed "
-        // ).to.be.reverted
-    console.log(9)
+    ).to.be.reverted
+    
     //pass time, everyone votes
     voteCount = await governance.voteCount()
-    console.log(10)
-    expect(
-      await governance.connect(v1).vote(voteCount, true, false),
+    
+    await expect(
+      governance.connect(v1).vote(voteCount, true, false),
       "voter was able to vote on finished dispute"
-    )
-    console.log(11)
-    //tally votes
-    await tellor.tallyVotes(voteCount)
+    ).to.be.reverted
+    
+    // //tally votes
+    // await tellor.tallyVotes(voteCount)
 
-    //execute vote
-    await tellor.executeVote(voteCount)
+    // //execute vote
+    // await tellor.executeVote(voteCount)
 
 
 
@@ -162,7 +165,7 @@ describe("End-to-End Tests - Two", function() {
   it("Upgrade Treasury Contract", async function() {
 
       //read current treasury address
-      console.log(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")))
+      
       //deploy new treasury contract
       let tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury");
       let treasury = await tfac.deploy()
@@ -176,20 +179,20 @@ describe("End-to-End Tests - Two", function() {
       await tellor.connect(devWallet).transfer(v1.address, devBalance)
       await tellor.connect(govSigner).mint(v1.address, BigInt(1E6)*BigInt(1E18))
 
-      console.log(await tellor.balanceOf(v1.address) / await tellor.totalSupply())
+      
       //propose vote setup
       let f = await ethers.utils.keccak256(ethers.utils.toUtf8Bytes("changeTreasuryContract(address)"))
       let bytes4 = f.substring(0, 10)
       let currentBlock = await ethers.provider.getBlock()
       let timestamp = currentBlock.timestamp
-      console.log(timestamp)
-      console.log(4)
+      
+      
 
       //propose vote
       await governance.connect(v1).proposeVote(
         tellor.address,
         bytes4,
-        treasury.address,
+        "0x000000000000000000000000" + treasury.address.slice(2),
         timestamp
       )
 
@@ -210,16 +213,18 @@ describe("End-to-End Tests - Two", function() {
       //execute vote
       await governance.executeVote(voteCount)
 
-      let voteVars = await governance.getVoteInfo(voteCount)
-
-      console.log(treasury.address)
-      console.log(voteVars[2][0])
-      console.log(voteVars[3])
-      console.log(voteVars[4])
-
       let treasuryAddress = await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT"))
       expect(treasuryAddress).to.equal(treasury.address)
     })
 
-    // it("")
+    it("No votes during treasury duration", async function() {
+
+      //create treasury buyer
+
+      //issue treasuries
+
+      //user buys treasury
+
+      //
+    })
 });
