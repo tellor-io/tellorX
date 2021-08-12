@@ -88,17 +88,14 @@ contract Treasury is TellorVars{
                 votesSinceTreasury++;
             }
         }
-        console.log(votesSinceTreasury);
-        uint256 _mintAmount = treas.accounts[_investor].amount * treas.rate;
+        uint256 _mintAmount = treas.accounts[_investor].amount * treas.rate/10000;
         if(votesSinceTreasury > 0){
             _mintAmount = _mintAmount *numVotesParticipated / votesSinceTreasury;
         }
-        console.log(_mintAmount);
-        console.log(treas.rate);
         IController(TELLOR_ADDRESS).mint(address(this),_mintAmount);
         totalLocked -= treas.accounts[_investor].amount;
         IController(TELLOR_ADDRESS).transfer(_investor,_mintAmount + treas.accounts[_investor].amount);
-        treasuryFundsByUser[_investor]+= treas.accounts[_investor].amount;
+        treasuryFundsByUser[_investor] -= treas.accounts[_investor].amount;
         treas.accounts[_investor].paid = true;
         emit TreasuryPaid(_investor,_mintAmount + treas.accounts[_investor].amount);
     }

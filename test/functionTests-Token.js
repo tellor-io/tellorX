@@ -169,12 +169,13 @@ describe("TellorX Function Tests - Token", function () {
 		  //stake account
 		  await tellor.connect(acc1).depositStake()
 		  //expect successful transfer decreases _from balance by _amount
-		  await tellor.connect(acc1).approve(acc2.address, BigInt(2E18))
+		  await tellor.connect(acc1).approve(acc2.address, BigInt(4E18))
 		  let balance = await tellor.balanceOf(acc1.address)
-		  expect(balance).to.equal(0)
+		  expect(balance).to.equal(mintedTokens)
+		  await tellor.connect(acc2).transferFrom(acc1.address, acc2.address,BigInt(4E18))
 		  //expect successful transfer increases _to balance by _amount
 		  balance = await tellor.balanceOf(acc2.address)
-		  expect(balance).to.equal(BigInit(4E18))
+		  expect(balance).to.equal(BigInt(4E18))
 		  
 	  })
 })

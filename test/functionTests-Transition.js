@@ -87,10 +87,6 @@ describe("TellorX Function Tests - Transition", function() {
     assert(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")) == treasury.address, "Governance Address should be correct");
     assert(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == oracle.address, "Governance Address should be correct");
     assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) - h.to18(100) == 0, "stake amount should peroperly change");
-    await h.expectThrow(tellor.init(oracle.address,oracle.address,oracle.address))
-    newController = await cfac.deploy();
-    await master.changeTellorContract(newController.address);
-    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
     await h.expectThrow(tellor.init(oracle.address,oracle.address,oracle.address));
     assert(await tellor.getUintVar(h.hash("_SWITCH_TIME")) > 0, "switch time should be correct")
   });
@@ -144,6 +140,38 @@ describe("TellorX Function Tests - Transition", function() {
     assert(await tellor.sliceUintTest(val) - 150 == 0, "sliceUint shoudl work properly")
   });
   it("fallback()", async function() {
+    await hre.network.provider.request({
+      method: "hardhat_reset",
+      params: [{forking: {
+            jsonRpcUrl: hre.config.networks.hardhat.forking.url,
+            blockNumber: 12762660 //fork old one (non-parachute), so we don't need upgrade process
+          },},],
+      });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DEV_WALLET]}
+    )
+    oldTellorInstance = await ethers.getContractAt("contracts/tellor3/ITellor.sol:ITellor", tellorMaster)
+    gfac = await ethers.getContractFactory("contracts/testing/TestGovernance.sol:TestGovernance");
+    ofac = await ethers.getContractFactory("contracts/Oracle.sol:Oracle");
+    tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury");
+    cfac = await ethers.getContractFactory("contracts/testing/TestController.sol:TestController");
+    governance = await gfac.deploy();
+    oracle = await ofac.deploy();
+    treasury = await tfac.deploy();
+    controller = await cfac.deploy();
+    await governance.deployed();
+    await oracle.deployed();
+    await treasury.deployed();
+    await controller.deployed();
+    await accounts[0].sendTransaction({to:DEV_WALLET,value:ethers.utils.parseEther("1.0")});
+    const devWallet = await ethers.provider.getSigner(DEV_WALLET);
+    const bigWallet = await ethers.provider.getSigner(BIGWALLET);
+    master = await oldTellorInstance.connect(devWallet)
+    await master.changeTellorContract(controller.address)
+    tellor = await ethers.getContractAt("contracts/testing/TestController.sol:TestController",tellorMaster, devWallet);
+    await tellor.deployed();
+    await tellor.init(governance.address,oracle.address,treasury.address)
     await tellor.transfer(accounts[2].address,web3.utils.toWei("500"));
     tellorUser = await ethers.getContractAt("contracts/interfaces/IController.sol:IController",tellorMaster, accounts[2]);
     let count = await master.getNewValueCountbyRequestId(1);
