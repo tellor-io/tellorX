@@ -69,7 +69,8 @@ describe("TellorX Function Tests - Treasury", function() {
     assert(await treasury.getTreasuryFundsByUser(accounts[1].address) == web3.utils.toWei("200"), "User treasury funds should be correct");
     let details = await treasury.getTreasuryDetails(1);
     assert(details[3] == web3.utils.toWei("200"), "Treasury details purchased should be correct");
-    assert(await treasury.getTreasuryAccount(1, accounts[1].address) == web3.utils.toWei("200"), "Treasury account should be correct");
+    let acc = await treasury.getTreasuryAccount(1, accounts[1].address);
+    assert(acc[0] == web3.utils.toWei("200"), "Treasury account should be correct");
     assert(await treasury.getTreasuryOwners(1) == accounts[1].address, "Get treasury owners should be correct");
     assert(await treasury.totalLocked() == web3.utils.toWei("200"), "Total locked should be correct");
   });
@@ -101,18 +102,20 @@ describe("TellorX Function Tests - Treasury", function() {
     await h.expectThrow(tellorUser.payTreasury(accounts[1].address, 1));//treasury locked
     await h.advanceTime(100);
     await tellorUser.payTreasury(accounts[1].address, 1);
-    assert(await treasury.getTreasuryFundsByUser(accounts[1].address) == web3.utils.toWei("0"), "User treasury funds should be zero");
+    assert(await treasury.getTreasuryFundsByUser(accounts[1].address) == 0, "User treasury funds should be zero");
     await h.expectThrow(tellorUser.payTreasury(accounts[1].address, 1));//treasury already paid to user
-    assert(await tellor.balanceOf(accounts[1].address) == web3.utils.toWei("200")*1.02, "User balance should be correct");
+    assert(await tellor.balanceOf(accounts[1].address)*1 == 1*web3.utils.toWei("200")*1.02, "User balance should be correct");
   });
   it("getTreasuryAccount()", async function() {
     tellorUser = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[1]);
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     admin = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, govSigner);
     await admin.issueTreasury(web3.utils.toWei("400"), 200, 100);
-    assert(await treasury.getTreasuryAccount(1, accounts[1].address) == web3.utils.toWei("0"), "Treasury account balance should be correct");
+    let acc = await treasury.getTreasuryAccount(1, accounts[1].address) 
+    assert(acc[0] *1 == 0, "Treasury account balance should be correct");
     await tellorUser.buyTreasury(1, web3.utils.toWei("200"));
-    assert(await treasury.getTreasuryAccount(1, accounts[1].address) == web3.utils.toWei("200"), "Treasury account balance should be correct");
+    acc = await treasury.getTreasuryAccount(1, accounts[1].address) 
+    assert( acc[0] == web3.utils.toWei("200"), "Treasury account balance should be correct");
   });
   it("getTreasuryDetails()", async function() {
     tellorUser = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[1]);

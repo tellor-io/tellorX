@@ -75,22 +75,27 @@ contract Treasury is TellorVars{
         uint256 votesSinceTreasury;
         address governanceContract = IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT);
         //Add up number of votes _investor has participated in
-        for(
-            uint256 voteCount = treas.accounts[_investor].startVoteCount;
-            voteCount <= treas.endVoteCount;
-            voteCount++
-        ) {
-            bool voted = IGovernance(governanceContract).didVote(voteCount, _investor);
-            if (voted) {
-                numVotesParticipated++;
+        if(treas.endVoteCount > treas.accounts[_investor].startVoteCount){
+            for(
+                uint256 voteCount = treas.accounts[_investor].startVoteCount;
+                voteCount < treas.endVoteCount;
+                voteCount++
+            ) {
+                bool voted = IGovernance(governanceContract).didVote(voteCount + 1, _investor);
+                if (voted) {
+                    numVotesParticipated++;
+                }
+                votesSinceTreasury++;
             }
-            votesSinceTreasury++;
         }
-        uint256 _mintAmount = treas.accounts[_investor].amount * treas.rate * numVotesParticipated / votesSinceTreasury;
+        uint256 _mintAmount = treas.accounts[_investor].amount * treas.rate/10000;
+        if(votesSinceTreasury > 0){
+            _mintAmount = _mintAmount *numVotesParticipated / votesSinceTreasury;
+        }
         IController(TELLOR_ADDRESS).mint(address(this),_mintAmount);
         totalLocked -= treas.accounts[_investor].amount;
         IController(TELLOR_ADDRESS).transfer(_investor,_mintAmount + treas.accounts[_investor].amount);
-        treasuryFundsByUser[_investor]+= treas.accounts[_investor].amount;
+        treasuryFundsByUser[_investor] -= treas.accounts[_investor].amount;
         treas.accounts[_investor].paid = true;
         emit TreasuryPaid(_investor,_mintAmount + treas.accounts[_investor].amount);
     }

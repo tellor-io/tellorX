@@ -9,6 +9,7 @@ describe("TellorX Function Tests - Governance", function() {
 
     const tellorMaster = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
     const DEV_WALLET = "0x39E419bA25196794B595B2a595Ea8E527ddC9856"
+    const BIGWALLET = "0xf977814e90da44bfa03b6295a0616a897441acec";
     let accounts = null
     let tellor = null
     let cfac,ofac,tfac,gfac,devWallet
@@ -17,9 +18,10 @@ describe("TellorX Function Tests - Governance", function() {
     let mainnetBlock = 0;
   
   beforeEach("deploy and setup TellorX", async function() {
+    this.timeout(100000)
     if(run == 0){
       const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
-      mainnetBlock = directors.height - 10;
+      mainnetBlock = directors.height - 20;
       console.log("     Forking from block: ",mainnetBlock)
       run = 1;
     }
@@ -35,12 +37,16 @@ describe("TellorX Function Tests - Governance", function() {
       method: "hardhat_impersonateAccount",
       params: [DEV_WALLET]}
     )
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [BIGWALLET]}
+    )
         //Steps to Deploy:
         //Deploy Governance, Oracle, Treasury, and Controller. 
         //Fork mainnet Ethereum, changeTellorContract to Controller
         //run init in Controller
 
-    oldTellorInstance = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor", tellorMaster)
+    oldTellorInstance = await ethers.getContractAt("contracts/tellor3/ITellor.sol:ITellor", tellorMaster)
     gfac = await ethers.getContractFactory("contracts/testing/TestGovernance.sol:TestGovernance");
     ofac = await ethers.getContractFactory("contracts/Oracle.sol:Oracle");
     tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury");
@@ -55,8 +61,17 @@ describe("TellorX Function Tests - Governance", function() {
     await controller.deployed();
     await accounts[0].sendTransaction({to:DEV_WALLET,value:ethers.utils.parseEther("1.0")});
     devWallet = await ethers.provider.getSigner(DEV_WALLET);
+    const bigWallet = await ethers.provider.getSigner(BIGWALLET);
     master = await oldTellorInstance.connect(devWallet)
-    await master.changeTellorContract(controller.address);
+    await master.proposeFork(controller.address);
+    let _id = await master.getUintVar(h.hash("_DISPUTE_COUNT"))
+    await master.vote(_id,true)
+    master = await oldTellorInstance.connect(bigWallet)
+    await master.vote(_id,true);
+    await h.advanceTime(86400 * 8)
+    await master.tallyVotes(_id)
+    await h.advanceTime(86400 * 2.5)
+    await master.updateTellor(_id)
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, devWallet);
     await tellor.deployed();
     await tellor.init(governance.address,oracle.address,treasury.address)

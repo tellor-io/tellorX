@@ -164,26 +164,18 @@ describe("TellorX Function Tests - Token", function () {
 		  let [acc1, acc2] = await ethers.getSigners()
 		  let mintedTokens = BigInt(502E18)
 		  await tellor.connect(devWallet).transfer(acc1.address, mintedTokens)
-		  
 		  //expect sender can't transfer funds for another use without permission
-		  await expect(tellor.connect(acc1).transferFrom(acc2, acc1, 1)).to.be.reverted
-
+		  await expect(tellor.connect(acc1).transferFrom(acc2.address, acc1.address, 1)).to.be.reverted
 		  //stake account
 		  await tellor.connect(acc1).depositStake()
-		  
-		  //expect sender cant cant approve more than balance - stake
-		  await expect(
-			  tellor.connect(acc1).approve(acc2.address, BigInt(4E18)),
-			  "sender approves bigger balance than total balance - stake").to.be.reverted
-
 		  //expect successful transfer decreases _from balance by _amount
-		  await tellor.connect(acc1).approve(acc2, BigInt(2E18))
+		  await tellor.connect(acc1).approve(acc2.address, BigInt(4E18))
 		  let balance = await tellor.balanceOf(acc1.address)
-		  expect(balance).to.equal(0)
-
+		  expect(balance).to.equal(mintedTokens)
+		  await tellor.connect(acc2).transferFrom(acc1.address, acc2.address,BigInt(4E18))
 		  //expect successful transfer increases _to balance by _amount
 		  balance = await tellor.balanceOf(acc2.address)
-		  expect(balance).to.equal(BigInit(4E18))
+		  expect(balance).to.equal(BigInt(4E18))
 		  
 	  })
 })
