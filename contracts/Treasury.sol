@@ -24,6 +24,7 @@ contract Treasury is TellorVars{
         uint256 purchased;
         uint256 duration;
         uint256 endVoteCount;
+        bool endVoteCountRecorded;
         address[] owners;
         mapping(address => TreasuryUser) accounts;
     }
@@ -74,6 +75,21 @@ contract Treasury is TellorVars{
         uint256 numVotesParticipated;
         uint256 votesSinceTreasury;
         address governanceContract = IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT);
+        //Find endVoteCount if not already calculated
+        if(!treas.endVoteCountRecorded) {
+            uint256 voteCountIter = IGovernance(governanceContract).getVoteCount();
+            if(voteCountIter > 0) {
+                (,uint256[8] memory voteInfo,,,,,) = IGovernance(governanceContract).getVoteInfo(voteCountIter);
+                while(voteCountIter > 0 && voteInfo[1] > treas.dateStarted + treas.duration) {
+                    voteCountIter--;
+                    if(voteCountIter > 0) {
+                        (,voteInfo,,,,,) = IGovernance(governanceContract).getVoteInfo(voteCountIter);
+                    }
+                }
+            }
+            treas.endVoteCount = voteCountIter;
+            treas.endVoteCountRecorded = true;
+        }
         //Add up number of votes _investor has participated in
         if(treas.endVoteCount > treas.accounts[_investor].startVoteCount){
             for(
