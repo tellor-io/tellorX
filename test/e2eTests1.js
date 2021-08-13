@@ -166,4 +166,35 @@ describe("End-to-End Tests - One", function() {
       "cannot send tokens it doesn't have"
     ).to.be.reverted
   })
+  it("Must be able to migrate successfully", async function() {
+
+    let NonMigratedAddy ="0x21db5e3000e1ef6f78f07c75bc00a0a3b2215cdc"
+    oldTellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor","0x0Ba45A8b5d5575935B8158a88C631E9F9C95a2e5", accounts[1]);
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [NonMigratedAddy]}
+    )
+    const nonMigratedGuy = await ethers.provider.getSigner(NonMigratedAddy);
+    await accounts[1].sendTransaction({to:NonMigratedAddy,value:ethers.utils.parseEther("1.0")});
+    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, nonMigratedGuy);
+    let oldTellorBalance = await oldTellor.balanceOf(NonMigratedAddy)
+    await tellor.migrate();
+    await h.expectThrow(tellor.migrate());//should fail if run twice
+    assert(await tellor.isMigrated(NonMigratedAddy), "address should be marked as migrated")
+    assert(oldTellorBalance - await tellor.balanceOf(NonMigratedAddy) == 0, "balances should be the same")
+    await parachute.migrateFor(accounts[1].address, web3.utils.toWei("100"))
+    assert(await tellor.balanceOf(accounts[1].address) == web3.utils.toWei("100"), "should have migratedFor properly")
+  })
+  it("Staked miners should not be able to tip or get under their stake amount", async function() {
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
+    await tellorUser.depositStake();
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
+    await tellorUser.requestStakingWithdraw()
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
+  })
 });

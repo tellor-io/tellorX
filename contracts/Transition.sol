@@ -167,6 +167,15 @@ contract Transition is TellorStorage,TellorVars{
         return uints[_TOTAL_SUPPLY];
     }
 
+    /**
+     * @dev Getter for if the party is migrated
+     * @param _addy address of party
+     * @return if the party is migrated
+     */
+    function isMigrated(address _addy) external view returns (bool) {
+        return migrated[_addy];
+    }
+
     
     /**
      * @dev this function is solely for the parachute contract
