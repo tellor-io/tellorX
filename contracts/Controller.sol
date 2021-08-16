@@ -4,6 +4,7 @@ pragma solidity 0.8.3;
 import "./TellorStaking.sol";
 import "./interfaces/IController.sol";
 import "./Transition.sol";
+import "hardhat/console.sol";
 
 contract Controller is TellorStaking, Transition{
 

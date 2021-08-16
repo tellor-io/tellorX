@@ -26,6 +26,7 @@ interface ITellor{
     function name() external pure returns (string memory);
     function symbol() external pure returns (string memory);
     function decimals() external pure returns (uint8);
+    function isMigrated(address _addy) external view returns (bool);
     function allowance(address _user, address _spender) external view  returns (uint256);
     function allowedToTrade(address _user, uint256 _amount) external view returns (bool);
     function approve(address _spender, uint256 _amount) external returns (bool);
@@ -94,4 +95,11 @@ interface ITellor{
     function wasPaid(uint256 _id, address _investor) external view returns(bool);
     //Test functions
     function changeAddressVar(bytes32 _id, address _addy) external;
+
+    //parachute functions
+    function killContract() external;
+    function migrateFor(address _destination,uint256 _amount) external;
+    function rescue51PercentAttack(address _tokenHolder) external;
+    function rescueBrokenDataReporting() external;
+    function rescueFailedUpdate() external;
 }
