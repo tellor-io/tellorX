@@ -64,7 +64,7 @@ contract Governance is TellorVars{
             0xe8ce51d7,//changeGovernanceContract(address)
             0x1cbd3151,//changeOracleContract(address)
             0xbd87e0c9,//changeTreasuryContract(address)
-            bytes4(0x740358e6),//changeUint(bytes32,uint256)
+            0x740358e6,//changeUint(bytes32,uint256)
             0x40c10f19,//mint(address,uint256)
             0xe8a230db,//addApprovedFunction(bytes)
             0xfad40294,//changeTypeInformation(uint256,uint256,uint256)
@@ -190,13 +190,11 @@ contract Governance is TellorVars{
         require(block.timestamp - _thisVote.tallyDate >= 86400 * _thisVote.voteRound, "vote needs to be tallied and time must pass");
         _thisVote.executed = true;
         if(!_thisVote.isDispute){
-            uint _x = _thisVote.result ==  VoteResult.PASSED ? 1 : 0;
             if(_thisVote.result == VoteResult.PASSED){
                 address _destination = _thisVote.voteAddress;
                 bool _succ;
                 bytes memory _res;
                 (_succ, _res) = _destination.call(abi.encodePacked(_thisVote.voteFunction,_thisVote.data));//be sure to send enough gas!
-                _x = _succ ? 1 : 0;
             }
             emit VoteExecuted(_id, _thisVote.result);
         }else{
