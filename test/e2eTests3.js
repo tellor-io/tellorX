@@ -63,7 +63,6 @@ describe("End-to-End Tests - Three", function() {
     admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
     await admin.mint(accounts[1].address, web3.utils.toWei("200000"));
     let voteCount;
-    // Reference: function proposeVote(address _contract, bytes4 _function, bytes calldata _data, uint256 _timestamp)
 
     // ****************************************
     // * changeControllerContract(address)
