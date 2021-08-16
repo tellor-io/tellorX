@@ -48,13 +48,9 @@ contract TellorStaking is Token{
     }
 
     function slashMiner(address _reporter, address _disputer) external{
-
         //require that only the governance contract can call it
         require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
-
         stakerDetails[_reporter].currentStatus = 5;
-
-
         if(balanceOf(_reporter) >= uints[_STAKE_AMOUNT]){
             _doTransfer(_reporter,_disputer,uints[_STAKE_AMOUNT]);
         }

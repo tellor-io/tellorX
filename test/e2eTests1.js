@@ -12,7 +12,7 @@ describe("End-to-End Tests - One", function() {
     const BIGWALLET = "0xf977814e90da44bfa03b6295a0616a897441acec";
     let accounts = null
     let tellor = null
-    let cfac,ofac,tfac,gfac,parachute
+    let cfac,ofac,tfac,gfac,parachute,govBig,govTeam
     let govSigner = null
   
   beforeEach("deploy and setup TellorX", async function() {
@@ -55,8 +55,8 @@ describe("End-to-End Tests - One", function() {
     await treasury.deployed();
     await controller.deployed();
     await accounts[0].sendTransaction({to:DEV_WALLET,value:ethers.utils.parseEther("1.0")});
-    const devWallet = await ethers.provider.getSigner(DEV_WALLET);
-    const bigWallet = await ethers.provider.getSigner(BIGWALLET);
+    devWallet = await ethers.provider.getSigner(DEV_WALLET);
+    bigWallet = await ethers.provider.getSigner(BIGWALLET);
     master = await oldTellorInstance.connect(devWallet)
     await master.proposeFork(controller.address);
     let _id = await master.getUintVar(h.hash("_DISPUTE_COUNT"))
@@ -69,6 +69,8 @@ describe("End-to-End Tests - One", function() {
     await master.updateTellor(_id)
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, devWallet);
     parachute = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",PARACHUTE, devWallet);
+    govTeam = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, devWallet);
+    govBig = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, bigWallet);
     await tellor.deployed();
     await tellor.init(governance.address,oracle.address,treasury.address)
     await hre.network.provider.request({
@@ -166,4 +168,130 @@ describe("End-to-End Tests - One", function() {
       "cannot send tokens it doesn't have"
     ).to.be.reverted
   })
+  it("Must be able to migrate successfully", async function() {
+
+    let NonMigratedAddy ="0x21db5e3000e1ef6f78f07c75bc00a0a3b2215cdc"
+    oldTellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor","0x0Ba45A8b5d5575935B8158a88C631E9F9C95a2e5", accounts[1]);
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [NonMigratedAddy]}
+    )
+    const nonMigratedGuy = await ethers.provider.getSigner(NonMigratedAddy);
+    await accounts[1].sendTransaction({to:NonMigratedAddy,value:ethers.utils.parseEther("1.0")});
+    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, nonMigratedGuy);
+    let oldTellorBalance = await oldTellor.balanceOf(NonMigratedAddy)
+    await tellor.migrate();
+    await h.expectThrow(tellor.migrate());//should fail if run twice
+    assert(await tellor.isMigrated(NonMigratedAddy), "address should be marked as migrated")
+    assert(oldTellorBalance - await tellor.balanceOf(NonMigratedAddy) == 0, "balances should be the same")
+    await parachute.migrateFor(accounts[1].address, web3.utils.toWei("100"))
+    assert(await tellor.balanceOf(accounts[1].address) == web3.utils.toWei("100"), "should have migratedFor properly")
+  })
+  it("Staked miners should not be able to tip or get under their stake amount", async function() {
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
+    await tellorUser.depositStake();
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
+    await tellorUser.requestStakingWithdraw()
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
+  })
+  it("Check reducing stake amount in the future", async function() {
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
+    await tellorUser.depositStake();
+    //vote to reduce the stakeAmount
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
+    await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
+    await governance.proposeVote(tellorMaster,0x740358e6,ethers.utils.defaultAbiCoder.encode([ "bytes32","uint256" ],[h.hash("_STAKE_AMOUNT"),web3.utils.toWei("50")]),0)//changeUINT(hash(stakeAmount),50wei)
+    await h.advanceTime(86400 * 8)
+    await govTeam.vote(1,true,false);
+    await govBig.vote(1,true,false);
+    await governance.tallyVotes(1)
+    await h.advanceTime(86400 * 3)
+    await governance.executeVote(1)
+    assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) == web3.utils.toWei("50"), "stake amount should change properly")
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("51")));//must have funds
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,web3.utils.toWei("52")));//must have funds
+    await tellorUser.transfer(accounts[4].address,web3.utils.toWei("50"))
+  })
+  it("Check reducing stake amount in the future", async function() {
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
+    await tellorUser.depositStake();
+    //vote to reduce the stakeAmount
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
+    await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
+     await governance.proposeVote(tellorMaster,0x740358e6,ethers.utils.defaultAbiCoder.encode([ "bytes32","uint256" ],[h.hash("_STAKE_AMOUNT"),web3.utils.toWei("50")]),0)//changeUINT(hash(stakeAmount),50wei)
+    await h.advanceTime(86400 * 8)
+    await govTeam.vote(1,true,false);
+    await govBig.vote(1,true,false);
+    await governance.tallyVotes(1)
+    await h.advanceTime(86400 * 3)
+    await oracle1.submitValue(ethers.utils.formatBytes32String("1"),150)
+    let _t = await oracle.getReportTimestampByIndex(ethers.utils.formatBytes32String("1"),0);
+    let dispFee = await governance.disputeFee()
+    let initBalDisputer = await tellor.balanceOf(accounts[2].address)
+    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.executeVote(1)
+    await govTeam.vote(2,true,false);
+    assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) == web3.utils.toWei("50"), "stake amount should change properly")
+    await tellorUser.transfer(accounts[4].address,web3.utils.toWei("50"))
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
+    await h.advanceTime(86400 * 8)
+    await governance.tallyVotes(2);
+    await h.advanceTime(86400 * 3)
+    await governance.executeVote(2)
+    assert(await tellor.balanceOf(accounts[1].address) == 0, "miner should be slashed")
+    assert(await tellor.balanceOf(accounts[2].address)*1 - (initBalDisputer*1 +  1*web3.utils.toWei("50") - dispFee * .1) == 0, "disputer should get new stake amount")
+  })
+
+  it("Bad value placed, withdraw requested, dispute started", async function() {
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
+    await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
+    await tellorUser.depositStake();
+    await oracle1.submitValue(ethers.utils.formatBytes32String("1"),150)
+    await tellorUser.requestStakingWithdraw();
+    let _t = await oracle.getReportTimestampByIndex(ethers.utils.formatBytes32String("1"),0);
+    let initBalDisputer = await tellor.balanceOf(accounts[2].address)
+    let vars = await tellor.getStakerInfo(accounts[1].address)
+    assert(vars[0] - 2 == 0, "status should be correct")
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
+    await governance.beginDispute(h.tob32("1"),_t);
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
+    vars = await tellor.getStakerInfo(accounts[1].address)
+    assert(vars[0] - 3 == 0, "status should be correct")
+    await govTeam.vote(1,true,false);
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
+    await h.advanceTime(86400 * 8)
+    await h.expectThrow(tellorUser.withdrawStake());//must have funds
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
+    await governance.tallyVotes(1)
+    await h.expectThrow(tellorUser.withdrawStake());//must have funds
+    vars = await tellor.getStakerInfo(accounts[1].address)
+    assert(vars[0] - 4 == 0, "status should be correct")
+    await h.advanceTime(86400 * 2)
+    await governance.executeVote(1)
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
+    vars = await tellor.getStakerInfo(accounts[1].address)
+    assert(vars[0] - 5 == 0, "status should be correct")
+    await h.expectThrow(tellorUser.withdrawStake());//must have funds
+    assert(await tellor.balanceOf(accounts[1].address) == 0, "miner should be slashed")
+    await h.expectThrow(tellorUser.withdrawStake());//must have funds
+  })
+
+
+  
+
 });
