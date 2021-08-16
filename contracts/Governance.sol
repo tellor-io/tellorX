@@ -204,7 +204,6 @@ contract Governance is TellorVars{
             IController _controller = IController(TELLOR_ADDRESS);
             uint256 _i;
             uint256 _voteID;
-            
             if(_thisVote.result == VoteResult.PASSED){
                 for(_i=voteRounds[_thisVote.identifierHash].length;_i>0;_i--){
                     _voteID = voteRounds[_thisVote.identifierHash][_i-1];
