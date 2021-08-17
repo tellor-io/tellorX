@@ -16,7 +16,7 @@ describe("TellorX Function Tests - Governance", function() {
     let govSigner = null
     let run = 0;
     let mainnetBlock = 0;
-  
+
   beforeEach("deploy and setup TellorX", async function() {
     this.timeout(100000)
     if(run == 0){
@@ -42,7 +42,7 @@ describe("TellorX Function Tests - Governance", function() {
       params: [BIGWALLET]}
     )
         //Steps to Deploy:
-        //Deploy Governance, Oracle, Treasury, and Controller. 
+        //Deploy Governance, Oracle, Treasury, and Controller.
         //Fork mainnet Ethereum, changeTellorContract to Controller
         //run init in Controller
 
@@ -84,7 +84,7 @@ describe("TellorX Function Tests - Governance", function() {
   });
   it("constructor()", async function() {
     let initFuncs = [0x3c46a185,0xe8ce51d7,0x1cbd3151,0xbd87e0c9, 0x740358e6,
-      0x40c10f19,0xe8a230db,0xfad40294,0xe280e8e8,0x6274885f,0xf3ff955a];
+      0x40c10f19,0xe48d4b3b,0xfad40294,0xe280e8e8,0x6274885f,0xf3ff955a];
     for(let _i =0;_i< initFuncs.length;_i++){
       res = await governance.isFunctionApproved(initFuncs[_i])
       assert(res == true, "Function should be approved")
@@ -154,12 +154,12 @@ describe("TellorX Function Tests - Governance", function() {
   it("delegateOfAt()", async function() {
     governance = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, accounts[2]);
     await governance.delegate(DEV_WALLET);
-    let block2 = await ethers.provider.getBlock(); 
+    let block2 = await ethers.provider.getBlock();
     await governance.delegate(accounts[1].address);
     let _num = block2.number * 1
     let del = await governance.delegateOfAt(accounts[2].address,_num)
     assert(del == DEV_WALLET, "delegate should be correct")
-    block2 = await ethers.provider.getBlock(); 
+    block2 = await ethers.provider.getBlock();
     _num = block2.number * 1
     del = await governance.delegateOfAt(accounts[2].address,_num)
     assert(del == accounts[1].address, "delegate should be correct")
@@ -472,7 +472,7 @@ describe("TellorX Function Tests - Governance", function() {
       await oracle.submitValue( ethers.utils.formatBytes32String("disputedVar"),300000 + i);
       let _t = await oracle.getReportTimestampByIndex(h.tob32("disputedVar"),0);
       await governance.beginDispute(h.tob32("disputedVar"),_t);
-    }  
+    }
     assert(await governance.getOpenDisputesOnId(h.tob32("disputedVar")) == 4, "number of open disputes should be right")
   });
   it("didVote()", async function() {

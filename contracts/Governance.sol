@@ -66,7 +66,7 @@ contract Governance is TellorVars{
             0xbd87e0c9,//changeTreasuryContract(address)
             0x740358e6,//changeUint(bytes32,uint256)
             0x40c10f19,//mint(address,uint256)
-            0xe8a230db,//addApprovedFunction(bytes)
+            0xe48d4b3b,//setApprovedFunction(bytes4,bool)
             0xfad40294,//changeTypeInformation(uint256,uint256,uint256)
             0xe280e8e8,//changeMiningLock(uint256)
             0x6274885f,//issueTreasury(uint256,uint256,uint256)
@@ -243,12 +243,12 @@ contract Governance is TellorVars{
         if (voteRounds[_hash].length > 1) {
             uint256 _prevId = voteRounds[_hash][voteRounds[_hash].length - 2];
             require(block.timestamp - voteInfo[_prevId].tallyDate < 1 days);//1 day for new disputes
-        } 
+        }
         _thisVote.identifierHash = _hash;
         uint256 _fee = 10e18 * 2**(voteRounds[_hash].length - 1);
         //should we add a way to not need to approve here?
         //This is the fee to do anything (just 10 tokens flat, no refunds.  Goes up quickly to prevent spamming)
-        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee), "fee must be paid"); 
+        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee), "fee must be paid");
         _thisVote.voteRound = voteRounds[_hash].length;
         _thisVote.startDate = block.timestamp;
         _thisVote.blockNumber = block.number;
@@ -257,7 +257,7 @@ contract Governance is TellorVars{
         _thisVote.voteFunction = _function;
         _thisVote.voteAddress = _contract;
         _thisVote.initiator = msg.sender;
-        require(_contract == TELLOR_ADDRESS || 
+        require(_contract == TELLOR_ADDRESS ||
             _contract == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT) ||
             _contract == IController(TELLOR_ADDRESS).addresses(_TREASURY_CONTRACT) ||
             _contract == IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT), "must interact with the Tellor system"
@@ -350,7 +350,7 @@ contract Governance is TellorVars{
     function didVote(uint256 _id, address _voter) external view returns(bool){
         return voteInfo[_id].voted[_voter];
     }
-    
+
     function getDelegateInfo(address _holder) external view returns(address,uint){
         return (delegateOfAt(_holder,block.number), delegateInfo[_holder][delegateInfo[_holder].length-1].fromBlock);
     }
