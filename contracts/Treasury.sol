@@ -125,6 +125,10 @@ contract Treasury is TellorVars{
         );
     }
 
+    function getTreasuryCount() external view returns(uint256){
+        return treasuryCount;
+    }
+
     function getTreasuryDetails(uint256 _id) external view returns(uint256,uint256,uint256,uint256){
         return(treasury[_id].dateStarted,treasury[_id].totalAmount,treasury[_id].rate,treasury[_id].purchased);
     }
