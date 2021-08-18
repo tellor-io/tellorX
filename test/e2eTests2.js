@@ -15,72 +15,74 @@ describe("End-to-End Tests - Two", function() {
   const BIGWALLET = "0xf977814e90da44bfa03b6295a0616a897441acec";
   let accounts = null
   let tellor = null
-  let cfac,ofac,tfac,gfac,parachute
+  let cfac,ofac,tfac,gfac,parachute,govBig,govTeam
   let govSigner = null
-  let devWallet
   
-    beforeEach("deploy and setup TellorX", async function() {
-      accounts = await ethers.getSigners();
-      await hre.network.provider.request({
-        method: "hardhat_reset",
-        params: [{forking: {
-              jsonRpcUrl: hre.config.networks.hardhat.forking.url,
-              blockNumber:13004700
-            },},],
-        });
-      await hre.network.provider.request({
-        method: "hardhat_impersonateAccount",
-        params: [DEV_WALLET]}
-      )
-      await hre.network.provider.request({
-        method: "hardhat_impersonateAccount",
-        params: [PARACHUTE]}
-      )
-      await hre.network.provider.request({
-        method: "hardhat_impersonateAccount",
-        params: [BIGWALLET]}
-      )
-          //Steps to Deploy:
-          //Deploy Governance, Oracle, Treasury, and Controller. 
-          //Fork mainnet Ethereum, changeTellorContract to Controller
-          //run init in Controller
-  
-      oldTellorInstance = await ethers.getContractAt("contracts/tellor3/ITellor.sol:ITellor", tellorMaster)
-      gfac = await ethers.getContractFactory("contracts/testing/TestGovernance.sol:TestGovernance");
-      ofac = await ethers.getContractFactory("contracts/Oracle.sol:Oracle");
-      tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury");
-      cfac = await ethers.getContractFactory("contracts/testing/TestController.sol:TestController");
-      governance = await gfac.deploy();
-      oracle = await ofac.deploy();
-      treasury = await tfac.deploy();
-      controller = await cfac.deploy();
-      await governance.deployed();
-      await oracle.deployed();
-      await treasury.deployed();
-      await controller.deployed();
-      await accounts[0].sendTransaction({to:DEV_WALLET,value:ethers.utils.parseEther("1.0")});
-      devWallet = await ethers.provider.getSigner(DEV_WALLET);
-      bigWallet = await ethers.provider.getSigner(BIGWALLET);
-      master = await oldTellorInstance.connect(devWallet)
-      await master.proposeFork(controller.address);
-      let _id = await master.getUintVar(h.hash("_DISPUTE_COUNT"))
-      await master.vote(_id,true)
-      master = await oldTellorInstance.connect(bigWallet)
-      await master.vote(_id,true);
-      await h.advanceTime(86400 * 8)
-      await master.tallyVotes(_id)
-      await h.advanceTime(86400 * 2.5)
-      await master.updateTellor(_id)
-      tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, devWallet);
-      parachute = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",PARACHUTE, devWallet);
-      await tellor.deployed();
-      await tellor.init(governance.address,oracle.address,treasury.address)
-      await hre.network.provider.request({
-        method: "hardhat_impersonateAccount",
-        params: [governance.address]}
-      )
-      await accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("1.0")});
-      govSigner = await ethers.provider.getSigner(governance.address);
+  beforeEach("deploy and setup TellorX", async function() {
+    accounts = await ethers.getSigners();
+    await hre.network.provider.request({
+      method: "hardhat_reset",
+      params: [{forking: {
+            jsonRpcUrl: hre.config.networks.hardhat.forking.url,
+            blockNumber:13037866
+
+          },},],
+      });
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [DEV_WALLET]}
+    )
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [PARACHUTE]}
+    )
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [BIGWALLET]}
+    )
+        //Steps to Deploy:
+        //Deploy Governance, Oracle, Treasury, and Controller. 
+        //Fork mainnet Ethereum, changeTellorContract to Controller
+        //run init in Controller
+
+    oldTellorInstance = await ethers.getContractAt("contracts/tellor3/ITellor.sol:ITellor", tellorMaster)
+    gfac = await ethers.getContractFactory("contracts/testing/TestGovernance.sol:TestGovernance");
+    ofac = await ethers.getContractFactory("contracts/Oracle.sol:Oracle");
+    tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury");
+    cfac = await ethers.getContractFactory("contracts/testing/TestController.sol:TestController");
+    governance = await gfac.deploy();
+    oracle = await ofac.deploy();
+    treasury = await tfac.deploy();
+    controller = await cfac.deploy();
+    await governance.deployed();
+    await oracle.deployed();
+    await treasury.deployed();
+    await controller.deployed();
+    await accounts[0].sendTransaction({to:DEV_WALLET,value:ethers.utils.parseEther("1.0")});
+    devWallet = await ethers.provider.getSigner(DEV_WALLET);
+    bigWallet = await ethers.provider.getSigner(BIGWALLET);
+    master = await oldTellorInstance.connect(devWallet)
+    await master.proposeFork(controller.address);
+    let _id = await master.getUintVar(h.hash("_DISPUTE_COUNT"))
+    await master.vote(_id,true)
+    master = await oldTellorInstance.connect(bigWallet)
+    await master.vote(_id,true);
+    await h.advanceTime(86400 * 8)
+    await master.tallyVotes(_id)
+    await h.advanceTime(86400 * 2.5)
+    await master.updateTellor(_id)
+    tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, devWallet);
+    parachute = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",PARACHUTE, devWallet);
+    govTeam = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, devWallet);
+    govBig = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, bigWallet);
+    await tellor.deployed();
+    await tellor.init(governance.address,oracle.address,treasury.address)
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [governance.address]}
+    )
+    await accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("1.0")});
+    govSigner = await ethers.provider.getSigner(governance.address);
     });
   it("What happens if a staked miner is disputed twice? (maybe have window for disputes to prevent this?)", async function() {
     
@@ -117,28 +119,28 @@ describe("End-to-End Tests - Two", function() {
     await governance.connect(disputer1).beginDispute(requestId, timestamp)
     let voteCount = await governance.voteCount()
     //elapse time (a week forward) to 
-    console.log(1)
+    
     await network.provider.send("evm_increaseTime", [3600 * 24 * 7]) //1 week
     await network.provider.send("evm_mine")
     //voter votes
     await governance.connect(v1).vote(voteCount, true, false)
-    console.log(2)
+    
     //tally votes
     await governance.tallyVotes(voteCount)
-    console.log(3)
+    
     //elapse time (a week forward) to 
     await network.provider.send("evm_increaseTime", [3600 * 24 * 7]) //1 week
     await network.provider.send("evm_mine")
     //execute vote
     await governance.executeVote(voteCount)
-    console.log(4)
+    
     await expect(
       governance.connect(v1).vote(voteCount, true, false),
       "voter was able to vote on finished dispute"
     ).to.be.reverted
     //check vote data
     
-    console.log(5)
+    
     await expect(
         governance.connect(disputer1).beginDispute(requestId, timestamp),
         // "account disputed "
@@ -219,12 +221,77 @@ describe("End-to-End Tests - Two", function() {
 
     it("No votes during treasury duration", async function() {
 
-      //create treasury buyer
+      let treasuryAmount = BigInt(500E18)
+      let treasuryRate = 0.05 * 10000
+      let treasuryDuration = 3600 * 24 * 14 //14 days
 
-      //issue treasuries
+      let treasuryBought = BigInt(10E18)
 
-      //user buys treasury
+      let n = 42
+      let requestId = keccak256("0x"+n.toString(16))
+      let disputedValue = keccak256("0x"+n.toString(16))
 
-      //
+      //create treasury buyer, reporter, disputer
+      let [buyer, reporter, disputer] = await ethers.getSigners()
+
+      //mint tokens for buyer
+      await tellor.connect(devWallet).transfer(buyer.address, BigInt(101E18))
+      
+      //mint and stake reporter
+      await tellor.connect(devWallet).transfer(reporter.address, BigInt(101E18))
+      await tellor.connect(reporter).depositStake()
+      
+      //mint disputer
+      await tellor.connect(devWallet).transfer(disputer.address, BigInt(200E18))
+      
+      //governance issues treasuries
+      await treasury.connect(govSigner).issueTreasury(treasuryAmount, treasuryRate, treasuryDuration)
+      let treasuryCount = treasury.getTreasuryCount()
+
+      //buyer buys treasury
+      await treasury.connect(buyer).buyTreasury(treasuryCount, treasuryBought)
+
+      //reporter submits a value
+      await oracle.connect(reporter).submitValue(requestId, disputedValue)
+      let currentBlock = await ethers.provider.getBlock()
+      let timestamp = currentBlock.timestamp
+      
+      //disputer disputes value
+      await governance.connect(disputer).beginDispute(requestId, timestamp)
+      let voteCount = await governance.voteCount()
+
+
+      //user doesn't vote
+      await h.advanceTime(86400 * 7) //7 days
+
+      //tally vote      
+      await governance.tallyVotes(voteCount)
+      
+      await h.advanceTime(86400*7) //7 days
+
+      //execute vote
+      await governance.executeVote(voteCount)
+
+      //vote should have invalid outcome
+      let voteInfo = await governance.getVoteInfo(voteCount)
+      let voteResult = voteInfo[3]
+      let invalid = 2
+      
+      expect(voteResult).to.equal(invalid, "no one voted, outcome wasn't 'invalid'")
+
+      //fast forward to treasury expiration
+      await h.advanceTime(86400)
+
+      //pay treasury
+      let oldBalance = Number(await tellor.balanceOf(buyer.address))
+      
+      await treasury.connect(buyer).payTreasury(buyer.address, treasuryCount)
+      
+      let newBalance = Number(await tellor.balanceOf(buyer.address))
+      
+      
+      //expect no treasury rewards because buyer didnt vote
+      expect(newBalance - oldBalance).to.equal(Number(treasuryBought))
+
     })
 });

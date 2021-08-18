@@ -108,7 +108,9 @@ contract Treasury is TellorVars{
         if(votesSinceTreasury > 0){
             _mintAmount = _mintAmount *numVotesParticipated / votesSinceTreasury;
         }
-        IController(TELLOR_ADDRESS).mint(address(this),_mintAmount);
+        if (_mintAmount > 0) {
+            IController(TELLOR_ADDRESS).mint(address(this),_mintAmount);
+        }
         totalLocked -= treas.accounts[_investor].amount;
         IController(TELLOR_ADDRESS).transfer(_investor,_mintAmount + treas.accounts[_investor].amount);
         treasuryFundsByUser[_investor] -= treas.accounts[_investor].amount;
@@ -123,6 +125,10 @@ contract Treasury is TellorVars{
             treasury[_id].accounts[_investor].startVoteCount,
             treasury[_id].accounts[_investor].paid
         );
+    }
+
+    function getTreasuryCount() external view returns(uint256){
+        return treasuryCount;
     }
 
     function getTreasuryDetails(uint256 _id) external view returns(uint256,uint256,uint256,uint256){
