@@ -119,28 +119,28 @@ describe("End-to-End Tests - Two", function() {
     await governance.connect(disputer1).beginDispute(requestId, timestamp)
     let voteCount = await governance.voteCount()
     //elapse time (a week forward) to 
-    console.log(1)
+    
     await network.provider.send("evm_increaseTime", [3600 * 24 * 7]) //1 week
     await network.provider.send("evm_mine")
     //voter votes
     await governance.connect(v1).vote(voteCount, true, false)
-    console.log(2)
+    
     //tally votes
     await governance.tallyVotes(voteCount)
-    console.log(3)
+    
     //elapse time (a week forward) to 
     await network.provider.send("evm_increaseTime", [3600 * 24 * 7]) //1 week
     await network.provider.send("evm_mine")
     //execute vote
     await governance.executeVote(voteCount)
-    console.log(4)
+    
     await expect(
       governance.connect(v1).vote(voteCount, true, false),
       "voter was able to vote on finished dispute"
     ).to.be.reverted
     //check vote data
     
-    console.log(5)
+    
     await expect(
         governance.connect(disputer1).beginDispute(requestId, timestamp),
         // "account disputed "
@@ -222,8 +222,10 @@ describe("End-to-End Tests - Two", function() {
     it("No votes during treasury duration", async function() {
 
       let treasuryAmount = BigInt(500E18)
-      let treasuryRate
+      let treasuryRate = 0.05 * 10000
       let treasuryDuration = 3600 * 24 * 14 //14 days
+
+      let treasuryBought = BigInt(10E18)
 
       let n = 42
       let requestId = keccak256("0x"+n.toString(16))
@@ -234,27 +236,28 @@ describe("End-to-End Tests - Two", function() {
 
       //mint tokens for buyer
       await tellor.connect(devWallet).transfer(buyer.address, BigInt(101E18))
-      console.log(1)
+      
       //mint and stake reporter
       await tellor.connect(devWallet).transfer(reporter.address, BigInt(101E18))
-      console.log(2)
-      //mint and stake disputer
+      await tellor.connect(reporter).depositStake()
+      
+      //mint disputer
       await tellor.connect(devWallet).transfer(disputer.address, BigInt(200E18))
-      console.log(3)
+      
       //governance issues treasuries
       await treasury.connect(govSigner).issueTreasury(treasuryAmount, treasuryRate, treasuryDuration)
       let treasuryCount = treasury.getTreasuryCount()
-console.log(4)
+
       //buyer buys treasury
-      await treasury.connect(buyer).buyTreasury(treasuryCount)
-console.log(5)
+      await treasury.connect(buyer).buyTreasury(treasuryCount, treasuryBought)
+
       //reporter submits a value
-      await tellor.connect(reporter).submitValue(requestId, disputedValue)
+      await oracle.connect(reporter).submitValue(requestId, disputedValue)
       let currentBlock = await ethers.provider.getBlock()
       let timestamp = currentBlock.timestamp
-console.log(6)
+      
       //disputer disputes value
-      await tellor.connect(disputer).beginDispute(requestId, timestamp)
+      await governance.connect(disputer).beginDispute(requestId, timestamp)
       let voteCount = await governance.voteCount()
 
 
@@ -262,21 +265,33 @@ console.log(6)
       await h.advanceTime(86400 * 7) //7 days
 
       //tally vote      
-      await tellor.tallyVotes(voteCount)
+      await governance.tallyVotes(voteCount)
+      
       await h.advanceTime(86400*7) //7 days
 
       //execute vote
-      await tellor.executeVote(voteCount)
+      await governance.executeVote(voteCount)
+
+      //vote should have invalid outcome
+      let voteInfo = await governance.getVoteInfo(voteCount)
+      let voteResult = voteInfo[3]
+      let invalid = 2
+      
+      expect(voteResult).to.equal(invalid, "no one voted, outcome wasn't 'invalid'")
 
       //fast forward to treasury expiration
       await h.advanceTime(86400)
 
       //pay treasury
-      let oldBalance = await tellor.balanceOf(buyer.address)
+      let oldBalance = Number(await tellor.balanceOf(buyer.address))
+      
       await treasury.connect(buyer).payTreasury(buyer.address, treasuryCount)
-      let newBalance = await tellor.balanceOf(buyer.address)
-      //penalty on invalid vote?
-      expect(oldBalance).to.equal(newBalance)
+      
+      let newBalance = Number(await tellor.balanceOf(buyer.address))
+      
+      
+      //expect no treasury rewards because buyer didnt vote
+      expect(newBalance - oldBalance).to.equal(Number(treasuryBought))
 
     })
 });
