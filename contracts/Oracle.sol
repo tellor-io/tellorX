@@ -68,7 +68,7 @@ contract Oracle is TellorVars{
     function submitValue(bytes32 _id, bytes calldata _value) external{
         require(
             block.timestamp - reporterLastTimestamp[msg.sender]  > miningLock,
-            "Reporter can only win rewards once per 12 hours"
+            "still in reporter time lock, please wait!"
         );
         reporterLastTimestamp[msg.sender] = block.timestamp;
         IController _tellor = IController(TELLOR_ADDRESS);
@@ -108,6 +108,10 @@ contract Oracle is TellorVars{
     function getBlockNumberByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(uint256){
         return reports[_id].timestampToBlockNum[_timestamp];
     }
+
+    function getMiningLock() external view returns(uint256){
+        return miningLock;
+    }
     
     function getReporterByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(address){
         return reports[_id].reporterByTimestamp[_timestamp];
@@ -123,6 +127,10 @@ contract Oracle is TellorVars{
 
     function getReportTimestampByIndex(bytes32 _id, uint256 _index) external view returns(uint256){
         return reports[_id].timestamps[_index];
+    }
+
+    function getTimeBasedReward() external view returns(uint256){
+        return timeBasedReward;
     }
 
     function getTimeOfLastNewValue() external view returns(uint256){
