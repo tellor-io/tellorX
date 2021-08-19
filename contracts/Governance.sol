@@ -289,7 +289,7 @@ contract Governance is TellorVars{
             block.timestamp -_thisVote.startDate > _duration,
             "Time for voting haven't elapsed"
         );
-        if(_thisVote.invalidQuery >= _thisVote.doesSupport && _thisVote.invalidQuery >= _thisVote.against){
+        if(_thisVote.invalidQuery >= _thisVote.doesSupport && _thisVote.invalidQuery >= _thisVote.against && _thisVote.isDispute){
             _thisVote.result = VoteResult.INVALID;
         }
         else if (_thisVote.doesSupport > _thisVote.against) {
