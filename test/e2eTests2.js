@@ -343,4 +343,8 @@ describe("End-to-End Tests - Two", function() {
 
 
     })
+
+    it("stake enough reporters to prove disputeFee hits minimum", async function() {
+      
+    })
 });
