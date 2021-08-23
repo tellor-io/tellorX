@@ -1,5 +1,6 @@
 const web3 = require('web3');
 const BN = web3.utils.BN;
+
 const hash = web3.utils.keccak256;
 var assert = require('assert');
 
