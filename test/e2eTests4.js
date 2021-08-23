@@ -82,7 +82,7 @@ describe("End-to-End Tests - Four", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("stake enough reporters to prove disputeFee hits minimum", async function() {
-    this.timeout(320000)
+    this.timeout(400000)
     await govBig.transfer(DEV_WALLET,await tellor.balanceOf(BIGWALLET))
     let wallet
     console.log("this may take a minute...")
