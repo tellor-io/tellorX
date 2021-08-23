@@ -344,7 +344,7 @@ describe("End-to-End Tests - Two", function() {
 
     })
 
-    it("stake enough reporters to prove disputeFee hits minimum", async function() {
-      
+    it("Test dispute on old contract, then dispute on new contract", async function() {
+
     })
 });
