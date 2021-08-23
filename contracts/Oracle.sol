@@ -84,12 +84,7 @@ contract Oracle is TellorVars{
         rep.valueByTimestamp[block.timestamp] = _value;
         rep.reporterByTimestamp[block.timestamp] = msg.sender;
         //send tips + timeBasedReward
-        uint256 _timeDiff = block.timestamp - timeOfLastNewValue;
-        uint256 _tip = tips[_id];
-        uint256 _reward = (_timeDiff * timeBasedReward) / 300;//.5 TRB per 5 minutes (should we make this upgradeable)
-        if(_tellor.balanceOf(address(this)) < _reward + tipsInContract){
-            _reward = _tellor.balanceOf(address(this)) - tipsInContract;
-        }
+        (uint256 _tip,uint256 _reward) = currentReward(_id);
         tipsInContract -= _tip;
         if(_reward + _tip > 0){
             _tellor.transfer(msg.sender,_reward + _tip);
@@ -98,6 +93,16 @@ contract Oracle is TellorVars{
         timeOfLastNewValue = block.timestamp;
         reportsSubmittedByAddress[msg.sender]++;
         emit NewReport(_id, block.timestamp, _value,_tip + _reward);
+    }
+
+    function currentReward(bytes32 _id) public view returns(uint256 ,uint256){
+        IController _tellor = IController(TELLOR_ADDRESS);
+        uint256 _timeDiff = block.timestamp - timeOfLastNewValue;
+        uint256 _reward = (_timeDiff * timeBasedReward) / 300;//.5 TRB per 5 minutes (should we make this upgradeable)
+        if(_tellor.balanceOf(address(this)) < _reward + tipsInContract){
+            _reward = _tellor.balanceOf(address(this)) - tipsInContract;
+        }
+        return (tips[_id], _reward);
     }
 
     function verify() external pure returns(uint){
