@@ -15,7 +15,7 @@ describe("End-to-End Tests - Two", function() {
   const BIGWALLET = "0xf977814e90da44bfa03b6295a0616a897441acec";
   let accounts = null
   let tellor = null
-  let cfac,ofac,tfac,gfac,parachute,govBig,govTeam
+  let cfac,ofac,tfac,gfac,parachute,govBig,govTeam,oracle
   let govSigner = null
   
   beforeEach("deploy and setup TellorX", async function() {
@@ -297,7 +297,7 @@ describe("End-to-End Tests - Two", function() {
 
     it("Decrease reporter lock time", async function() {
 
-      let oldminingLock
+      let oldMiningLock
       let newMiningLock = 60*60
       let reportingStake = BigInt(100E18)
       
@@ -314,25 +314,29 @@ describe("End-to-End Tests - Two", function() {
       //stake reporter
       await tellor.connect(reporter).depositStake()
 
-      //read current mining lock
+      // read current mining lock
       oldMiningLock = await oracle.getMiningLock()
-      expect(oldminingLock).to.equal(60*60*12)
+      
+      expect(oldMiningLock).to.equal(60*60*12)
 
       //miner submits
+      
       await oracle.connect(reporter).submitValue(requestId, disputedValue)
+      
 
       //decrease mining lock to 1 hour
       await oracle.connect(govSigner).changeMiningLock(newMiningLock)
-      expect(await oracle.miningLock()).to.equal(60*60*12)
+      expect(await oracle.miningLock()).to.equal(newMiningLock)
 
       //expect the mining lock still works
-      expect(
-        await oracle.connect(reporter).submitValue(requestId, disputedValue),
+      await expect(
+        oracle.connect(reporter).submitValue(requestId, disputedValue),
         "mining lock stopped working"
       ).to.be.reverted
 
       //expect they can submit after 1 hour now, not 12
-      h.advanceTime(60*60 + 1)
+      await h.advanceTime(60*60)
+      
 
       //reporter submits value
       await oracle.connect(reporter).submitValue(requestId, disputedValue)
