@@ -290,7 +290,95 @@ describe("End-to-End Tests - One", function() {
     assert(await tellor.balanceOf(accounts[1].address) == 0, "miner should be slashed")
     await h.expectThrow(tellorUser.withdrawStake());//must have funds
   })
-
+  it("Check increasing stake amount in the future", async function() {
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
+    await tellorUser.depositStake();
+    //vote to reduce the stakeAmount
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
+    await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
+    await governance.proposeVote(tellorMaster,0x740358e6,ethers.utils.defaultAbiCoder.encode([ "bytes32","uint256" ],[h.hash("_STAKE_AMOUNT"),web3.utils.toWei("200")]),0)//changeUINT(hash(stakeAmount),50wei)
+    await h.advanceTime(86400 * 8)
+    await govTeam.vote(1,true,false);
+    await govBig.vote(1,true,false);
+    await governance.tallyVotes(1)
+    await h.advanceTime(86400 * 3)
+    await governance.executeVote(1)
+    assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) == web3.utils.toWei("200"), "stake amount should change properly")
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("51")));//must have funds
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,web3.utils.toWei("52")));//must have funds
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("50"));
+    await h.expectThrow(tellorUser.transfer(accounts[4].address,web3.utils.toWei("50")));
+    await h.expectThrow(oracle1.submitValue(ethers.utils.formatBytes32String("1"),150))
+    let vars = await tellor.getStakerInfo(accounts[1].address)
+    console.log(vars)
+    assert(vars[0] - 1 == 0, "status should be correct")
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("50"));
+    await oracle1.submitValue(ethers.utils.formatBytes32String("1"),150)
+    vars = await tellor.getStakerInfo(accounts[1].address)
+    assert(vars[0] - 1 == 0, "status should be correct")
+  })
+  it("Check increasing stake amount in the future", async function() {
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
+    await tellorUser.depositStake();
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
+    await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
+     await governance.proposeVote(tellorMaster,0x740358e6,ethers.utils.defaultAbiCoder.encode([ "bytes32","uint256" ],[h.hash("_STAKE_AMOUNT"),web3.utils.toWei("200")]),0)//changeUINT(hash(stakeAmount),50wei)
+    await h.advanceTime(86400 * 8)
+    await govTeam.vote(1,true,false);
+    await govBig.vote(1,true,false);
+    await governance.tallyVotes(1)
+    await h.advanceTime(86400 * 3)
+    await oracle1.submitValue(ethers.utils.formatBytes32String("1"),150)
+    let _t = await oracle.getReportTimestampByIndex(ethers.utils.formatBytes32String("1"),0);
+    let dispFee = await governance.disputeFee()
+    let initBalDisputer = await tellor.balanceOf(accounts[2].address)
+    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.executeVote(1)
+    await govTeam.vote(2,true,false);
+    assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) == web3.utils.toWei("200"), "stake amount should change properly")
+    await h.expectThrow(tellorUser.transfer(accounts[4].address,web3.utils.toWei("50")))
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
+    await h.advanceTime(86400 * 8)
+    await governance.tallyVotes(2);
+    await h.advanceTime(86400 * 3)
+    await governance.executeVote(2)
+    assert(await tellor.balanceOf(accounts[1].address) == 0, "miner should be slashed")
+    assert(await tellor.balanceOf(accounts[2].address)*1 - (initBalDisputer*1 +  1*web3.utils.toWei("100") - dispFee * .1) == 0, "disputer should get new stake amount")
+  })
+  it("Increase reporter lock time", async function() {
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
+    await tellorUser.depositStake();
+    //vote to reduce the stakeAmount
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
+    await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
+    await governance.proposeVote(oracle.address,0xe280e8e8,ethers.utils.defaultAbiCoder.encode(["uint256" ],[86400]),0)
+    await h.advanceTime(86400 * 8)
+    await govTeam.vote(1,true,false);
+    await govBig.vote(1,true,false);
+    await governance.tallyVotes(1)
+    await h.advanceTime(86400 * 3)
+    await governance.executeVote(1)
+    await oracle1.submitValue(ethers.utils.formatBytes32String("1"),150)
+    await h.advanceTime(86400/2  + 3600)//13 hours
+    assert(await oracle.miningLock() == 86400, "mining lock should be correct")
+    await h.expectThrow(oracle1.submitValue(ethers.utils.formatBytes32String("1"),150));//must wait
+    await h.advanceTime(60*60*11)//11 hours
+    let _t = await oracle.getReportTimestampByIndex(ethers.utils.formatBytes32String("1"),0);
+    await h.expectThrow(governance.beginDispute(h.tob32("1"),_t))
+    await oracle1.submitValue(ethers.utils.formatBytes32String("1"),1750)
+    await h.advanceTime(60*60*13)//13 hours
+    _t = await oracle.getReportTimestampByIndex(ethers.utils.formatBytes32String("1"),1);
+    await governance.beginDispute(h.tob32("1"),_t)
+  })
 
   
 
