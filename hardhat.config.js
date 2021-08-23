@@ -29,6 +29,7 @@ module.exports = {
   },
   networks: {
     hardhat: {
+      initialBaseFeePerGas: 0,
       accounts: {
         mnemonic:
           "nick lucian brenda kevin sam fiscal patch fly damp ocean produce wish",
