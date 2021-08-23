@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/Controller.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">contracts/</a> Controller.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/23</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/24</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/9</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/24</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity 0.8.3;
+&nbsp;
+import "./TellorStaking.sol";
+import "./interfaces/IController.sol";
+import "./Transition.sol";
+import "hardhat/console.sol";
+&nbsp;
+contract Controller is TellorStaking, Transition{
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function changeControllerContract(address _newController) external{</span>
+<span class="cstat-no" title="statement not covered" >        require(msg.sender == addresses[_GOVERNANCE_CONTRACT])</span>;
+<span class="cstat-no" title="statement not covered" >        require(_isValid(_newController))</span>;
+<span class="cstat-no" title="statement not covered" >        addresses[_TELLOR_CONTRACT] = _newController</span>;//name _TELLOR_CONTRACT is hardcoded in
+        assembly {
+            sstore(_EIP_SLOT, _newController)
+        }
+    }
+    
+<span class="fstat-no" title="function not covered" >    function changeGovernanceContract(address _newGovernance) external{</span>
+<span class="cstat-no" title="statement not covered" >        require(msg.sender == addresses[_GOVERNANCE_CONTRACT])</span>;
+<span class="cstat-no" title="statement not covered" >        require(_isValid(_newGovernance))</span>;
+<span class="cstat-no" title="statement not covered" >        addresses[_GOVERNANCE_CONTRACT] = _newGovernance</span>;
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function changeOracleContract(address _newOracle) external {</span>
+<span class="cstat-no" title="statement not covered" >        require(msg.sender == addresses[_GOVERNANCE_CONTRACT])</span>;
+<span class="cstat-no" title="statement not covered" >        require(_isValid(_newOracle))</span>;
+<span class="cstat-no" title="statement not covered" >        addresses[_ORACLE_CONTRACT] = _newOracle</span>;
+&nbsp;
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function changeTreasuryContract(address _newTreasury) external{</span>
+<span class="cstat-no" title="statement not covered" >        require(msg.sender == addresses[_GOVERNANCE_CONTRACT])</span>;
+<span class="cstat-no" title="statement not covered" >        require(_isValid(_newTreasury))</span>;
+<span class="cstat-no" title="statement not covered" >        addresses[_TREASURY_CONTRACT] = _newTreasury</span>;
+&nbsp;
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function changeUint(bytes32 _target, uint256 _amount) external{</span>
+<span class="cstat-no" title="statement not covered" >        require(msg.sender == addresses[_GOVERNANCE_CONTRACT])</span>;
+<span class="cstat-no" title="statement not covered" >        uints[_target] = _amount</span>;
+    }
+&nbsp;
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function migrate() external{</span>
+<span class="cstat-no" title="statement not covered" >        require(!migrated[msg.sender], "Already migrated")</span>;
+<span class="cstat-no" title="statement not covered" >        _doMint(msg.sender, IController(addresses[_OLD_TELLOR]).balanceOf(msg.sender))</span>;
+<span class="cstat-no" title="statement not covered" >        migrated[msg.sender] = true</span>;
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function mint(address _reciever, uint256 _amount) external{</span>
+<span class="cstat-no" title="statement not covered" >        require(msg.sender == addresses[_GOVERNANCE_CONTRACT] || msg.sender == addresses[_TREASURY_CONTRACT], "must be admin")</span>;
+<span class="cstat-no" title="statement not covered" >        _doMint(_reciever, _amount)</span>;
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function verify() external pure returns(uint){</span>
+<span class="cstat-no" title="statement not covered" >        return 9999;</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function _isValid(address _contract) internal returns(bool){</span>
+<span class="cstat-no" title="statement not covered" >        (bool _success, bytes memory _data) =</span>
+            address(_contract).call(
+                abi.encodeWithSelector(0xfc735e99, "") //verify() signature
+            );
+<span class="cstat-no" title="statement not covered" >        require(</span>
+            _success &amp;&amp; abi.decode(_data, (uint256)) &gt; 9000, //just an arbitrary number to ensure that the contract is valid
+            "new contract is invalid"
+        );
+<span class="cstat-no" title="statement not covered" >        return true;</span>
+    }
+}</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Aug 23 2021 13:30:01 GMT-0400 (Eastern Daylight Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

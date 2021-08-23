@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/Treasury.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">contracts/</a> Treasury.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/57</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/28</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/11</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/61</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity 0.8.3;
+&nbsp;
+import "./interfaces/IController.sol";
+import "./TellorVars.sol";
+import "./interfaces/IGovernance.sol";
+import "hardhat/console.sol";
+&nbsp;
+/**
+ @author Tellor Inc.
+ @title Treasury
+ @dev This is the Treasury contract which defines the function for Tellor
+ * treasuries, or staking pools.
+*/
+contract Treasury is TellorVars{
+    // Storage
+    uint256 public totalLocked; // amount of TRB locked across all treasuries
+    uint256 public treasuryCount; // number of total treasuries
+    mapping(uint =&gt; TreasuryDetails) public treasury; // maps an ID to a treasury and its corresponding details
+    mapping(address =&gt; uint256) treasuryFundsByUser; // maps a treasury investor to their total treasury funds, in TRB
+&nbsp;
+    // Structs
+    // Internal struct used to keep track of an individual user in a treasury
+    struct TreasuryUser{
+        uint256 amount; // the amount the user has placed in a treasury, in TRB
+        uint256 startVoteCount; // the amount of votes that have been cast when a user deposits their money into a treasury
+        bool paid; // determines if a user has paid/voted in Tellor governance proposals
+    }
+    // Internal struct used to keep track of a treasury and its pertinent attributes (amount, interest rate, etc.)
+    struct TreasuryDetails{
+        uint256 dateStarted; // the date that treasury was started
+        uint256 totalAmount; // the total amount stored in the treasury, in TRB
+        uint256 rate; // the interest rate of the treasury, in BP
+        uint256 purchased; // the amount of TRB purchased from the treasury
+        uint256 duration; // the time in which the treasury locks participants
+        uint256 endVoteCount; // the end vote count for when the treasury duration is over
+        bool endVoteCountRecorded; // determines if the vote count has been calculated or not
+        address[] owners; // the owners of the treasury
+        mapping(address =&gt; TreasuryUser) accounts; // a mapping of a treasury user address and corresponding details
+    }
+&nbsp;
+    // Events
+    event TreasuryIssued(uint256 _id,uint256 _amount,uint256 _rate);
+    event TreasuryPaid(address _investor, uint256 _amount);
+    event TreasuryPurchased(address _investor,uint256 _amount);
+    
+    // Functions
+    /**
+     * @dev This is an external function that is used to deposit money into a treasury.
+     * @param _id is the ID for a specific treasury instance
+     * @param _amount is the amount to deposit into a treasury
+    */
+<span class="fstat-no" title="function not covered" >    function buyTreasury(uint256 _id,uint256 _amount) external {</span>
+        // Transfer sender funds to Treasury
+<span class="cstat-no" title="statement not covered" >        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_amount))</span>;
+<span class="cstat-no" title="statement not covered" >        treasuryFundsByUser[msg.sender]+=_amount</span>;
+        // Check for sufficient treasury funds
+<span class="cstat-no" title="statement not covered" >        TreasuryDetails storage _treas = treasury[_id];</span>
+<span class="cstat-no" title="statement not covered" >        require(_amount &lt;= _treas.totalAmount - _treas.purchased, "Not enough money in treasury left to purchase.")</span>;
+        // Update treasury details -- vote count, purchased, amount, and owners
+<span class="cstat-no" title="statement not covered" >        address governanceContract = IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT);</span>
+<span class="cstat-no" title="statement not covered" >        _treas.accounts[msg.sender].startVoteCount = IGovernance(governanceContract).getVoteCount()</span>;
+<span class="cstat-no" title="statement not covered" >        _treas.purchased += _amount</span>;
+<span class="cstat-no" title="statement not covered" >        _treas.accounts[msg.sender].amount += _amount</span>;      
+<span class="cstat-no" title="statement not covered" >        _treas.owners.push(msg.sender)</span>;
+<span class="cstat-no" title="statement not covered" >        totalLocked += _amount</span>;
+<span class="cstat-no" title="statement not covered" >        emit TreasuryPurchased(msg.sender,_amount);</span>
+    }
+&nbsp;
+    /**
+     * @dev This is an external function that is used to delegate voting rights from one TRB holder to another.
+     * Note that only the governance contract can call this function.
+     * @param _delegate is the address that the sender gives voting rights to
+    */
+<span class="fstat-no" title="function not covered" >    function delegateVotingPower(address _delegate) external {</span>
+<span class="cstat-no" title="statement not covered" >        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT), "Only governance contract is allowed to delegate voting power.")</span>;
+<span class="cstat-no" title="statement not covered" >        IGovernance(msg.sender).delegate(_delegate)</span>;
+    }
+&nbsp;
+    /**
+     * @dev This is an external function that is used to issue a new treasury.
+     * Note that only the governance contract can call this function.
+     * @param _totalAmount is the amount of total TRB that treasury stores
+     * @param _rate is the treasury's interest rate in BP
+     * @param _duration is the amount of time the treasury locks participants
+    */
+<span class="fstat-no" title="function not covered" >    function issueTreasury(uint256 _totalAmount, uint256 _rate, uint256 _duration) external{</span>
+<span class="cstat-no" title="statement not covered" >        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT), "Only governance contract is allowed to issue a treasury.")</span>;
+        // Increment treasury count, and define new treasury and its details (start date, total amount, rate, etc.)
+        treasuryCount++;
+<span class="cstat-no" title="statement not covered" >        TreasuryDetails storage _treas = treasury[treasuryCount];</span>
+<span class="cstat-no" title="statement not covered" >        _treas.dateStarted = block.timestamp</span>;
+<span class="cstat-no" title="statement not covered" >        _treas.totalAmount = _totalAmount</span>;
+<span class="cstat-no" title="statement not covered" >        _treas.rate = _rate</span>;
+<span class="cstat-no" title="statement not covered" >        _treas.duration = _duration</span>;
+<span class="cstat-no" title="statement not covered" >        emit TreasuryIssued(treasuryCount,_totalAmount,_rate);</span>
+    }
+&nbsp;
+    /**
+     * @dev This functions allows an investor to pay the treasury. Internally, the function calculates the number of 
+     votes in governance contract when issued, and also transfers the amount individually locked + interest to the investor.
+     * @param _id is the ID of the treasury the account is stored in
+     * @param _investor is the address of the account in the treasury 
+     */
+<span class="fstat-no" title="function not covered" >    function payTreasury(address _investor,uint256 _id) external{</span>
+        // Validate ID of treasury, duration for treasury has not passed, and the user has not paid
+<span class="cstat-no" title="statement not covered" >        TreasuryDetails storage treas = treasury[_id];</span>
+<span class="cstat-no" title="statement not covered" >        require(_id &lt;= treasuryCount, "ID does not correspond to a valid treasury.")</span>;
+<span class="cstat-no" title="statement not covered" >        require(treas.dateStarted + treas.duration &lt;= block.timestamp)</span>;
+<span class="cstat-no" title="statement not covered" >        require(!treas.accounts[_investor].paid)</span>;
+        // Calculate non-voting penalty (treasury holders have to vote)
+<span class="cstat-no" title="statement not covered" >        uint256 numVotesParticipated;</span>
+<span class="cstat-no" title="statement not covered" >        uint256 votesSinceTreasury;</span>
+<span class="cstat-no" title="statement not covered" >        address governanceContract = IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT);</span>
+        // Find endVoteCount if not already calculated
+<span class="cstat-no" title="statement not covered" >        if(!treas.endVoteCountRecorded) {</span>
+<span class="cstat-no" title="statement not covered" >            uint256 voteCountIter = IGovernance(governanceContract).getVoteCount();</span>
+<span class="cstat-no" title="statement not covered" >            if(voteCountIter &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >                (,uint256[8] memory voteInfo,,,,,) = IGovernance(governanceContract).getVoteInfo(voteCountIter);</span>
+<span class="cstat-no" title="statement not covered" >                while(voteCountIter &gt; 0 &amp;&amp; voteInfo[1] &gt; treas.dateStarted + treas.duration) {</span>
+                    voteCountIter--;
+<span class="cstat-no" title="statement not covered" >                    if(voteCountIter &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >                        (,voteInfo,,,,,) = IGovernance(governanceContract).getVoteInfo(voteCountIter)</span>;
+                    }
+                }
+            }
+<span class="cstat-no" title="statement not covered" >            treas.endVoteCount = voteCountIter</span>;
+<span class="cstat-no" title="statement not covered" >            treas.endVoteCountRecorded = true</span>;
+        }
+        // Add up number of votes _investor has participated in
+<span class="cstat-no" title="statement not covered" >        if(treas.endVoteCount &gt; treas.accounts[_investor].startVoteCount){</span>
+<span class="cstat-no" title="statement not covered" >            for(</span>
+                uint256 voteCount = treas.accounts[_investor].startVoteCount;
+                voteCount &lt; treas.endVoteCount;
+                voteCount++
+            ) {
+<span class="cstat-no" title="statement not covered" >                bool voted = IGovernance(governanceContract).didVote(voteCount + 1, _investor);</span>
+<span class="cstat-no" title="statement not covered" >                if (voted) {</span>
+                    numVotesParticipated++;
+                }
+                votesSinceTreasury++;
+            }
+        }
+        // Determine amount of TRB to mint for interest
+<span class="cstat-no" title="statement not covered" >        uint256 _mintAmount = treas.accounts[_investor].amount * treas.rate/10000;</span>
+<span class="cstat-no" title="statement not covered" >        if(votesSinceTreasury &gt; 0){</span>
+<span class="cstat-no" title="statement not covered" >            _mintAmount = _mintAmount *numVotesParticipated / votesSinceTreasury</span>;
+        }
+<span class="cstat-no" title="statement not covered" >        if (_mintAmount &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >            IController(TELLOR_ADDRESS).mint(address(this),_mintAmount)</span>;
+        }
+        // Transfer locked amount + interest amount, and indicate user has paid
+<span class="cstat-no" title="statement not covered" >        totalLocked -= treas.accounts[_investor].amount</span>;
+<span class="cstat-no" title="statement not covered" >        IController(TELLOR_ADDRESS).transfer(_investor,_mintAmount + treas.accounts[_investor].amount)</span>;
+<span class="cstat-no" title="statement not covered" >        treasuryFundsByUser[_investor] -= treas.accounts[_investor].amount</span>;
+<span class="cstat-no" title="statement not covered" >        treas.accounts[_investor].paid = true</span>;
+<span class="cstat-no" title="statement not covered" >        emit TreasuryPaid(_investor,_mintAmount + treas.accounts[_investor].amount);</span>
+    }
+&nbsp;
+    // Getters
+    /**
+     * @dev This function returns the details of an account within a treasury.
+     * Note: refer to 'TreasuryUser' struct.
+     * @param _id is the ID of the treasury the account is stored in
+     * @param _investor is the address of the account in the treasury
+     * @return uint256 of the amount of TRB the account has staked in the treasury
+     * @return uint256 of the start vote count of when the account deposited money into the treasury
+     * @return bool of whether the treasury account has paid or not
+     */
+<span class="fstat-no" title="function not covered" >    function getTreasuryAccount(uint256 _id, address _investor) external view returns(uint256, uint256, bool){</span>
+<span class="cstat-no" title="statement not covered" >        return (</span>
+            treasury[_id].accounts[_investor].amount,
+            treasury[_id].accounts[_investor].startVoteCount,
+            treasury[_id].accounts[_investor].paid
+        );
+    }
+&nbsp;
+    /**
+     * @dev This function returns the number of treasuries/TellorX staking pools.
+     * @return uint256 of the number of treasuries
+     */
+<span class="fstat-no" title="function not covered" >    function getTreasuryCount() external view returns(uint256){</span>
+<span class="cstat-no" title="statement not covered" >        return treasuryCount;</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function getTreasuryDetails(uint256 _id) external view returns(uint256,uint256,uint256,uint256){</span>
+<span class="cstat-no" title="statement not covered" >        return(treasury[_id].dateStarted,treasury[_id].totalAmount,treasury[_id].rate,treasury[_id].purchased);</span>
+    }
+&nbsp;
+    /**
+     * @dev This function returns the amount of deposited by a user into treasuries.
+     * @param _user is the specific account within a treasury to look up
+     * @return uint256 of the amount of funds the user has, in TRB
+     */
+<span class="fstat-no" title="function not covered" >    function getTreasuryFundsByUser(address _user) external view returns(uint256){</span>
+<span class="cstat-no" title="statement not covered" >        return treasuryFundsByUser[_user];</span>
+    }
+&nbsp;
+    /**
+     * @dev This function returns the addresses of the owners of a treasury
+     * @param _id is the ID of a specific treasury
+     * @return address[] memory of the addresses of the owners of the treasury
+     */
+<span class="fstat-no" title="function not covered" >    function getTreasuryOwners(uint256 _id) external view returns(address[] memory){</span>
+<span class="cstat-no" title="statement not covered" >        return treasury[_id].owners;</span>
+    }
+&nbsp;
+    /**
+     * @dev This function is used during the upgrade process to verify valid Tellor Contracts
+    */
+<span class="fstat-no" title="function not covered" >    function verify() external pure returns(uint){</span>
+<span class="cstat-no" title="statement not covered" >        return 9999;</span>
+    }
+&nbsp;
+    /**
+     * @dev This function determines whether or not an investor in a treasury has paid/voted on Tellor governance proposals
+     * @param _id is the ID of the treasury the account is stored in
+     * @param _investor is the address of the account in the treasury
+     * @return bool of whether or not the investor has paid
+     */
+<span class="fstat-no" title="function not covered" >    function wasPaid(uint256 _id, address _investor) external view returns(bool){</span>
+<span class="cstat-no" title="statement not covered" >        return treasury[_id].accounts[_investor].paid;</span>
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Aug 23 2021 13:30:01 GMT-0400 (Eastern Daylight Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
