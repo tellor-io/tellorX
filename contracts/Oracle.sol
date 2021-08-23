@@ -4,6 +4,8 @@ pragma solidity 0.8.3;
 import "./interfaces/IController.sol";
 import "./TellorVars.sol";
 import "hardhat/console.sol";
+
+
 contract Oracle is TellorVars{
 
     uint256[] public timestamps;
