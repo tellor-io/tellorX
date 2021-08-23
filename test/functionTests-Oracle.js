@@ -292,4 +292,9 @@ describe("TellorX Function Tests - Oracle", function() {
     let blocky = await ethers.provider.getBlock();
     assert(await oracle.getTimeOfLastNewValue() - blocky.timestamp == 0, "blockNumber should be correct")
   });
+
+  it("getTimeBasedReward()", async function() {
+    let miningLock = await oracle.getTimeBasedReward()
+    expect(miningLock).to.equal(BigInt(5E17))
+  })
 });
