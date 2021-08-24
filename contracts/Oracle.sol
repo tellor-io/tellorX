@@ -3,6 +3,7 @@ pragma solidity 0.8.3;
 
 import "./interfaces/IController.sol";
 import "./TellorVars.sol";
+import "hardhat/console.sol";
 
 /**
  @author Tellor Inc.
