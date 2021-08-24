@@ -264,7 +264,7 @@ contract Oracle is TellorVars{
 
     /**
      * @dev Used during the upgrade process to verify valid Tellor Contracts
-    */
+     */
     function verify() external pure returns(uint){
         return 9999;
     }
