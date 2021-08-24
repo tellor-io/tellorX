@@ -6,6 +6,12 @@ import "./interfaces/IController.sol";
 import "./Transition.sol";
 import "hardhat/console.sol";
 
+/**
+ @author Tellor Inc.
+ @title Controller
+ @dev This is the Controller contract which defines the functionality for 
+ * changing contract addresses, as well as minting and migrating tokens
+*/
 contract Controller is TellorStaking, Transition{
 
     // Functions
@@ -58,20 +64,34 @@ contract Controller is TellorStaking, Transition{
 
     }
 
+    /**
+     * @dev Changes a uint for a specific target index
+     * Note: this function is only callable by the Governance contract.
+     * @param _target is the index of the uint to change
+     * @param _amount is the amount to change the given uint to
+    */
     function changeUint(bytes32 _target, uint256 _amount) external{
-        require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
+        require(msg.sender == addresses[_GOVERNANCE_CONTRACT], "Only the Governance contract can change the uint");
         uints[_target] = _amount;
     }
 
-
+    /**
+     * @dev Mints tokens of the sender from the old contract to the sender
+    */
     function migrate() external{
         require(!migrated[msg.sender], "Already migrated");
         _doMint(msg.sender, IController(addresses[_OLD_TELLOR]).balanceOf(msg.sender));
         migrated[msg.sender] = true;
     }
 
+    /**
+     * @dev Mints TRB for a certain address
+     * Note: this function is only callable by the Governance contract.
+     * @param _reciever is the address of the contract that will receive the minted tokens
+     * @param _amount is the amount of tokens that will be minted for the _receiver address
+    */
     function mint(address _reciever, uint256 _amount) external{
-        require(msg.sender == addresses[_GOVERNANCE_CONTRACT] || msg.sender == addresses[_TREASURY_CONTRACT], "must be admin");
+        require(msg.sender == addresses[_GOVERNANCE_CONTRACT] || msg.sender == addresses[_TREASURY_CONTRACT], "Only an admin can mint tokens");
         _doMint(_reciever, _amount);
     }
 
@@ -82,13 +102,19 @@ contract Controller is TellorStaking, Transition{
         return 9999;
     }
 
+    /**
+     * @dev Used during the upgrade process to verify valid Tellor Contracts and ensure
+     * they have the right signature
+     * @param _contract is the address of the Tellor contract to verify
+     * @return bool of whether or not the address is a valid Tellor contract
+     */
     function _isValid(address _contract) internal returns(bool){
         (bool _success, bytes memory _data) =
             address(_contract).call(
-                abi.encodeWithSelector(0xfc735e99, "") //verify() signature
+                abi.encodeWithSelector(0xfc735e99, "") // verify() signature
             );
         require(
-            _success && abi.decode(_data, (uint256)) > 9000, //just an arbitrary number to ensure that the contract is valid
+            _success && abi.decode(_data, (uint256)) > 9000, // An arbitrary number to ensure that the contract is valid
             "new contract is invalid"
         );
         return true;
