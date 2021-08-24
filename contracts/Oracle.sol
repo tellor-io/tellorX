@@ -181,6 +181,14 @@ contract Oracle is TellorVars{
     }
 
     /**
+     * @dev Returns the time based reward for submitting a value
+     * @return uint256 of time based reward
+     */
+    function getTimeBasedReward() external view returns(uint256){
+        return timeBasedReward;
+    }
+
+    /**
      * @dev Returns the number of timestamps/reports for a specific data ID
      * @param _id is ID of the specific data feed
      * @return uint256 of the number of the timestamps/reports for the inputted data ID
