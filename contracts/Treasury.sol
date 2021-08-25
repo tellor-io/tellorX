@@ -43,7 +43,7 @@ contract Treasury is TellorVars{
     event TreasuryIssued(uint256 _id,uint256 _amount,uint256 _rate);
     event TreasuryPaid(address _investor, uint256 _amount);
     event TreasuryPurchased(address _investor,uint256 _amount);
-    
+
     // Functions
     /**
      * @dev This is an external function that is used to deposit money into a treasury.
@@ -61,7 +61,7 @@ contract Treasury is TellorVars{
         address governanceContract = IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT);
         _treas.accounts[msg.sender].startVoteCount = IGovernance(governanceContract).getVoteCount();
         _treas.purchased += _amount;
-        _treas.accounts[msg.sender].amount += _amount;      
+        _treas.accounts[msg.sender].amount += _amount;
         _treas.owners.push(msg.sender);
         totalLocked += _amount;
         emit TreasuryPurchased(msg.sender,_amount);
@@ -97,10 +97,10 @@ contract Treasury is TellorVars{
     }
 
     /**
-     * @dev This functions allows an investor to pay the treasury. Internally, the function calculates the number of 
+     * @dev This functions allows an investor to pay the treasury. Internally, the function calculates the number of
      votes in governance contract when issued, and also transfers the amount individually locked + interest to the investor.
      * @param _id is the ID of the treasury the account is stored in
-     * @param _investor is the address of the account in the treasury 
+     * @param _investor is the address of the account in the treasury
      */
     function payTreasury(address _investor,uint256 _id) external{
         // Validate ID of treasury, duration for treasury has not passed, and the user has not paid
@@ -134,7 +134,8 @@ contract Treasury is TellorVars{
                 voteCount < treas.endVoteCount;
                 voteCount++
             ) {
-                bool voted = IGovernance(governanceContract).didVote(voteCount + 1, _investor);
+                (,,,address reportedMiner) = IGovernance(governanceContract).getDisputeInfo(voteCount + 1);
+                bool voted = IGovernance(governanceContract).didVote(voteCount + 1, _investor) || _investor == reportedMiner;
                 if (voted) {
                     numVotesParticipated++;
                 }
