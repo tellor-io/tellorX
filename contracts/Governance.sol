@@ -9,15 +9,16 @@ import "hardhat/console.sol";
 
 contract Governance is TellorVars{
 
+    // Storage
     uint256 public voteCount;
     uint256 public disputeFee;
     mapping (address => Delegation[]) delegateInfo;
     mapping(bytes4 => bool) functionApproved;
     mapping(bytes32 => uint[]) voteRounds;//shows if a certain vote has already started
-    mapping(uint => Vote) voteInfo;
-    mapping(uint => Dispute) disputeInfo;
-    mapping(bytes32 => uint) openDisputesOnId;
-    enum VoteResult {FAILED,PASSED,INVALID}
+    mapping(uint => Vote) voteInfo; // mapping of a vote ID to the details of the vote
+    mapping(uint => Dispute) disputeInfo; // mapping of a dispute ID to the details of the dispute
+    mapping(bytes32 => uint) openDisputesOnId; // mapping of a price feed ID to the number of disputes
+    enum VoteResult {FAILED,PASSED,INVALID} // status of a potential vote
 
     struct Delegation {
         address delegate;
@@ -51,7 +52,7 @@ contract Governance is TellorVars{
         mapping(address => bool) voted; //mapping of address to whether or not they voted
     }
 
-    /*Events*/
+    // Events
     event NewDispute(uint256 _id, bytes32 _requestId, uint256 _timestamp, address _reporter);
     event NewVote(address _contract, bytes4 _function, bytes _data);
     event Voted(uint256 _voteId, bool _supports, address _voter, uint _voteWeight, bool _invalidQuery);
@@ -328,7 +329,10 @@ contract Governance is TellorVars{
             disputeFee = _stakeAmt - _reducer;
         }
     }
-
+    
+    /**
+     * @dev Used during the upgrade process to verify valid Tellor Contracts
+     */
     function verify() external pure returns(uint){
         return 9999;
     }
@@ -346,27 +350,62 @@ contract Governance is TellorVars{
         }
     }
 
-    /*Getters*/
+    // Getters
     function didVote(uint256 _id, address _voter) external view returns(bool){
         return voteInfo[_id].voted[_voter];
     }
 
+    /**
+     * @dev Returns info on a delegate for a given holder
+     * @param _holder is the address of the holder of TRB tokens
+     * @return address of the delegate at the given holder and block number
+     * @return uint of the block number of the delegate
+     */
     function getDelegateInfo(address _holder) external view returns(address,uint){
         return (delegateOfAt(_holder,block.number), delegateInfo[_holder][delegateInfo[_holder].length-1].fromBlock);
     }
 
+    /**
+     * @dev Returns info on a dispute for a given ID
+     * @param _id is the ID of a specific dispute
+     * @return bytes32 of the data ID of the dispute
+     * @return uint256 of the timestamp of the dispute
+     * @return bytes memory of the value being disputed
+     * @return address of the reporter being disputed
+     */
     function getDisputeInfo(uint256 _id) external view returns(bytes32,uint256,bytes memory, address){
         Dispute storage _d = disputeInfo[_id];
         return (_d.requestId,_d.timestamp,_d.value,_d.reportedMiner);
     }
 
+    /**
+     * @dev Returns the number of open disputes for a specific data ID
+     * @param _id is the ID of a specific data feed
+     * @return uint256 of the number of open disputes for the data ID
+     */
     function getOpenDisputesOnId(bytes32 _id) external view returns(uint256){
         return openDisputesOnId[_id];
     }
 
-    function getVoteCount() external view returns(uint256) {
+    /**
+     * @dev Returns the total number of votes
+     * @return uint256 of the total number of votes
+     */
+    function getVoteCount() external view returns(uint256){
         return voteCount;
     }
+
+    /**
+     * @dev Returns info on a vote for a given vote ID
+     * @param _id is the ID of a specific vote
+     * @return bytes32 of the identifier hash of the vote
+     * @return uint256[8] memory of the pertinent round info (vote rounds, start date, fee, etc.)
+     * @return bool[2] memory of whether or not the vote was executed and in dispute
+     * @return VoteResult of the result of the vote
+     * @return bytes memory of the data of the vote
+     * @return bytes4 of the vote function
+     * @return address[2] memory of the addresses of the vote and initiator
+     */
     function getVoteInfo(uint256 _id) external view returns(bytes32,uint256[8] memory,bool[2] memory,
                                                             VoteResult,bytes memory,bytes4,address[2] memory){
         Vote storage _v = voteInfo[_id];
@@ -375,11 +414,20 @@ contract Governance is TellorVars{
         _v.data,_v.voteFunction,[_v.voteAddress,_v.initiator]);
     }
 
-
+    /**
+     * @dev Returns an array of voting rounds for a given vote
+     * @param _hash is the identifier hash for a vote
+     * @return uint256[] memory of the vote rounds
+     */
     function getVoteRounds(bytes32 _hash) external view returns(uint256[] memory){
         return voteRounds[_hash];
     }
 
+    /**
+     * @dev Returns whether or not a function is approved
+     * @param _func is the hash of the function to be checked
+     * @return bool of whether or not the function is approved
+     */
     function isFunctionApproved(bytes4 _func) external view returns(bool){
         return functionApproved[_func];
     }
