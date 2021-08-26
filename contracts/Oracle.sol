@@ -140,6 +140,11 @@ contract Oracle is TellorVars{
         emit NewReport(_id, block.timestamp, _value,_tip + _reward);
     }
     
+    /**
+     * @dev Calculates the current reward for a reporter given tips
+     * and time based reward
+     * @param _id is ID of the specific data feed
+    */
     function currentReward(bytes32 _id) public view returns(uint256 ,uint256){
         IController _tellor = IController(TELLOR_ADDRESS);
         uint256 _timeDiff = block.timestamp - timeOfLastNewValue;
