@@ -13,7 +13,7 @@ describe("TellorX Function Tests - Oracle", function() {
     let tellor = null
     let cfac,ofac,tfac,gfac,devWallet
     let govSigner = null
-  
+
   beforeEach("deploy and setup TellorX", async function() {
     accounts = await ethers.getSigners();
     await hre.network.provider.request({
@@ -28,7 +28,7 @@ describe("TellorX Function Tests - Oracle", function() {
       params: [DEV_WALLET]}
     )
         //Steps to Deploy:
-        //Deploy Governance, Oracle, Treasury, and Controller. 
+        //Deploy Governance, Oracle, Treasury, and Controller.
         //Fork mainnet Ethereum, changeTellorContract to Controller
         //run init in Controller
 
@@ -123,6 +123,27 @@ describe("TellorX Function Tests - Oracle", function() {
     assert(await oracle.getTimestampIndexByTimestamp(ethers.utils.formatBytes32String("1"),blocky.timestamp) == 0, "index should be correct")
     assert(await oracle.getValueByTimestamp(ethers.utils.formatBytes32String("1"),blocky.timestamp) == "0x", "value should be correct")
   });
+  it("currentReward()", async function() {
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("105"));
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+    await tellorUser.depositStake();
+    oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
+    await oracle.submitValue(ethers.utils.formatBytes32String("1"),150);
+    let blocky1 = await ethers.provider.getBlock();
+    await oracle.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("5"));
+    await h.advanceTime(10000);
+    let currentReward = await oracle.currentReward(ethers.utils.formatBytes32String("1"));
+    assert(currentReward[0] == web3.utils.toWei("2.5"), "Tip should be correct");
+    assert(currentReward[1] == 0, "Current accumulated reward should be zero");
+    await tellor.transfer(oracle.address, web3.utils.toWei("100"));
+    let blocky2 = await ethers.provider.getBlock();
+    let timeDiff = blocky2.timestamp - blocky1.timestamp;
+    currentReward = await oracle.currentReward(ethers.utils.formatBytes32String("1"));
+    let tbr = await oracle.timeBasedReward();
+    let expectedReward = tbr.mul(timeDiff).div(300);
+    assert(currentReward[0] == web3.utils.toWei("2.5"), "Tips in contract should be correct");
+    assert(expectedReward.eq(currentReward[1]), "Current accumulated tbr should be correct");
+  });
   it("verify()", async function() {
     assert(await oracle.verify() > 9000, "Contract should properly verify")
   });
@@ -193,7 +214,7 @@ describe("TellorX Function Tests - Oracle", function() {
     await oracle2.submitValue( ethers.utils.formatBytes32String("1"),150);
     let blocky = await ethers.provider.getBlock();
     assert(await oracle.getReportTimestampByIndex(ethers.utils.formatBytes32String("1"),1) == blocky.timestamp, "timestamp should be correct")
-    
+
   });
   it("getReportsSubmittedByAddress()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
