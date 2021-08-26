@@ -29,6 +29,7 @@ module.exports = {
   },
   networks: {
     hardhat: {
+      hardfork: process.env.CODE_COVERAGE ? "berlin" : "london",
       initialBaseFeePerGas: 0,
       accounts: {
         mnemonic:
