@@ -38,8 +38,6 @@ contract Transition is TellorStorage,TellorVars{
 
     /**
      * @dev Returns the latest value for a specific request ID.
-     * The function first tries the new contract, before trying to retrieve data from the
-     * old value if mining has not started.
      * @param _requestId the requestId to look up
      * @return uint256 of the value of the latest value of the request ID
      * @return bool of whether or not the value was successfully retrieved
@@ -112,6 +110,7 @@ contract Transition is TellorStorage,TellorVars{
         view
         returns (uint256)
     {
+        // Try new contract first, but give old timestamp if new mining has not started
         try IOracle(addresses[_ORACLE_CONTRACT]).getReportTimestampByIndex(bytes32(_requestId),_index) returns (uint256 _val){
             return _val;
         }
@@ -201,7 +200,7 @@ contract Transition is TellorStorage,TellorVars{
 
     
     /**
-     * @dev this function is solely for the parachute contract
+     * @dev Function is solely for the parachute contract
      */
     function getNewCurrentVariables() external view returns (bytes32 _c,uint256[5] memory _r,uint256 _diff,uint256 _tip){
         _r = [uint256(1),uint256(1),uint256(1),uint256(1),uint256(1)];
@@ -211,19 +210,23 @@ contract Transition is TellorStorage,TellorVars{
     }
     
     /**
-     * @dev This allows Tellor X to fallback to the old Tellor if there are current open disputes (or disputes on old Tellor values)
+     * @dev Allows Tellor X to fallback to the old Tellor if there are current open disputes 
+     * (or disputes on old Tellor values)
      */
     fallback() external {
-        address addr = 0xdDB59729045d2292eeb8Ff96c46B8db53B88Daa2;//hardcode this in?
+        address addr = 0xdDB59729045d2292eeb8Ff96c46B8db53B88Daa2; // Main Tellor address (Harcode this in?)
+        // Obtain function header from msg.data
         bytes4 _function;
         for (uint i = 0; i < 4; i++) {
             _function |= bytes4(msg.data[i] & 0xFF) >> (i * 8);
         }
-        require(_function == bytes4(bytes32(keccak256("beginDispute(uint256,uint256,uint256)")))||
+        // Ensure that the function is allowed and related to disputes, voting, and dispute fees
+        require(_function == bytes4(bytes32(keccak256("beginDispute(uint256,uint256,uint256)"))) ||
         _function == bytes4(bytes32(keccak256("vote(uint256,bool)"))) ||
         _function == bytes4(bytes32(keccak256("tallyVotes(uint256)"))) ||
         _function == bytes4(bytes32(keccak256("unlockDisputeFee(uint256)"))),"function should be allowed"); //should autolock out after a week (no disputes can begin past a week)
-        (bool result, ) =  addr.delegatecall(msg.data);
+        // Calls the function in msg.data from main Tellor address
+        (bool result,) = addr.delegatecall(msg.data);
             assembly {
                 returndatacopy(0, 0, returndatasize())
                 switch result
@@ -237,7 +240,12 @@ contract Transition is TellorStorage,TellorVars{
            }
     }
 
-    //Internal    
+    // Internal
+    /**
+     * @dev Utilized to help slice a bytes variable into a uint
+     * @param b is the bytes variable to be sliced
+     * @return _x of the sliced uint256
+     */    
     function _sliceUint(bytes memory b) internal pure returns (uint256 _x){
         uint256 number;
         for(uint256 i=0;i<b.length;i++){
