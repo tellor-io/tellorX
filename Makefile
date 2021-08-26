@@ -8,9 +8,7 @@ slither: ## Run slither security checks.
 
 .PHONY: solhint
 solhint: ## Run solhint linter.
-	solhint 'contracts/**/*.sol'
-
-
+	solhint 'contracts/*.sol'
 
 
 
