@@ -4,13 +4,13 @@
  */
  require("@nomiclabs/hardhat-waffle");
  require("solidity-coverage");
- require("@nomiclabs/hardhat-truffle5");
+ //require("@nomiclabs/hardhat-truffle5");
  require("hardhat-gas-reporter");
  require('hardhat-contract-sizer');
  require("@nomiclabs/hardhat-ethers");
  require("@nomiclabs/hardhat-etherscan");
  require("dotenv").config();
- require("@nomiclabs/hardhat-web3");
+ //require("@nomiclabs/hardhat-web3");
  
  //Run this commands to deploy tellor playground:
  //npx hardhat deploy --net rinkeby --network rinkeby
@@ -20,7 +20,7 @@
  .addParam("net", "network to deploy in")
  .setAction(async taskArgs => {
 
-  var net = taskArgs.network
+  var net = taskArgs.net
   const tellorMaster = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
   const DEV_WALLET = "0x39E419bA25196794B595B2a595Ea8E527ddC9856"
   let gfac
@@ -33,12 +33,12 @@
   tellorMasterInst = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor", tellorMaster)
 
     console.log("Starting deployment for governance contract...")
-    gfac = await ethers.getContractFactory("contracts/testing/TestGovernance.sol:TestGovernance")
+    gfac = await ethers.getContractFactory("contracts/testing/Governance.sol:Governance")
     governance = await gfac.deploy()
     await governance.deployed()
 
     if (net == "mainnet"){
-        console.log(“Governance contract deployed to:", "https://etherscan.io/address/" + tellor.address);
+        console.log("Governance contract deployed to:", "https://etherscan.io/address/" + governance.address);
         console.log("   Governance transaction hash:", "https://etherscan.io/tx/" + governance.deployTransaction.hash);
     } else if (net == "rinkeby") {
         console.log("Governance contract deployed to:", "https://rinkeby.etherscan.io/address/" + governance.address);
@@ -50,7 +50,7 @@
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
     console.log('waiting for governance tx confirmation...');
-    await tellor.deployTransaction.wait(3)
+    await governance.deployTransaction.wait(3)
 
     console.log('submitting governance contract for verification...');
     await run("verify:verify", 
@@ -121,7 +121,7 @@
     console.log("treasury Contract verified")
 
     console.log("Starting deployment for Controller contract...")
-    cfac = await ethers.getContractFactory("contracts/testing/TestController.sol:TestController")
+    cfac = await ethers.getContractFactory("contracts/testing/Controller.sol:Controller")
     controller = await cfac.deploy()
     await controller.deployed()
 
@@ -152,7 +152,7 @@
     console.log("Propose a fork to the Controller address and run the init function")
 
 
- }
+ })
  
 module.exports = {
   solidity: {
