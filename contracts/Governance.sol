@@ -10,10 +10,10 @@ import "hardhat/console.sol";
 contract Governance is TellorVars{
 
     // Storage
-    uint256 public voteCount;
-    uint256 public disputeFee;
-    mapping (address => Delegation[]) delegateInfo;
-    mapping(bytes4 => bool) functionApproved;
+    uint256 public voteCount; // total number of votes initiated
+    uint256 public disputeFee; // dispute fee for a vote
+    mapping (address => Delegation[]) delegateInfo; // mapping of delegate addresses to an array of their delegations
+    mapping(bytes4 => bool) functionApproved; // mapping of function hashes to bools of whether the functions are approved
     mapping(bytes32 => uint[]) voteRounds;//shows if a certain vote has already started
     mapping(uint => Vote) voteInfo; // mapping of a vote ID to the details of the vote
     mapping(uint => Dispute) disputeInfo; // mapping of a dispute ID to the details of the dispute
@@ -21,35 +21,35 @@ contract Governance is TellorVars{
     enum VoteResult {FAILED,PASSED,INVALID} // status of a potential vote
 
     struct Delegation {
-        address delegate;
-        uint fromBlock;
+        address delegate; // address of holder delegating
+        uint fromBlock; // block number address started delegating
     }
 
     struct Dispute {
-        bytes32 requestId;
-        uint timestamp;
-        bytes value;
-        address reportedMiner; //miner who submitted the 'bad value' will get disputeFee if dispute vote fails
+        bytes32 requestId; // ID of the dispute
+        uint timestamp; // timestamp of when the dispute was initiated 
+        bytes value; // the value being disputed
+        address reportedMiner; // miner who submitted the 'bad value' will get disputeFee if dispute vote fails
     }
 
     struct Vote {
-        bytes32 identifierHash;
-        uint256 voteRound;
-        uint startDate;
-        uint blockNumber;
-        uint256 fee;
-        uint tallyDate;
-        uint doesSupport;
-        uint against;
-        bool executed; //is the dispute settled
-        VoteResult result; //did the vote pass?
-        bool isDispute;
-        uint256 invalidQuery;
-        bytes data;
-        bytes4 voteFunction;
-        address voteAddress; //address of contract to execute function on
-        address initiator; //miner reporting the 'bad value'-pay disputeFee will get reportedMiner's stake if dispute vote passes
-        mapping(address => bool) voted; //mapping of address to whether or not they voted
+        bytes32 identifierHash; // identifier hash of the vote
+        uint256 voteRound; // the round of voting associated with the vote
+        uint startDate; // timestamp of when vote was initiated
+        uint blockNumber; // block number of when vote was initiated
+        uint256 fee; // fee associated with the vote
+        uint tallyDate; // timestamp of when the votes were tallied
+        uint doesSupport; // number of votes in favor
+        uint against; // number of votes against
+        bool executed; // boolean of is the dispute settled
+        VoteResult result; // VoteResult of did the vote pass?
+        bool isDispute; // boolean of is the vote is is still in dispute
+        uint256 invalidQuery; // invalid query of the vote
+        bytes data; // data associated with the vote
+        bytes4 voteFunction; // hash of the function associated with the vote
+        address voteAddress; // address of contract to execute function on
+        address initiator; // reporting submitting the 'bad value'-pay disputeFee will get reportedMiner's stake if dispute vote passes
+        mapping(address => bool) voted; // mapping of address to whether or not they voted
     }
 
     // Events
@@ -351,6 +351,12 @@ contract Governance is TellorVars{
     }
 
     // Getters
+    /**
+     * @dev Determines if an address voted for a specific vote
+     * @param _id is the ID of the vote
+     * @param _voter is the address of the voter to check for
+     * @return bool of whether or note the address voted for the specific vote
+     */
     function didVote(uint256 _id, address _voter) external view returns(bool){
         return voteInfo[_id].voted[_voter];
     }
@@ -432,7 +438,7 @@ contract Governance is TellorVars{
         return functionApproved[_func];
     }
 
-    //Internal
+    // Internal
     function _vote(address _voter, uint256 _id, bool _supports, bool _invalidQuery) internal {
         require(_id <= voteCount, "vote does not exist");
         Vote storage _thisVote = voteInfo[_id];
@@ -462,6 +468,9 @@ contract Governance is TellorVars{
         emit Voted(_id, _supports, _voter, voteWeight,_invalidQuery);
     }
 
+    /**
+     * @dev Calculates minimum of two uint256s
+     */
     function _min(uint256 a, uint256 b) internal pure returns (uint256) {
         return a < b ? a : b;
     }
