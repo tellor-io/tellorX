@@ -190,13 +190,13 @@ module.exports = {
         url: "https://eth-mainnet.alchemyapi.io/v2/7dW8KCqWwKa1vdaitq-SxmKfxWZ4yPG6"
       },
       allowUnlimitedContractSize: true
-    },
-    rinkeby: {
-         url: `${process.env.NODE_URL_RINKEBY}`,
-         accounts: [process.env.PRIVATE_KEY],
-         gas: 10000000 ,
-         gasPrice: 40000000000
     }//,
+    //rinkeby: {
+      //   url: `${process.env.NODE_URL_RINKEBY}`,
+      //   accounts: [process.env.PRIVATE_KEY],
+      //   gas: 10000000 ,
+      //   gasPrice: 40000000000
+    //},
       // mainnet: {
       //   url: `${process.env.NODE_URL_MAINNET}`,
       //   accounts: [process.env.PRIVATE_KEY],
