@@ -20,6 +20,7 @@ contract Governance is TellorVars{
     mapping(bytes32 => uint) openDisputesOnId; // mapping of a price feed ID to the number of disputes
     enum VoteResult {FAILED,PASSED,INVALID} // status of a potential vote
 
+    // Structs
     struct Delegation {
         address delegate; // address of holder delegating
         uint fromBlock; // block number address started delegating
@@ -53,31 +54,37 @@ contract Governance is TellorVars{
     }
 
     // Events
-    event NewDispute(uint256 _id, bytes32 _requestId, uint256 _timestamp, address _reporter);
-    event NewVote(address _contract, bytes4 _function, bytes _data);
-    event Voted(uint256 _voteId, bool _supports, address _voter, uint _voteWeight, bool _invalidQuery);
-    event VoteExecuted(uint256 _id, VoteResult _result);
-    event VoteTallied(uint256 _id, VoteResult _result);
+    event NewDispute(uint256 _id, bytes32 _requestId, uint256 _timestamp, address _reporter); // Emitted when a new dispute is opened
+    event NewVote(address _contract, bytes4 _function, bytes _data); // Emitted when a new vote is initiated
+    event Voted(uint256 _voteId, bool _supports, address _voter, uint _voteWeight, bool _invalidQuery); // Emitted when an address casts their vote
+    event VoteExecuted(uint256 _id, VoteResult _result); // Emitted when a vote is executed
+    event VoteTallied(uint256 _id, VoteResult _result); // Emitted when all casting for a vote is tallied
 
+    // Functions
+    /**
+     * @dev Initializes approved function hashes and updates the minimum dispute fees
+     */
     constructor(){
         bytes4[11] memory _funcs = [
-            bytes4(0x3c46a185),//changeControllerContract(address)
-            0xe8ce51d7,//changeGovernanceContract(address)
-            0x1cbd3151,//changeOracleContract(address)
-            0xbd87e0c9,//changeTreasuryContract(address)
-            0x740358e6,//changeUint(bytes32,uint256)
-            0x40c10f19,//mint(address,uint256)
-            0xe48d4b3b,//setApprovedFunction(bytes4,bool)
-            0xfad40294,//changeTypeInformation(uint256,uint256,uint256)
-            0xe280e8e8,//changeMiningLock(uint256)
-            0x6274885f,//issueTreasury(uint256,uint256,uint256)
-            0xf3ff955a//delegateVotingPower(address)
+            bytes4(0x3c46a185), // changeControllerContract(address)
+            0xe8ce51d7, // changeGovernanceContract(address)
+            0x1cbd3151, // changeOracleContract(address)
+            0xbd87e0c9, // changeTreasuryContract(address)
+            0x740358e6, // changeUint(bytes32,uint256)
+            0x40c10f19, // mint(address,uint256)
+            0xe48d4b3b, // setApprovedFunction(bytes4,bool)
+            0xfad40294, // changeTypeInformation(uint256,uint256,uint256)
+            0xe280e8e8, // changeMiningLock(uint256)
+            0x6274885f, // issueTreasury(uint256,uint256,uint256)
+            0xf3ff955a // delegateVotingPower(address)
         ];
+        // Approve function hashes and update dispute fee
         for(uint256 _i =0;_i< _funcs.length;_i++){
             functionApproved[_funcs[_i]] = true;
         }
         updateMinDisputeFee();
     }
+
     /**
      * @dev Helps initialize a dispute by assigning it a disputeId
      * when a miner returns a false/bad value on the validate array(in Tellor.ProofOfWork) it sends the
