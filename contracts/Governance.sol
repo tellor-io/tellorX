@@ -97,6 +97,7 @@ contract Governance is TellorVars{
             require(block.timestamp - voteInfo[_prevId].tallyDate < 1 days, "new dispute round must be started within a day");
         } else {
             require(block.timestamp - _timestamp < IOracle(_oracle).miningLock(), "Dispute must be started within 12 hours...same variable as mining lock");
+            openDisputesOnId[_requestId]++;
         }
         Vote storage _thisVote = voteInfo[_id];
         Dispute storage _thisDispute = disputeInfo[_id];
@@ -110,7 +111,6 @@ contract Governance is TellorVars{
         _thisVote.startDate = block.timestamp;
         _thisVote.voteRound = voteRounds[_hash].length;
         _thisVote.isDispute = true;
-        openDisputesOnId[_requestId]++;
         uint256 _fee;
         if(voteRounds[_hash].length == 1){
             _fee = disputeFee * 2**(openDisputesOnId[_requestId] - 1);
@@ -199,6 +199,9 @@ contract Governance is TellorVars{
             emit VoteExecuted(_id, _thisVote.result);
         }else{
             Dispute storage _thisDispute = disputeInfo[_id];
+            if(voteRounds[_thisVote.identifierHash].length == _thisVote.voteRound){
+                openDisputesOnId[_thisDispute.requestId]--;
+            }
             IController _controller = IController(TELLOR_ADDRESS);
             uint256 _i;
             uint256 _voteID;
@@ -226,7 +229,6 @@ contract Governance is TellorVars{
                 }
                 _controller.changeStakingStatus(_thisDispute.reportedMiner,1);
             }
-            openDisputesOnId[_thisDispute.requestId]--;
             emit VoteExecuted(_id, _thisVote.result);
         }
     }
