@@ -262,6 +262,7 @@ describe("TellorX Function Tests - Governance", function() {
     h.expectThrow(governance.tallyVotes(1));//already executed
   });
   it("updateMinDisputeFee()", async function() {
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     master= await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
     await master.changeUint(h.hash("_STAKE_COUNT"),1000)
     await governance.updateMinDisputeFee();

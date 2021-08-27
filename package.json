@@ -23,16 +23,16 @@
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "chai": "^4.3.4",
     "ethereum-waffle": "^3.4.0",
-    "ethers": "^5.4.5",
-    "hardhat": "^2.6.1",
-    "solidity-coverage": "^0.7.16"
+    "ethers": "^5.4.4",
+    "hardhat": "^2.6.0",
+    "hardhat-gas-reporter": "^1.0.4"
   },
   "dependencies": {
     "@ethersproject/abi": "^5.4.0",
     "@nomiclabs/hardhat-etherscan": "^2.1.5",
     "dotenv": "^10.0.0",
     "hardhat-contract-sizer": "^2.0.3",
-    "hardhat-gas-reporter": "^1.0.4",
-    "web3": "^1.5.2"
+    "solidity-coverage": "^0.7.17",
+    "web3": "^1.5.1"
   }
 }
