@@ -1,0 +1,1325 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/Governance.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">contracts/</a> Governance.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/189</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/100</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/22</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/188</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity 0.8.3;
+&nbsp;
+import "./TellorVars.sol";
+import "./interfaces/IOracle.sol";
+import "./interfaces/IController.sol";
+import "./interfaces/ITreasury.sol";
+import "hardhat/console.sol";
+&nbsp;
+contract Governance is TellorVars{
+&nbsp;
+    uint256 public voteCount;
+    uint256 public disputeFee;
+    mapping (address =&gt; Delegation[]) delegateInfo;
+    mapping(bytes4 =&gt; bool) functionApproved;
+    mapping(bytes32 =&gt; uint[]) voteRounds;//shows if a certain vote has already started
+    mapping(uint =&gt; Vote) voteInfo;
+    mapping(uint =&gt; Dispute) disputeInfo;
+    mapping(bytes32 =&gt; uint) openDisputesOnId;
+    enum VoteResult {FAILED,PASSED,INVALID}
+&nbsp;
+    struct Delegation {
+        address delegate;
+        uint fromBlock;
+    }
+&nbsp;
+    struct Dispute {
+        bytes32 requestId;
+        uint timestamp;
+        bytes value;
+        address reportedMiner; //miner who submitted the 'bad value' will get disputeFee if dispute vote fails
+    }
+&nbsp;
+    struct Vote {
+        bytes32 identifierHash;
+        uint256 voteRound;
+        uint startDate;
+        uint blockNumber;
+        uint256 fee;
+        uint tallyDate;
+        uint doesSupport;
+        uint against;
+        bool executed; //is the dispute settled
+        VoteResult result; //did the vote pass?
+        bool isDispute;
+        uint256 invalidQuery;
+        bytes data;
+        bytes4 voteFunction;
+        address voteAddress; //address of contract to execute function on
+        address initiator; //miner reporting the 'bad value'-pay disputeFee will get reportedMiner's stake if dispute vote passes
+        mapping(address =&gt; bool) voted; //mapping of address to whether or not they voted
+    }
+&nbsp;
+    /*Events*/
+    event NewDispute(uint256 _id, bytes32 _requestId, uint256 _timestamp, address _reporter);
+    event NewVote(address _contract, bytes4 _function, bytes _data);
+    event Voted(uint256 _voteId, bool _supports, address _voter, uint _voteWeight, bool _invalidQuery);
+    event VoteExecuted(uint256 _id, VoteResult _result);
+    event VoteTallied(uint256 _id, VoteResult _result);
+&nbsp;
+<span class="fstat-no" title="function not covered" >    constructor(){</span>
+<span class="cstat-no" title="statement not covered" >        bytes4[11] memory _funcs = [</span>
+            bytes4(0x3c46a185),//changeControllerContract(address)
+            0xe8ce51d7,//changeGovernanceContract(address)
+            0x1cbd3151,//changeOracleContract(address)
+            0xbd87e0c9,//changeTreasuryContract(address)
+            0x740358e6,//changeUint(bytes32,uint256)
+            0x40c10f19,//mint(address,uint256)
+            0xe48d4b3b,//setApprovedFunction(bytes4,bool)
+            0xfad40294,//changeTypeInformation(uint256,uint256,uint256)
+            0xe280e8e8,//changeMiningLock(uint256)
+            0x6274885f,//issueTreasury(uint256,uint256,uint256)
+            0xf3ff955a//delegateVotingPower(address)
+        ];
+<span class="cstat-no" title="statement not covered" >        for(uint256 _i =0;_i&lt; _funcs.length;_i++){</span>
+<span class="cstat-no" title="statement not covered" >            functionApproved[_funcs[_i]] = true</span>;
+        }
+<span class="cstat-no" title="statement not covered" >        updateMinDisputeFee()</span>;
+    }
+    /**
+     * @dev Helps initialize a dispute by assigning it a disputeId
+     * when a miner returns a false/bad value on the validate array(in Tellor.ProofOfWork) it sends the
+     * invalidated value information to POS voting
+     * @param _requestId being disputed
+     * @param _timestamp being disputed
+     */
+<span class="fstat-no" title="function not covered" >    function beginDispute(bytes32 _requestId,uint256 _timestamp) external {</span>
+<span class="cstat-no" title="statement not covered" >        address _oracle = IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT);</span>
+<span class="cstat-no" title="statement not covered" >        require(IOracle(_oracle).getBlockNumberByTimestamp(_requestId, _timestamp) != 0, "Mined block is 0")</span>;
+<span class="cstat-no" title="statement not covered" >        address _reporter = IOracle(_oracle).getReporterByTimestamp(_requestId,_timestamp);</span>
+<span class="cstat-no" title="statement not covered" >        bytes32 _hash = keccak256(abi.encodePacked(_requestId, _timestamp));</span>
+        voteCount++;
+<span class="cstat-no" title="statement not covered" >        uint256 _id = voteCount;</span>
+<span class="cstat-no" title="statement not covered" >        voteRounds[_hash].push(_id)</span>;
+<span class="cstat-no" title="statement not covered" >        if (voteRounds[_hash].length &gt; 1) {</span>
+<span class="cstat-no" title="statement not covered" >            uint256 _prevId = voteRounds[_hash][voteRounds[_hash].length - 2];</span>
+<span class="cstat-no" title="statement not covered" >            require(block.timestamp - voteInfo[_prevId].tallyDate &lt; 1 days, "new dispute round must be started within a day")</span>;
+        } else {
+<span class="cstat-no" title="statement not covered" >            require(block.timestamp - _timestamp &lt; IOracle(_oracle).miningLock(), "Dispute must be started within 12 hours...same variable as mining lock")</span>;
+        }
+<span class="cstat-no" title="statement not covered" >        Vote storage _thisVote = voteInfo[_id];</span>
+<span class="cstat-no" title="statement not covered" >        Dispute storage _thisDispute = disputeInfo[_id];</span>
+<span class="cstat-no" title="statement not covered" >        _thisVote.identifierHash = _hash</span>;
+<span class="cstat-no" title="statement not covered" >        _thisDispute.requestId = _requestId</span>;
+<span class="cstat-no" title="statement not covered" >        _thisDispute.timestamp = _timestamp</span>;
+<span class="cstat-no" title="statement not covered" >        _thisDispute.value = IOracle(_oracle).getValueByTimestamp(_requestId, _timestamp)</span>;
+<span class="cstat-no" title="statement not covered" >        _thisDispute.reportedMiner = _reporter</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.initiator = msg.sender</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.blockNumber = block.number</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.startDate = block.timestamp</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.voteRound = voteRounds[_hash].length</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.isDispute = true</span>;
+        openDisputesOnId[_requestId]++;
+<span class="cstat-no" title="statement not covered" >        uint256 _fee;</span>
+<span class="cstat-no" title="statement not covered" >        if(voteRounds[_hash].length == 1){</span>
+<span class="cstat-no" title="statement not covered" >            _fee = disputeFee * 2**(openDisputesOnId[_requestId] - 1)</span>;
+<span class="cstat-no" title="statement not covered" >            IOracle(_oracle).removeValue(_requestId,_timestamp)</span>;
+        }
+        else{
+<span class="cstat-no" title="statement not covered" >            _fee = disputeFee * 2**(voteRounds[_hash].length - 1)</span>;
+        }
+<span class="cstat-no" title="statement not covered" >        _thisVote.fee = _fee * 9 / 10</span>;
+<span class="cstat-no" title="statement not covered" >        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee))</span>; //This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
+<span class="cstat-no" title="statement not covered" >        IOracle(_oracle).addTip(_requestId,_fee/10)</span>;
+<span class="cstat-no" title="statement not covered" >        IController(TELLOR_ADDRESS).changeStakingStatus(_reporter,3)</span>;
+<span class="cstat-no" title="statement not covered" >        emit NewDispute(_id, _requestId, _timestamp, _reporter);</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function delegate(address _delegate) external{</span>
+<span class="cstat-no" title="statement not covered" >        Delegation[] storage checkpoints = delegateInfo[msg.sender];</span>
+<span class="cstat-no" title="statement not covered" >        if (</span>
+            checkpoints.length == 0 ||
+            checkpoints[checkpoints.length - 1].fromBlock != block.number
+        ) {
+<span class="cstat-no" title="statement not covered" >            checkpoints.push(</span>
+                Delegation({
+                    delegate: _delegate,
+                    fromBlock: uint128(block.number)
+                })
+            );
+        } else {
+<span class="cstat-no" title="statement not covered" >            Delegation storage oldCheckPoint =</span>
+                checkpoints[checkpoints.length - 1];
+<span class="cstat-no" title="statement not covered" >            oldCheckPoint.delegate = _delegate</span>;
+        }
+    }
+&nbsp;
+    /**
+     * @dev Queries the balance of _user at a specific _blockNumber
+     * @param _user The address from which the balance will be retrieved
+     * @param _blockNumber The block number when the balance is queried
+     * @return The balance at _blockNumber specified
+     */
+<span class="fstat-no" title="function not covered" >    function delegateOfAt(address _user, uint256 _blockNumber)</span>
+        public
+        view
+        returns (address)
+    {
+<span class="cstat-no" title="statement not covered" >        Delegation[] storage checkpoints = delegateInfo[_user];</span>
+<span class="cstat-no" title="statement not covered" >        if (</span>
+            checkpoints.length == 0 || checkpoints[0].fromBlock &gt; _blockNumber
+        ) {
+<span class="cstat-no" title="statement not covered" >            return address(0);</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >            if (_blockNumber &gt;= checkpoints[checkpoints.length - 1].fromBlock)</span>
+<span class="cstat-no" title="statement not covered" >                return checkpoints[checkpoints.length - 1].delegate;</span>
+            // Binary search of the value in the array
+<span class="cstat-no" title="statement not covered" >            uint256 min = 0;</span>
+<span class="cstat-no" title="statement not covered" >            uint256 max = checkpoints.length - 2;</span>
+<span class="cstat-no" title="statement not covered" >            while (max &gt; min) {</span>
+<span class="cstat-no" title="statement not covered" >                uint256 mid = (max + min + 1) / 2;</span>
+<span class="cstat-no" title="statement not covered" >                if (checkpoints[mid].fromBlock == _blockNumber) {</span>
+<span class="cstat-no" title="statement not covered" >                    return checkpoints[mid].delegate;</span>
+                } else <span class="cstat-no" title="statement not covered" >if (checkpoints[mid].fromBlock &lt; _blockNumber) {</span>
+<span class="cstat-no" title="statement not covered" >                    min = mid</span>;
+                } else {
+<span class="cstat-no" title="statement not covered" >                    max = mid - 1</span>;
+                }
+            }
+<span class="cstat-no" title="statement not covered" >            return checkpoints[min].delegate;</span>
+        }
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function executeVote(uint256 _id) external{</span>
+<span class="cstat-no" title="statement not covered" >        Vote storage _thisVote = voteInfo[_id];</span>
+<span class="cstat-no" title="statement not covered" >        require(_id &lt;= voteCount, "vote ID must be valid")</span>;
+<span class="cstat-no" title="statement not covered" >        require(!_thisVote.executed, "Vote has been executed")</span>;
+<span class="cstat-no" title="statement not covered" >        require(_thisVote.tallyDate &gt; 0, "Vote must be tallied")</span>;
+<span class="cstat-no" title="statement not covered" >        require(voteRounds[_thisVote.identifierHash].length == _thisVote.voteRound, "must be the final vote")</span>;
+<span class="cstat-no" title="statement not covered" >        require(block.timestamp - _thisVote.tallyDate &gt;= 86400 * _thisVote.voteRound, "vote needs to be tallied and time must pass")</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.executed = true</span>;
+<span class="cstat-no" title="statement not covered" >        if(!_thisVote.isDispute){</span>
+<span class="cstat-no" title="statement not covered" >            if(_thisVote.result == VoteResult.PASSED){</span>
+<span class="cstat-no" title="statement not covered" >                address _destination = _thisVote.voteAddress;</span>
+<span class="cstat-no" title="statement not covered" >                bool _succ;</span>
+<span class="cstat-no" title="statement not covered" >                bytes memory _res;</span>
+<span class="cstat-no" title="statement not covered" >                (_succ, _res) = _destination.call(abi.encodePacked(_thisVote.voteFunction,_thisVote.data))</span>;//be sure to send enough gas!
+            }
+<span class="cstat-no" title="statement not covered" >            emit VoteExecuted(_id, _thisVote.result);</span>
+        }else{
+<span class="cstat-no" title="statement not covered" >            Dispute storage _thisDispute = disputeInfo[_id];</span>
+<span class="cstat-no" title="statement not covered" >            IController _controller = IController(TELLOR_ADDRESS);</span>
+<span class="cstat-no" title="statement not covered" >            uint256 _i;</span>
+<span class="cstat-no" title="statement not covered" >            uint256 _voteID;</span>
+<span class="cstat-no" title="statement not covered" >            if(_thisVote.result == VoteResult.PASSED){</span>
+<span class="cstat-no" title="statement not covered" >                for(_i=voteRounds[_thisVote.identifierHash].length;_i&gt;0;_i--){</span>
+<span class="cstat-no" title="statement not covered" >                    _voteID = voteRounds[_thisVote.identifierHash][_i-1]</span>;
+<span class="cstat-no" title="statement not covered" >                    _thisVote = voteInfo[_voteID]</span>;
+<span class="cstat-no" title="statement not covered" >                    if(_i == 1){</span>
+<span class="cstat-no" title="statement not covered" >                        _controller.slashMiner(_thisDispute.reportedMiner ,_thisVote.initiator)</span>;
+                    }
+<span class="cstat-no" title="statement not covered" >                    _controller.transfer(_thisVote.initiator,_thisVote.fee)</span>;
+                }
+            }else <span class="cstat-no" title="statement not covered" >if(_thisVote.result == VoteResult.INVALID){</span>
+<span class="cstat-no" title="statement not covered" >                for(_i=voteRounds[_thisVote.identifierHash].length;_i&gt;0;_i--){</span>
+<span class="cstat-no" title="statement not covered" >                    _voteID = voteRounds[_thisVote.identifierHash][_i-1]</span>;
+<span class="cstat-no" title="statement not covered" >                    _thisVote = voteInfo[_voteID]</span>;
+<span class="cstat-no" title="statement not covered" >                   _controller.transfer(_thisVote.initiator,_thisVote.fee)</span>;
+                }
+<span class="cstat-no" title="statement not covered" >                _controller.changeStakingStatus(_thisDispute.reportedMiner,1)</span>;
+            }else <span class="cstat-no" title="statement not covered" >if(_thisVote.result == VoteResult.FAILED){</span>
+<span class="cstat-no" title="statement not covered" >                for(_i=voteRounds[_thisVote.identifierHash].length;_i&gt;0;_i--){</span>
+<span class="cstat-no" title="statement not covered" >                    _voteID = voteRounds[_thisVote.identifierHash][_i-1]</span>;
+<span class="cstat-no" title="statement not covered" >                    _thisVote = voteInfo[_voteID]</span>;
+<span class="cstat-no" title="statement not covered" >                    _controller.transfer(_thisDispute.reportedMiner,_thisVote.fee)</span>;
+                }
+<span class="cstat-no" title="statement not covered" >                _controller.changeStakingStatus(_thisDispute.reportedMiner,1)</span>;
+            }
+            openDisputesOnId[_thisDispute.requestId]--;
+<span class="cstat-no" title="statement not covered" >            emit VoteExecuted(_id, _thisVote.result);</span>
+        }
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >   function proposeVote(address _contract, bytes4 _function, bytes calldata _data, uint256 _timestamp) external{</span>
+        voteCount++;
+<span class="cstat-no" title="statement not covered" >        uint256 _id = voteCount;</span>
+<span class="cstat-no" title="statement not covered" >        Vote storage _thisVote = voteInfo[_id];</span>
+<span class="cstat-no" title="statement not covered" >        if(_timestamp == 0){</span>
+<span class="cstat-no" title="statement not covered" >            _timestamp = block.timestamp</span>;
+        }
+<span class="cstat-no" title="statement not covered" >        bytes32 _hash = keccak256(abi.encodePacked(_contract,_function,_data,_timestamp));</span>
+<span class="cstat-no" title="statement not covered" >        voteRounds[_hash].push(_id)</span>;
+<span class="cstat-no" title="statement not covered" >        if (voteRounds[_hash].length &gt; 1) {</span>
+<span class="cstat-no" title="statement not covered" >            uint256 _prevId = voteRounds[_hash][voteRounds[_hash].length - 2];</span>
+<span class="cstat-no" title="statement not covered" >            require(block.timestamp - voteInfo[_prevId].tallyDate &lt; 1 days)</span>;//1 day for new disputes
+        }
+<span class="cstat-no" title="statement not covered" >        _thisVote.identifierHash = _hash</span>;
+<span class="cstat-no" title="statement not covered" >        uint256 _fee = 10e18 * 2**(voteRounds[_hash].length - 1);</span>
+        //should we add a way to not need to approve here?
+        //This is the fee to do anything (just 10 tokens flat, no refunds.  Goes up quickly to prevent spamming)
+<span class="cstat-no" title="statement not covered" >        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee), "fee must be paid")</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.voteRound = voteRounds[_hash].length</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.startDate = block.timestamp</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.blockNumber = block.number</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.fee = _fee</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.data = _data</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.voteFunction = _function</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.voteAddress = _contract</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.initiator = msg.sender</span>;
+<span class="cstat-no" title="statement not covered" >        require(_contract == TELLOR_ADDRESS ||</span>
+            _contract == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT) ||
+            _contract == IController(TELLOR_ADDRESS).addresses(_TREASURY_CONTRACT) ||
+            _contract == IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT), "must interact with the Tellor system"
+        );
+<span class="cstat-no" title="statement not covered" >        require(functionApproved[_function], "function must be approved")</span>;
+<span class="cstat-no" title="statement not covered" >        emit NewVote(_contract,_function,_data);</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function setApprovedFunction(bytes4 _func, bool _val) public{</span>
+<span class="cstat-no" title="statement not covered" >        require(msg.sender == address(this))</span>;
+<span class="cstat-no" title="statement not covered" >        functionApproved[_func] = _val</span>;
+    }
+&nbsp;
+    /**
+     * @dev tallies the votes and begins the 1 day challenge period
+     * @param _id is the dispute id
+     */
+<span class="fstat-no" title="function not covered" >    function tallyVotes(uint256 _id) external {</span>
+<span class="cstat-no" title="statement not covered" >        Vote storage _thisVote = voteInfo[_id];</span>
+<span class="cstat-no" title="statement not covered" >        require(!_thisVote.executed, "Dispute has been already executed")</span>;
+<span class="cstat-no" title="statement not covered" >        require(_thisVote.tallyDate == 0, "vote should not already be tallied")</span>;
+<span class="cstat-no" title="statement not covered" >        uint256 _duration = 2 days;</span>
+<span class="cstat-no" title="statement not covered" >        uint256 _quorum = 0;</span>
+<span class="cstat-no" title="statement not covered" >        if(!_thisVote.isDispute){</span>
+<span class="cstat-no" title="statement not covered" >            _duration = 7 days</span>;
+<span class="cstat-no" title="statement not covered" >            _quorum = 5</span>;
+        }
+<span class="cstat-no" title="statement not covered" >        require(</span>
+            block.timestamp -_thisVote.startDate &gt; _duration,
+            "Time for voting haven't elapsed"
+        );
+<span class="cstat-no" title="statement not covered" >        if(_thisVote.invalidQuery &gt;= _thisVote.doesSupport &amp;&amp; _thisVote.invalidQuery &gt;= _thisVote.against &amp;&amp; _thisVote.isDispute){</span>
+<span class="cstat-no" title="statement not covered" >            _thisVote.result = VoteResult.INVALID</span>;
+        }
+        else <span class="cstat-no" title="statement not covered" >if (_thisVote.doesSupport &gt; _thisVote.against) {</span>
+<span class="cstat-no" title="statement not covered" >                if (_thisVote.doesSupport &gt;= ((IController(TELLOR_ADDRESS).uints(_TOTAL_SUPPLY) * _quorum) / 100)) {</span>
+<span class="cstat-no" title="statement not covered" >                _thisVote.result = VoteResult.PASSED</span>;
+<span class="cstat-no" title="statement not covered" >                Dispute storage _thisDispute = disputeInfo[_id];</span>
+<span class="cstat-no" title="statement not covered" >                (uint256 _status,) = IController(TELLOR_ADDRESS).getStakerInfo(_thisDispute.reportedMiner);</span>
+<span class="cstat-no" title="statement not covered" >                if(_thisVote.isDispute &amp;&amp; _status == 3){</span>
+<span class="cstat-no" title="statement not covered" >                        IController(TELLOR_ADDRESS).changeStakingStatus(_thisDispute.reportedMiner,4)</span>;
+                }
+            }
+        }
+        else{
+<span class="cstat-no" title="statement not covered" >            _thisVote.result = VoteResult.FAILED</span>;
+        }
+<span class="cstat-no" title="statement not covered" >        _thisVote.tallyDate = block.timestamp</span>;
+<span class="cstat-no" title="statement not covered" >        emit VoteTallied(_id, _thisVote.result);</span>
+    }
+&nbsp;
+        /**
+     * @dev This function updates the minimum dispute fee as a function of the amount
+     * of staked miners
+     */
+<span class="fstat-no" title="function not covered" >    function updateMinDisputeFee() public{</span>
+<span class="cstat-no" title="statement not covered" >        uint256 _stakeAmt = IController(TELLOR_ADDRESS).uints(_STAKE_AMOUNT);</span>
+<span class="cstat-no" title="statement not covered" >        uint256 _trgtMiners = IController(TELLOR_ADDRESS).uints(_TARGET_MINERS);</span>
+<span class="cstat-no" title="statement not covered" >        uint256 _stakeCount = IController(TELLOR_ADDRESS).uints(_STAKE_COUNT);</span>
+<span class="cstat-no" title="statement not covered" >        uint256 _reducer;</span>
+<span class="cstat-no" title="statement not covered" >        if(_stakeCount &gt; 0){</span>
+<span class="cstat-no" title="statement not covered" >            _reducer = (_stakeAmt * (_min(_trgtMiners, _stakeCount) * 1000)/_trgtMiners)/1000</span>;
+        }
+<span class="cstat-no" title="statement not covered" >        if(_reducer &gt;= _stakeAmt){</span>
+<span class="cstat-no" title="statement not covered" >            disputeFee = 15e18</span>;
+        }
+        else{
+<span class="cstat-no" title="statement not covered" >            disputeFee = _stakeAmt - _reducer</span>;
+        }
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function verify() external pure returns(uint){</span>
+<span class="cstat-no" title="statement not covered" >        return 9999;</span>
+    }
+&nbsp;
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function vote(uint256 _id, bool _supports, bool _invalidQuery) external{</span>
+<span class="cstat-no" title="statement not covered" >        require(delegateOfAt(msg.sender, voteInfo[_id].blockNumber) == address(0), "the vote should not be delegated")</span>;
+<span class="cstat-no" title="statement not covered" >        _vote(msg.sender,_id,_supports,_invalidQuery)</span>;
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function voteFor(address[] calldata _addys,uint256 _id, bool _supports, bool _invalidQuery) external{</span>
+<span class="cstat-no" title="statement not covered" >        for(uint _i=0;_i&lt;_addys.length;_i++){</span>
+<span class="cstat-no" title="statement not covered" >            require(delegateOfAt(_addys[_i],voteInfo[_id].blockNumber)== msg.sender)</span>;
+<span class="cstat-no" title="statement not covered" >            _vote(_addys[_i],_id,_supports,_invalidQuery)</span>;
+        }
+    }
+&nbsp;
+    /*Getters*/
+<span class="fstat-no" title="function not covered" >    function didVote(uint256 _id, address _voter) external view returns(bool){</span>
+<span class="cstat-no" title="statement not covered" >        return voteInfo[_id].voted[_voter];</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function getDelegateInfo(address _holder) external view returns(address,uint){</span>
+<span class="cstat-no" title="statement not covered" >        return (delegateOfAt(_holder,block.number), delegateInfo[_holder][delegateInfo[_holder].length-1].fromBlock);</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function getDisputeInfo(uint256 _id) external view returns(bytes32,uint256,bytes memory, address){</span>
+<span class="cstat-no" title="statement not covered" >        Dispute storage _d = disputeInfo[_id];</span>
+<span class="cstat-no" title="statement not covered" >        return (_d.requestId,_d.timestamp,_d.value,_d.reportedMiner);</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function getOpenDisputesOnId(bytes32 _id) external view returns(uint256){</span>
+<span class="cstat-no" title="statement not covered" >        return openDisputesOnId[_id];</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function getVoteCount() external view returns(uint256) {</span>
+<span class="cstat-no" title="statement not covered" >        return voteCount;</span>
+    }
+<span class="fstat-no" title="function not covered" >    function getVoteInfo(uint256 _id) external view returns(bytes32,uint256[8] memory,bool[2] memory,</span>
+                                                            VoteResult,bytes memory,bytes4,address[2] memory){
+<span class="cstat-no" title="statement not covered" >        Vote storage _v = voteInfo[_id];</span>
+<span class="cstat-no" title="statement not covered" >        return (_v.identifierHash,[_v.voteRound,_v.startDate,_v.blockNumber,_v.fee,</span>
+        _v.tallyDate,_v.doesSupport,_v.against,_v.invalidQuery],[_v.executed,_v.isDispute],_v.result,
+        _v.data,_v.voteFunction,[_v.voteAddress,_v.initiator]);
+    }
+&nbsp;
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function getVoteRounds(bytes32 _hash) external view returns(uint256[] memory){</span>
+<span class="cstat-no" title="statement not covered" >        return voteRounds[_hash];</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function isFunctionApproved(bytes4 _func) external view returns(bool){</span>
+<span class="cstat-no" title="statement not covered" >        return functionApproved[_func];</span>
+    }
+&nbsp;
+    //Internal
+<span class="fstat-no" title="function not covered" >    function _vote(address _voter, uint256 _id, bool _supports, bool _invalidQuery) internal {</span>
+<span class="cstat-no" title="statement not covered" >        require(_id &lt;= voteCount, "vote does not exist")</span>;
+<span class="cstat-no" title="statement not covered" >        Vote storage _thisVote = voteInfo[_id];</span>
+<span class="cstat-no" title="statement not covered" >        if( _thisVote.isDispute){</span>
+<span class="cstat-no" title="statement not covered" >            require(!_thisVote.executed, "Dispute has been already executed")</span>;
+        }
+<span class="cstat-no" title="statement not covered" >        require(_thisVote.tallyDate == 0, "the vote has already been tallied")</span>;
+<span class="cstat-no" title="statement not covered" >        IController _controller = IController(TELLOR_ADDRESS);</span>
+<span class="cstat-no" title="statement not covered" >        uint256 voteWeight = _controller.balanceOfAt(_voter,_thisVote.blockNumber);</span>
+<span class="cstat-no" title="statement not covered" >        IOracle _oracle = IOracle(_controller.addresses(_ORACLE_CONTRACT));</span>
+<span class="cstat-no" title="statement not covered" >        ITreasury _treasury = ITreasury(_controller.addresses(_TREASURY_CONTRACT));</span>
+<span class="cstat-no" title="statement not covered" >        voteWeight += _treasury.getTreasuryFundsByUser(_voter)</span>;
+<span class="cstat-no" title="statement not covered" >        voteWeight +=  _oracle.getReportsSubmittedByAddress(_voter) * 1e18</span>;
+<span class="cstat-no" title="statement not covered" >        voteWeight += _oracle.getTipsByUser(_voter)</span>;
+<span class="cstat-no" title="statement not covered" >        (uint256 _status,) = _controller.getStakerInfo(_voter);</span>
+<span class="cstat-no" title="statement not covered" >        require(_status != 3, "Cannot vote if being disputed")</span>;
+<span class="cstat-no" title="statement not covered" >        require(!_thisVote.voted[_voter], "Sender has already voted")</span>;
+<span class="cstat-no" title="statement not covered" >        require(voteWeight &gt; 0, "User balance is 0")</span>;
+<span class="cstat-no" title="statement not covered" >        _thisVote.voted[_voter] = true</span>;
+<span class="cstat-no" title="statement not covered" >        if(_thisVote.isDispute &amp;&amp; _invalidQuery){</span>
+<span class="cstat-no" title="statement not covered" >            _thisVote.invalidQuery += voteWeight</span>;
+        } else <span class="cstat-no" title="statement not covered" >if(_supports) {</span>
+<span class="cstat-no" title="statement not covered" >            _thisVote.doesSupport += voteWeight</span>;
+        } else {
+<span class="cstat-no" title="statement not covered" >            _thisVote.against += voteWeight</span>;
+        }
+<span class="cstat-no" title="statement not covered" >        emit Voted(_id, _supports, _voter, voteWeight,_invalidQuery);</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function _min(uint256 a, uint256 b) internal pure returns (uint256) {</span>
+<span class="cstat-no" title="statement not covered" >        return a &lt; b ? a : b;</span>
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Aug 23 2021 13:30:01 GMT-0400 (Eastern Daylight Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
