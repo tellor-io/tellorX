@@ -313,7 +313,6 @@ describe("End-to-End Tests - One", function() {
     await h.expectThrow(tellorUser.transfer(accounts[4].address,web3.utils.toWei("50")));
     await h.expectThrow(oracle1.submitValue(ethers.utils.formatBytes32String("1"),150))
     let vars = await tellor.getStakerInfo(accounts[1].address)
-    console.log(vars)
     assert(vars[0] - 1 == 0, "status should be correct")
     await tellor.transfer(accounts[1].address,web3.utils.toWei("50"));
     await oracle1.submitValue(ethers.utils.formatBytes32String("1"),150)
