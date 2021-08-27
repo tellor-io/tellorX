@@ -229,7 +229,6 @@ contract Governance is TellorVars{
                 }
                 _controller.changeStakingStatus(_thisDispute.reportedMiner,1);
             }
-            openDisputesOnId[_thisDispute.requestId]--;
             emit VoteExecuted(_id, _thisVote.result);
         }
     }
