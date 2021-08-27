@@ -13,7 +13,6 @@ import "hardhat/console.sol";
  * changing contract addresses, as well as minting and migrating tokens
 */
 contract Controller is TellorStaking, Transition{
-
     // Functions
     /**
      * @dev Changes Controller contract to a new address

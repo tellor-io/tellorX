@@ -15,7 +15,6 @@ import "hardhat/console.sol";
 * through this address
 */
 contract Transition is TellorStorage,TellorVars{
-
     // Functions
     /**
      * @dev Runs once Tellor is migrated over. Changes the underlying storage.

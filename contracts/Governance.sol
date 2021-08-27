@@ -7,8 +7,15 @@ import "./interfaces/IController.sol";
 import "./interfaces/ITreasury.sol";
 import "hardhat/console.sol";
 
+/**
+ @author Tellor Inc.
+ @title Governance
+ @dev This is the Governance contract which defines the functionality for 
+ * proposing and executing votes, handling vote mechanism for voters,
+ * and distributing funds for initiators and disputed reporters depending
+ * on result.
+*/
 contract Governance is TellorVars{
-
     // Storage
     uint256 public voteCount; // total number of votes initiated
     uint256 public disputeFee; // dispute fee for a vote
@@ -105,7 +112,7 @@ contract Governance is TellorVars{
         // Check if dispute is started within correct time frame
         if (voteRounds[_hash].length > 1) {
             uint256 _prevId = voteRounds[_hash][voteRounds[_hash].length - 2];
-            require(block.timestamp - voteInfo[_prevId].tallyDate < 1 days, "new dispute round must be started within a day"); // Within a day for new round
+            require(block.timestamp - voteInfo[_prevId].tallyDate < 1 days, "New dispute round must be started within a day"); // Within a day for new round
         } else {
             require(block.timestamp - _timestamp < IOracle(_oracle).miningLock(), "Dispute must be started within 12 hours...same variable as mining lock"); // New dispute within mining lock
         }
@@ -180,6 +187,7 @@ contract Governance is TellorVars{
         returns (address)
     {
         Delegation[] storage checkpoints = delegateInfo[_user];
+        // Checks if delegate doesn't exist or has block number greater than queried
         if (
             checkpoints.length == 0 || checkpoints[0].fromBlock > _blockNumber
         ) {
@@ -187,7 +195,7 @@ contract Governance is TellorVars{
         } else {
             if (_blockNumber >= checkpoints[checkpoints.length - 1].fromBlock)
                 return checkpoints[checkpoints.length - 1].delegate;
-            // Binary search of the value in the array
+            // Binary search of correct delegate address
             uint256 min = 0;
             uint256 max = checkpoints.length - 2;
             while (max > min) {
@@ -204,20 +212,28 @@ contract Governance is TellorVars{
         }
     }
 
+    /**
+     * @dev Executes vote by using result and transferring balance to either 
+     * initiator or disputed reporter
+     * @param _id is the ID of the vote being executed
+     */
     function executeVote(uint256 _id) external{
+        // Ensure validity of vote ID, vote has been executed, and vote must be tallied
         Vote storage _thisVote = voteInfo[_id];
-        require(_id <= voteCount, "vote ID must be valid");
+        require(_id <= voteCount, "Vote ID must be valid");
         require(!_thisVote.executed, "Vote has been executed");
         require(_thisVote.tallyDate > 0, "Vote must be tallied");
-        require(voteRounds[_thisVote.identifierHash].length == _thisVote.voteRound, "must be the final vote");
-        require(block.timestamp - _thisVote.tallyDate >= 86400 * _thisVote.voteRound, "vote needs to be tallied and time must pass");
+        // Ensure vote must be final vote and that time has to be pass (86400 = 24 * 60 * 60 for seconds in a day)
+        require(voteRounds[_thisVote.identifierHash].length == _thisVote.voteRound, "Must be the final vote");
+        require(block.timestamp - _thisVote.tallyDate >= 86400 * _thisVote.voteRound, "Vote needs to be tallied and time must pass");
         _thisVote.executed = true;
         if(!_thisVote.isDispute){
+            // If vote is not in dispute and passed, execute proper vote function with vote data
             if(_thisVote.result == VoteResult.PASSED){
                 address _destination = _thisVote.voteAddress;
                 bool _succ;
                 bytes memory _res;
-                (_succ, _res) = _destination.call(abi.encodePacked(_thisVote.voteFunction,_thisVote.data));//be sure to send enough gas!
+                (_succ, _res) = _destination.call(abi.encodePacked(_thisVote.voteFunction,_thisVote.data)); // Be sure to send enough gas!
             }
             emit VoteExecuted(_id, _thisVote.result);
         }else{
@@ -226,22 +242,26 @@ contract Governance is TellorVars{
             uint256 _i;
             uint256 _voteID;
             if(_thisVote.result == VoteResult.PASSED){
+                // If vote is in dispute and passed, iterate through each vote round and transfer the dispute to initiator
                 for(_i=voteRounds[_thisVote.identifierHash].length;_i>0;_i--){
                     _voteID = voteRounds[_thisVote.identifierHash][_i-1];
                     _thisVote = voteInfo[_voteID];
+                    // If the first vote round, also make sure to slash the reporter and send their balance to the initiator
                     if(_i == 1){
                         _controller.slashMiner(_thisDispute.reportedMiner ,_thisVote.initiator);
                     }
                     _controller.transfer(_thisVote.initiator,_thisVote.fee);
                 }
             }else if(_thisVote.result == VoteResult.INVALID){
+                // If vote is in dispute and is invalid, iterate through each vote round and transfer the dispute to initiator
                 for(_i=voteRounds[_thisVote.identifierHash].length;_i>0;_i--){
                     _voteID = voteRounds[_thisVote.identifierHash][_i-1];
                     _thisVote = voteInfo[_voteID];
                    _controller.transfer(_thisVote.initiator,_thisVote.fee);
                 }
-                _controller.changeStakingStatus(_thisDispute.reportedMiner,1);
+                _controller.changeStakingStatus(_thisDispute.reportedMiner,1); // Change staking status of disputed reporter, but don't slash
             }else if(_thisVote.result == VoteResult.FAILED){
+                // If vote is in dispute and fails, iterate through each vote round and transfer the dispute to disputed reporter
                 for(_i=voteRounds[_thisVote.identifierHash].length;_i>0;_i--){
                     _voteID = voteRounds[_thisVote.identifierHash][_i-1];
                     _thisVote = voteInfo[_voteID];
@@ -249,29 +269,39 @@ contract Governance is TellorVars{
                 }
                 _controller.changeStakingStatus(_thisDispute.reportedMiner,1);
             }
-            openDisputesOnId[_thisDispute.requestId]--;
+            openDisputesOnId[_thisDispute.requestId]--; // Decrement open disputes after resolving
             emit VoteExecuted(_id, _thisVote.result);
         }
     }
 
+    /**
+     * @dev Proposes a vote for an associated Tellor contract and function, and defines the properties of the vote
+     * @param _contract is the Tellor contract to propose a vote for -> used to calculate identifier hash
+     * @param _function is the Tellor function to propose a vote for -> used to calculate identifier hash
+     * @param _data is the data associated with the vote proposaln -> used to calculate identifier hash
+     * @param _timestamp is the timestamp associated with the vote -> used to calculate identifier hash
+     */
    function proposeVote(address _contract, bytes4 _function, bytes calldata _data, uint256 _timestamp) external{
+        // Update vote count, vote ID, current vote, and timestamp
         voteCount++;
         uint256 _id = voteCount;
         Vote storage _thisVote = voteInfo[_id];
         if(_timestamp == 0){
             _timestamp = block.timestamp;
         }
+        // Calculate vote identifier hash and push to vote rounds
         bytes32 _hash = keccak256(abi.encodePacked(_contract,_function,_data,_timestamp));
         voteRounds[_hash].push(_id);
+        // Ensure new dispute round started within a day
         if (voteRounds[_hash].length > 1) {
             uint256 _prevId = voteRounds[_hash][voteRounds[_hash].length - 2];
-            require(block.timestamp - voteInfo[_prevId].tallyDate < 1 days);//1 day for new disputes
+            require(block.timestamp - voteInfo[_prevId].tallyDate < 1 days, "New dispute round must be started within a day"); // 1 day for new disputes
         }
-        _thisVote.identifierHash = _hash;
+        // Calculate fee to do anything (just 10 tokens flat, no refunds.  Goes up quickly to prevent spamming)
         uint256 _fee = 10e18 * 2**(voteRounds[_hash].length - 1);
-        //should we add a way to not need to approve here?
-        //This is the fee to do anything (just 10 tokens flat, no refunds.  Goes up quickly to prevent spamming)
-        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee), "fee must be paid");
+        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee), "Fee must be paid");
+        // Update information on vote -- hash, vote round, start date, block number, fee, etc.
+        _thisVote.identifierHash = _hash;
         _thisVote.voteRound = voteRounds[_hash].length;
         _thisVote.startDate = block.timestamp;
         _thisVote.blockNumber = block.number;
@@ -280,12 +310,13 @@ contract Governance is TellorVars{
         _thisVote.voteFunction = _function;
         _thisVote.voteAddress = _contract;
         _thisVote.initiator = msg.sender;
+        // Contract must be a Tellor contract, and function must be approved
         require(_contract == TELLOR_ADDRESS ||
             _contract == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT) ||
             _contract == IController(TELLOR_ADDRESS).addresses(_TREASURY_CONTRACT) ||
-            _contract == IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT), "must interact with the Tellor system"
+            _contract == IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT), "Must interact with the Tellor system"
         );
-        require(functionApproved[_function], "function must be approved");
+        require(functionApproved[_function], "Function must be approved");
         emit NewVote(_contract,_function,_data);
     }
 
@@ -300,40 +331,47 @@ contract Governance is TellorVars{
     }
 
     /**
-     * @dev tallies the votes and begins the 1 day challenge period
+     * @dev Tallies the votes and begins the 1 day challenge period
      * @param _id is the dispute id
      */
     function tallyVotes(uint256 _id) external {
+        // Ensure vote has not been executed and that vote has not been tallied
         Vote storage _thisVote = voteInfo[_id];
         require(!_thisVote.executed, "Dispute has been already executed");
-        require(_thisVote.tallyDate == 0, "vote should not already be tallied");
+        require(_thisVote.tallyDate == 0, "Vote should not already be tallied");
+        // Determine appropriate vote duration and quorum based on dispute status
         uint256 _duration = 2 days;
         uint256 _quorum = 0;
         if(!_thisVote.isDispute){
             _duration = 7 days;
             _quorum = 5;
         }
+        // Ensure voting is still open
         require(
             block.timestamp -_thisVote.startDate > _duration,
             "Time for voting haven't elapsed"
         );
+        // If there are more invalid votes than for and against, result is invalid
         if(_thisVote.invalidQuery >= _thisVote.doesSupport && _thisVote.invalidQuery >= _thisVote.against && _thisVote.isDispute){
             _thisVote.result = VoteResult.INVALID;
         }
         else if (_thisVote.doesSupport > _thisVote.against) {
-                if (_thisVote.doesSupport >= ((IController(TELLOR_ADDRESS).uints(_TOTAL_SUPPLY) * _quorum) / 100)) {
+            // If there are more support votes than against votes, and the vote has reached quorum, allow the vote to pass
+            if (_thisVote.doesSupport >= ((IController(TELLOR_ADDRESS).uints(_TOTAL_SUPPLY) * _quorum) / 100)) {
                 _thisVote.result = VoteResult.PASSED;
                 Dispute storage _thisDispute = disputeInfo[_id];
+                // In addition, change staking status of disputed miner as appropriate
                 (uint256 _status,) = IController(TELLOR_ADDRESS).getStakerInfo(_thisDispute.reportedMiner);
                 if(_thisVote.isDispute && _status == 3){
-                        IController(TELLOR_ADDRESS).changeStakingStatus(_thisDispute.reportedMiner,4);
+                    IController(TELLOR_ADDRESS).changeStakingStatus(_thisDispute.reportedMiner,4);
                 }
             }
         }
+        // If there are more against votes than support votes, the result failed
         else{
             _thisVote.result = VoteResult.FAILED;
         }
-        _thisVote.tallyDate = block.timestamp;
+        _thisVote.tallyDate = block.timestamp; // Update time vote was tallied
         emit VoteTallied(_id, _thisVote.result);
     }
 
@@ -479,24 +517,36 @@ contract Governance is TellorVars{
     }
 
     // Internal
+    /**
+     * @dev Allows an address to vote by calculating their total vote weight and updating vote count
+    * for the vote ID
+     * @param _voter is the address casting their vote
+     * @param _id is the vote ID the address is casting their vote for
+     * @param _supports is a boolean of whether the voter supports the dispute
+     * @param _invalidQuery is a boolean of whether the vote believes the dispute is invalid
+     */
     function _vote(address _voter, uint256 _id, bool _supports, bool _invalidQuery) internal {
-        require(_id <= voteCount, "vote does not exist");
+        // Ensure that dispute has not been executed and that vote does not exist and is not tallied
+        require(_id <= voteCount, "Vote does not exist");
         Vote storage _thisVote = voteInfo[_id];
         if( _thisVote.isDispute){
             require(!_thisVote.executed, "Dispute has been already executed");
         }
-        require(_thisVote.tallyDate == 0, "the vote has already been tallied");
+        require(_thisVote.tallyDate == 0, "Vote has already been tallied");
         IController _controller = IController(TELLOR_ADDRESS);
         uint256 voteWeight = _controller.balanceOfAt(_voter,_thisVote.blockNumber);
         IOracle _oracle = IOracle(_controller.addresses(_ORACLE_CONTRACT));
         ITreasury _treasury = ITreasury(_controller.addresses(_TREASURY_CONTRACT));
+        // Add to vote weight of voter based on treasury funds, reports submitted, and total tips
         voteWeight += _treasury.getTreasuryFundsByUser(_voter);
         voteWeight +=  _oracle.getReportsSubmittedByAddress(_voter) * 1e18;
         voteWeight += _oracle.getTipsByUser(_voter);
+        // Make sure voter can't already be disputed, has already voted, or if balance is 0
         (uint256 _status,) = _controller.getStakerInfo(_voter);
         require(_status != 3, "Cannot vote if being disputed");
         require(!_thisVote.voted[_voter], "Sender has already voted");
         require(voteWeight > 0, "User balance is 0");
+        // Update voting status and increment total queries for support, invalid, or against based on vote
         _thisVote.voted[_voter] = true;
         if(_thisVote.isDispute && _invalidQuery){
             _thisVote.invalidQuery += voteWeight;
