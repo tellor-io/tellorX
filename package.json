@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@ethersproject/abi": "^5.4.0",
+    "solidity-coverage": "^0.7.17",
     "web3": "^1.5.1"
   }
 }
