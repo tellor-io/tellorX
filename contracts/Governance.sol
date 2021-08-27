@@ -15,8 +15,8 @@ contract Governance is TellorVars{
     mapping (address => Delegation[]) delegateInfo; // mapping of delegate addresses to an array of their delegations
     mapping(bytes4 => bool) functionApproved; // mapping of function hashes to bools of whether the functions are approved
     mapping(bytes32 => uint[]) voteRounds;//shows if a certain vote has already started
-    mapping(uint => Vote) voteInfo; // mapping of a vote ID to the details of the vote
-    mapping(uint => Dispute) disputeInfo; // mapping of a dispute ID to the details of the dispute
+    mapping(uint => Vote) voteInfo; // mapping of vote IDs to the details of the vote
+    mapping(uint => Dispute) disputeInfo; // mapping of dispute IDs to the details of the dispute
     mapping(bytes32 => uint) openDisputesOnId; // mapping of a price feed ID to the number of disputes
     enum VoteResult {FAILED,PASSED,INVALID} // status of a potential vote
 
@@ -45,7 +45,7 @@ contract Governance is TellorVars{
         bool executed; // boolean of is the dispute settled
         VoteResult result; // VoteResult of did the vote pass?
         bool isDispute; // boolean of is the vote is is still in dispute
-        uint256 invalidQuery; // invalid query of the vote
+        uint256 invalidQuery; // whether or not the dispute is invalid
         bytes data; // data associated with the vote
         bytes4 voteFunction; // hash of the function associated with the vote
         address voteAddress; // address of contract to execute function on
@@ -93,32 +93,39 @@ contract Governance is TellorVars{
      * @param _timestamp being disputed
      */
     function beginDispute(bytes32 _requestId,uint256 _timestamp) external {
+        // Ensure mined block is not 0
         address _oracle = IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT);
         require(IOracle(_oracle).getBlockNumberByTimestamp(_requestId, _timestamp) != 0, "Mined block is 0");
         address _reporter = IOracle(_oracle).getReporterByTimestamp(_requestId,_timestamp);
         bytes32 _hash = keccak256(abi.encodePacked(_requestId, _timestamp));
+        // Increment vote count and push new vote round
         voteCount++;
         uint256 _id = voteCount;
         voteRounds[_hash].push(_id);
+        // Check if dispute is started within correct time frame
         if (voteRounds[_hash].length > 1) {
             uint256 _prevId = voteRounds[_hash][voteRounds[_hash].length - 2];
-            require(block.timestamp - voteInfo[_prevId].tallyDate < 1 days, "new dispute round must be started within a day");
+            require(block.timestamp - voteInfo[_prevId].tallyDate < 1 days, "new dispute round must be started within a day"); // Within a day for new round
         } else {
-            require(block.timestamp - _timestamp < IOracle(_oracle).miningLock(), "Dispute must be started within 12 hours...same variable as mining lock");
+            require(block.timestamp - _timestamp < IOracle(_oracle).miningLock(), "Dispute must be started within 12 hours...same variable as mining lock"); // New dispute within mining lock
         }
+        // Create new vote and dispute
         Vote storage _thisVote = voteInfo[_id];
         Dispute storage _thisDispute = disputeInfo[_id];
-        _thisVote.identifierHash = _hash;
+        // Initialize dispute information - request ID, timestamp, value, etc.
         _thisDispute.requestId = _requestId;
         _thisDispute.timestamp = _timestamp;
         _thisDispute.value = IOracle(_oracle).getValueByTimestamp(_requestId, _timestamp);
         _thisDispute.reportedMiner = _reporter;
+        // Initialize vote information - hash, initiator, block number, etc.
+        _thisVote.identifierHash = _hash;
         _thisVote.initiator = msg.sender;
         _thisVote.blockNumber = block.number;
         _thisVote.startDate = block.timestamp;
         _thisVote.voteRound = voteRounds[_hash].length;
         _thisVote.isDispute = true;
-        openDisputesOnId[_requestId]++;
+        openDisputesOnId[_requestId]++; // Increment number of open disputes on current ID
+        // Calculate dispute fee based on number of current vote rounds
         uint256 _fee;
         if(voteRounds[_hash].length == 1){
             _fee = disputeFee * 2**(openDisputesOnId[_requestId] - 1);
@@ -128,18 +135,25 @@ contract Governance is TellorVars{
             _fee = disputeFee * 2**(voteRounds[_hash].length - 1);
         }
         _thisVote.fee = _fee * 9 / 10;
-        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee)); //This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
+        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee)); // This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
+        // Add an initial tip and change the current staking status of reporter
         IOracle(_oracle).addTip(_requestId,_fee/10);
         IController(TELLOR_ADDRESS).changeStakingStatus(_reporter,3);
         emit NewDispute(_id, _requestId, _timestamp, _reporter);
     }
 
+    /**
+     * @dev Allows the sender to set an address as a delegate to vote on disputes
+     * @param _delegate is the address the sender is delegating to
+     */
     function delegate(address _delegate) external{
         Delegation[] storage checkpoints = delegateInfo[msg.sender];
+        // Check if sender hasn't delegated the specific address, or if the current delegate is from old block number
         if (
             checkpoints.length == 0 ||
             checkpoints[checkpoints.length - 1].fromBlock != block.number
         ) {
+            // Push a new delegate
             checkpoints.push(
                 Delegation({
                     delegate: _delegate,
@@ -147,6 +161,7 @@ contract Governance is TellorVars{
                 })
             );
         } else {
+            // Else, update old delegate
             Delegation storage oldCheckPoint =
                 checkpoints[checkpoints.length - 1];
             oldCheckPoint.delegate = _delegate;
@@ -274,8 +289,13 @@ contract Governance is TellorVars{
         emit NewVote(_contract,_function,_data);
     }
 
+    /**
+     * @dev Sets a given function's approved status
+     * @param _func is the hash of the function to change status
+     * @param _val is the boolean of the function's status (approved or not)
+     */
     function setApprovedFunction(bytes4 _func, bool _val) public{
-        require(msg.sender == address(this));
+        require(msg.sender == address(this), "Only the Governance contract can change a function's status");
         functionApproved[_func] = _val;
     }
 
@@ -317,7 +337,7 @@ contract Governance is TellorVars{
         emit VoteTallied(_id, _thisVote.result);
     }
 
-        /**
+    /**
      * @dev This function updates the minimum dispute fee as a function of the amount
      * of staked miners
      */
@@ -326,6 +346,7 @@ contract Governance is TellorVars{
         uint256 _trgtMiners = IController(TELLOR_ADDRESS).uints(_TARGET_MINERS);
         uint256 _stakeCount = IController(TELLOR_ADDRESS).uints(_STAKE_COUNT);
         uint256 _reducer;
+        // Calculate total dispute fee using stake count
         if(_stakeCount > 0){
             _reducer = (_stakeAmt * (_min(_trgtMiners, _stakeCount) * 1000)/_trgtMiners)/1000;
         }
@@ -344,15 +365,27 @@ contract Governance is TellorVars{
         return 9999;
     }
 
-
+    /**
+     * @dev Enables the sender address to cast a vote
+     * @param _id is the ID of the vote
+     * @param _supports is the address's vote: whether or not they support or are against
+     * @param _invalidQuery is whether or not the dispute is valid
+     */
     function vote(uint256 _id, bool _supports, bool _invalidQuery) external{
         require(delegateOfAt(msg.sender, voteInfo[_id].blockNumber) == address(0), "the vote should not be delegated");
         _vote(msg.sender,_id,_supports,_invalidQuery);
     }
 
+     /**
+     * @dev Enables the sender address to cast a vote for other addresses
+     * @param _addys is the array of addresses that the sender votes for
+     * @param _id is the ID of the vote
+     * @param _supports is the address's vote: whether or not they support or are against
+     * @param _invalidQuery is whether or not the dispute is valid
+     */
     function voteFor(address[] calldata _addys,uint256 _id, bool _supports, bool _invalidQuery) external{
         for(uint _i=0;_i<_addys.length;_i++){
-            require(delegateOfAt(_addys[_i],voteInfo[_id].blockNumber)== msg.sender);
+            require(delegateOfAt(_addys[_i],voteInfo[_id].blockNumber) == msg.sender, "Sender is not delegated to vote for this address");
             _vote(_addys[_i],_id,_supports,_invalidQuery);
         }
     }
