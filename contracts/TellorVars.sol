@@ -3,6 +3,7 @@
 pragma solidity 0.8.3;
 
 import "./tellor3/TellorVariables.sol";
+
 /**
  @author Tellor Inc.
  @title TellorVariables

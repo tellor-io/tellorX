@@ -4,22 +4,23 @@ pragma solidity 0.8.3;
 import "./tellor3/TellorStorage.sol";
 import "./TellorVars.sol";
 import "hardhat/console.sol";
+
 /**
  @author Tellor Inc.
- @title TellorTransfer
- @dev Contains the methods related to transfers and ERC20, its storage and hashes of tellor variables
- * that are used to save gas on transactions.
+ @title Token
+ @dev Contains the methods related to transfers and ERC20, its storage 
+ * and hashes of tellor variables that are used to save gas on transactions.
 */
 contract Token is TellorStorage,TellorVars{
-    /*Events*/
+    // Events
     event Approval(
         address indexed _owner,
         address indexed _spender,
         uint256 _value
-    ); //ERC20 Approval event
-    event Transfer(address indexed _from, address indexed _to, uint256 _value); //ERC20 Transfer Event
+    ); // ERC20 Approval event
+    event Transfer(address indexed _from, address indexed _to, uint256 _value); // ERC20 Transfer Event
 
-    /*Functions*/
+    // Functions
     /**
      * @dev Getter function for remaining spender balance
      * @param _user address of party with the balance
@@ -50,13 +51,10 @@ contract Token is TellorStorage,TellorVars{
             stakerDetails[_user].currentStatus != 0 &&
             stakerDetails[_user].currentStatus < 5
         ) {
-            //Subtracts the stakeAmount from balance if the _user is staked
-            if (balanceOf(_user)- uints[_STAKE_AMOUNT] >= _amount) {
-                return true;
-            }
-            return false;
+            // Subtracts the stakeAmount from balance if the _user is staked
+            return (balanceOf(_user) - uints[_STAKE_AMOUNT] >= _amount);
         }
-        return (balanceOf(_user) >= _amount);
+        return (balanceOf(_user) >= _amount); // Else, check if balance is greater than amount they want to spend
     }
 
     /**
@@ -67,17 +65,23 @@ contract Token is TellorStorage,TellorVars{
      */
     function approve(address _spender, uint256 _amount) external returns (bool) {
         require(_spender != address(0), "ERC20: approve to the zero address");
-
         _allowances[msg.sender][_spender] = _amount;
         emit Approval(msg.sender, _spender, _amount);
         return true;
     }
 
-
+    /**
+     * @dev This function approves a transfer of _amount tokens from _from to _to
+     * @param _from is the address the tokens will be transferred from
+     * @param _to is the address the tokens will be transferred to
+     * @param _amount is the number of tokens to transfer
+     * @return true if spender approved successfully
+     */
     function approveAndTransferFrom(address _from, address _to, uint256 _amount) external returns(bool){
-        require(msg.sender == addresses[_GOVERNANCE_CONTRACT] ||
+        require((msg.sender == addresses[_GOVERNANCE_CONTRACT] ||
             msg.sender == addresses[_TREASURY_CONTRACT] ||
-            msg.sender == addresses[_ORACLE_CONTRACT]);
+            msg.sender == addresses[_ORACLE_CONTRACT]),
+            "Only the Governance, Treasury, or Oracle Contract can approve and transfer tokens");
         _doTransfer(_from, _to, _amount);
         return true;
     }
@@ -127,6 +131,10 @@ contract Token is TellorStorage,TellorVars{
         }
     }
 
+    /**
+     * @dev Burns an amount of tokens
+     * @param _amount is the amount of tokens to burn
+     */
     function burn(uint256 _amount) external{
         _doBurn(msg.sender, _amount);
     }
@@ -165,7 +173,7 @@ contract Token is TellorStorage,TellorVars{
         return true;
     }
 
-    /*Internal Functions*/
+    // Internal
     /**
      * @dev Completes transfers by updating the balances on the current block number
      * and ensuring the amount does not contain tokens staked for mining
@@ -178,20 +186,23 @@ contract Token is TellorStorage,TellorVars{
         address _to,
         uint256 _amount
     ) internal {
+        // Ensure user has a correct balance and to address
         require(_amount != 0, "Tried to send non-positive amount");
         require(_to != address(0), "Receiver is 0 address");
         require(
             allowedToTrade(_from, _amount),
             "Should have sufficient balance to trade"
         );
+        // Update balance of _from address
         uint128 previousBalance = uint128(balanceOf(_from));
         uint128 _sizedAmount  = uint128(_amount);
         _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
+        // Check for overflow, and update balance of _to address
         previousBalance = uint128(balanceOf(_to));
         require(
             previousBalance + _sizedAmount >= previousBalance,
             "Overflow happened"
-        ); // Check for overflow
+        );
         _updateBalanceAtNow(_to, previousBalance + _sizedAmount);
         emit Transfer(_from, _to, _amount);
     }
@@ -202,10 +213,12 @@ contract Token is TellorStorage,TellorVars{
      * @param _amount is the amount of TRB to send
     */
     function _doMint(address _to, uint256 _amount) internal {
+        // Ensure to address and mint amount are valid
         require(_amount != 0, "Tried to mint non-positive amount");
         require(_to != address(0), "Receiver is 0 address");
         uint128 previousBalance = uint128(balanceOf(_to));
         uint128 _sizedAmount  = uint128(_amount);
+        // Check for overflow for balance and supply
         require(
             previousBalance + _sizedAmount >= previousBalance,
             "Overflow happened"
@@ -215,6 +228,7 @@ contract Token is TellorStorage,TellorVars{
             previousSupply + _amount >= previousSupply,
             "Overflow happened"
         );
+        // Update total supply and balance of _to address
         uints[_TOTAL_SUPPLY] += _amount;
         _updateBalanceAtNow(_to, previousBalance + _sizedAmount);
         emit Transfer(address(0), _to, _amount);
@@ -226,6 +240,7 @@ contract Token is TellorStorage,TellorVars{
      * @param _amount is the amount of TRB to burn
      */
     function _doBurn(address _from, uint256 _amount) internal {
+        // Ensure that amount of balance are valid
         if (_amount == 0) return;
         require(
             allowedToTrade(_from, _amount),
@@ -233,6 +248,7 @@ contract Token is TellorStorage,TellorVars{
         );
         uint128 previousBalance = uint128(balanceOf(_from));
         uint128 _sizedAmount  = uint128(_amount);
+        // Check for overflow
         require(
             previousBalance - _sizedAmount <= previousBalance,
             "Overflow happened"
@@ -242,6 +258,7 @@ contract Token is TellorStorage,TellorVars{
             previousSupply - _amount <= previousSupply,
             "Overflow happened"
         );
+        // Update total supply and balance of _from
         _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
         uints[_TOTAL_SUPPLY] -= _amount;
     }
@@ -252,10 +269,12 @@ contract Token is TellorStorage,TellorVars{
      */
     function _updateBalanceAtNow(address _user, uint128 _value) internal {
         Checkpoint[] storage checkpoints = balances[_user];
+        // Checks if no checkpoints exist, or if checkpoint block is not current block
         if (
             checkpoints.length == 0 ||
             checkpoints[checkpoints.length - 1].fromBlock != block.number
         ) {
+            // If yes, push a new checkpoint into the array
             checkpoints.push(
                 TellorStorage.Checkpoint({
                     fromBlock: uint128(block.number),
@@ -263,6 +282,7 @@ contract Token is TellorStorage,TellorVars{
                 })
             );
         } else {
+            // Else, update old checkpoint
             TellorStorage.Checkpoint storage oldCheckPoint =
                 checkpoints[checkpoints.length - 1];
             oldCheckPoint.value = _value;
