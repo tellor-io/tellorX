@@ -41,5 +41,8 @@ module.exports = {
       },
       allowUnlimitedContractSize: true
     }
+  },
+  mocha: {
+    timeout: 100000
   }
 }
