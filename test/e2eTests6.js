@@ -7,7 +7,7 @@ const { ethers } = require("hardhat");
 const { stakeAmount } = require("./helpers/helpers");
 const { keccak256 } = require("ethers/lib/utils");
 
-describe("End-to-End Tests - Two", function() {
+describe("End-to-End Tests - Six", function() {
     
   const tellorMaster = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
   const DEV_WALLET = "0x39E419bA25196794B595B2a595Ea8E527ddC9856"
@@ -15,7 +15,7 @@ describe("End-to-End Tests - Two", function() {
   const BIGWALLET = "0xf977814e90da44bfa03b6295a0616a897441acec";
   let accounts = null
   let tellor = null
-  let cfac,ofac,tfac,gfac,parachute,govBig,govTeam,oracle
+  let cfac,ofac,tfac,gfac,parachute,govBig,govTeam,oracle, oldTellorInstance
   let govSigner = null
   let disputeHash
   
@@ -156,7 +156,10 @@ describe("End-to-End Tests - Two", function() {
 
     it("Test dispute on old contract, then dispute on new contract", async function() {
         //should be able to read old dispute
-        await oldTellorInstance.get
+        console.log(1)
+        let disputeId = await oldTellorInstance.getDisputeIdByDisputeHash(disputeHash)
+        console.log('disputeId: ', disputeId);
+
       
     })
 });

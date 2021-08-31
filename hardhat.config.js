@@ -191,13 +191,6 @@ module.exports = {
         url: "https://eth-mainnet.alchemyapi.io/v2/7dW8KCqWwKa1vdaitq-SxmKfxWZ4yPG6"
       },
       allowUnlimitedContractSize: true
-<<<<<<< HEAD
-    }
-  },
-  mocha: {
-    timeout: 100000
-  }
-=======
     }//,
     //rinkeby: {
       //   url: `${process.env.NODE_URL_RINKEBY}`,
@@ -227,5 +220,4 @@ module.exports = {
 
 
  
->>>>>>> 49efb0289ae1adbe966713a97ea30132f6a1decf
 }
