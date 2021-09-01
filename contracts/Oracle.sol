@@ -105,7 +105,7 @@ contract Oracle is TellorVars{
      * @param _id is ID of the specific data feed
      * @param _value is the value the user submits to the oracle
     */
-    function submitValue(bytes32 _id, bytes calldata _value) external{
+    function submitValue(bytes32 _id, bytes calldata _value, uint256 _nonce) external{
         // Require reporter to abide by given mining lock
         require(
             block.timestamp - reporterLastTimestamp[msg.sender]  > miningLock,
@@ -120,6 +120,7 @@ contract Oracle is TellorVars{
         require(_tellor.balanceOf(msg.sender) >= _tellor.uints(_STAKE_AMOUNT), "balance must be greater than stake amount");
         // Checks for no double reporting of timestamps
         Report storage rep = reports[_id];
+        require(_nonce == rep.timestamps.length, "nonce must match timestamp index");
         require(rep.reporterByTimestamp[block.timestamp] == address(0), "timestamp already reported for");
         // Update number of timestamps, value for given timestamp, and reporter for timestamp
         rep.timestampIndex[block.timestamp] = rep.timestamps.length;
@@ -139,7 +140,7 @@ contract Oracle is TellorVars{
         reportsSubmittedByAddress[msg.sender]++;
         emit NewReport(_id, block.timestamp, _value,_tip + _reward);
     }
-    
+
     /**
      * @dev Calculates the current reward for a reporter given tips
      * and time based reward
@@ -154,7 +155,7 @@ contract Oracle is TellorVars{
         }
         return (tips[_id], _reward);
     }
-    
+
     //Getters
     /**
      * @dev Returns the block number at a given timestamp
@@ -169,7 +170,7 @@ contract Oracle is TellorVars{
     function getMiningLock() external view returns(uint256){
         return miningLock;
     }
-    
+
     /**
      * @dev Returns the address of the reporter who submitted a value for a data ID at a specific time
      * @param _id is ID of the specific data feed
@@ -204,7 +205,7 @@ contract Oracle is TellorVars{
      */
     function getTimestampCountById(bytes32 _id) external view returns(uint256){
         return reports[_id].timestamps.length;
-    }   
+    }
 
     /**
      * @dev Returns the timestamp of a reported value given a data ID and timestamp index
