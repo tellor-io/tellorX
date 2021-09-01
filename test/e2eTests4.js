@@ -15,7 +15,7 @@ describe("End-to-End Tests - Four", function() {
     let tellor = null
     let cfac,ofac,tfac,gfac,parachute,govBig,govTeam
     let govSigner = null
-  
+
   beforeEach("deploy and setup TellorX", async function() {
     accounts = await ethers.getSigners();
     await hre.network.provider.request({
@@ -38,7 +38,7 @@ describe("End-to-End Tests - Four", function() {
       params: [BIGWALLET]}
     )
         //Steps to Deploy:
-        //Deploy Governance, Oracle, Treasury, and Controller. 
+        //Deploy Governance, Oracle, Treasury, and Controller.
         //Fork mainnet Ethereum, changeTellorContract to Controller
         //run init in Controller
 
@@ -158,7 +158,7 @@ describe("End-to-End Tests - Four", function() {
     await governance.executeVote(2);
   })
   it("Test delegate then delegates", async function() {
-    
+
     let newController = await cfac.deploy();
     await newController.deployed();
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
@@ -276,7 +276,7 @@ describe("End-to-End Tests - Four", function() {
         console.log("4 disputes: ", c3)
         console.log("5 disputes : ", c4)
         console.log()
-    }) 
+    })
     it("Calculate gas costs of using delegate array to vote (1, 10, 100, 200 delegates)", async function() {
         this.timeout(400000)
         await govBig.transfer(DEV_WALLET,await tellor.balanceOf(BIGWALLET))
