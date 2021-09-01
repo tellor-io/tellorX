@@ -93,11 +93,13 @@ contract Oracle is TellorVars{
         // Shift all timestamps back to reflect deletion of value
         for (uint256 i = _index; i < rep.timestamps.length-1; i++){
             rep.timestamps[i] = rep.timestamps[i+1];
+            rep.timestampIndex[rep.timestamps[i]]-=1;
         }
         // Delete and reset timestamp and value
         delete rep.timestamps[rep.timestamps.length-1];
         rep.timestamps.pop();
         rep.valueByTimestamp[_timestamp] = "";
+        rep.timestampIndex[_timestamp] = 0;
     }
 
     /**
