@@ -197,6 +197,95 @@ contract Transition is TellorStorage,TellorVars{
         return migrated[_addy];
     }
 
+        /**
+     * @dev Gets all dispute variables
+     * @param _disputeId to look up
+     * @return bytes32 hash of dispute
+     * bool executed where true if it has been voted on
+     * bool disputeVotePassed
+     * bool isPropFork true if the dispute is a proposed fork
+     * address of reportedMiner
+     * address of reportingParty
+     * address of proposedForkAddress
+     * uint of requestId
+     * uint of timestamp
+     * uint of value
+     * uint of minExecutionDate
+     * uint of numberOfVotes
+     * uint of blocknumber
+     * uint of minerSlot
+     * uint of quorum
+     * uint of fee
+     * int count of the current tally
+     */
+    function getAllDisputeVars(uint256 _disputeId)
+        external
+        view
+        returns (
+            bytes32,
+            bool,
+            bool,
+            bool,
+            address,
+            address,
+            address,
+            uint256[9] memory,
+            int256
+        )
+    {
+        Dispute storage disp = disputesById[_disputeId];
+        return (
+            disp.hash,
+            disp.executed,
+            disp.disputeVotePassed,
+            disp.isPropFork,
+            disp.reportedMiner,
+            disp.reportingParty,
+            disp.proposedForkAddress,
+            [
+                disp.disputeUintVars[_REQUEST_ID],
+                disp.disputeUintVars[_TIMESTAMP],
+                disp.disputeUintVars[_VALUE],
+                disp.disputeUintVars[_MIN_EXECUTION_DATE],
+                disp.disputeUintVars[_NUM_OF_VOTES],
+                disp.disputeUintVars[_BLOCK_NUMBER],
+                disp.disputeUintVars[_MINER_SLOT],
+                disp.disputeUintVars[keccak256("quorum")],
+                disp.disputeUintVars[_FEE]
+            ],
+            disp.tally
+        );
+    }
+
+        /**
+     * @dev Checks if a given hash of miner,requestId has been disputed
+     * @param _hash is the sha256(abi.encodePacked(_miners[2],_requestId,_timestamp));
+     * @return uint disputeId
+     */
+    function getDisputeIdByDisputeHash(bytes32 _hash)
+        external
+        view
+        returns (uint256)
+    {
+        return disputeIdByDisputeHash[_hash];
+    }
+
+        /**
+     * @dev Checks for uint variables in the disputeUintVars mapping based on the disputeId
+     * @param _disputeId is the dispute id;
+     * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
+     * the variables/strings used to save the data in the mapping. The variables names are
+     * commented out under the disputeUintVars under the Dispute struct
+     * @return uint value for the bytes32 data submitted
+     */
+    function getDisputeUintVars(uint256 _disputeId, bytes32 _data)
+        external
+        view
+        returns (uint256)
+    {
+        return disputesById[_disputeId].disputeUintVars[_data];
+    }
+
     
     /**
      * @dev Function is solely for the parachute contract
