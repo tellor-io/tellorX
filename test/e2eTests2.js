@@ -15,16 +15,16 @@ describe("End-to-End Tests - Two", function() {
   const BIGWALLET = "0xf977814e90da44bfa03b6295a0616a897441acec";
   let accounts = null
   let tellor = null
-  let cfac,ofac,tfac,gfac,parachute,govBig,govTeam
+  let cfac,ofac,tfac,gfac,parachute,govBig,govTeam,oracle
   let govSigner = null
-  
+
   beforeEach("deploy and setup TellorX", async function() {
     accounts = await ethers.getSigners();
     await hre.network.provider.request({
       method: "hardhat_reset",
       params: [{forking: {
             jsonRpcUrl: hre.config.networks.hardhat.forking.url,
-            blockNumber:13037866
+            blockNumber:13147399
 
           },},],
       });
@@ -41,7 +41,7 @@ describe("End-to-End Tests - Two", function() {
       params: [BIGWALLET]}
     )
         //Steps to Deploy:
-        //Deploy Governance, Oracle, Treasury, and Controller. 
+        //Deploy Governance, Oracle, Treasury, and Controller.
         //Fork mainnet Ethereum, changeTellorContract to Controller
         //run init in Controller
 
@@ -85,7 +85,7 @@ describe("End-to-End Tests - Two", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
     });
   it("What happens if a staked miner is disputed twice? (maybe have window for disputes to prevent this?)", async function() {
-    
+
     //create miner and two disputers
     let n = 42
     let [v1, reporter, disputer1, disputer2] = await ethers.getSigners()
@@ -93,67 +93,67 @@ describe("End-to-End Tests - Two", function() {
     let disputedValue = keccak256("0x"+n.toString(16))
 
     //mint miner tokens
-    
+
     await tellor.connect(devWallet).transfer(reporter.address, BigInt(101E18))
-    
+
     //mint disputers their dispute fees
     await tellor.connect(devWallet).transfer(disputer1.address, BigInt(200E18))
-    
+
     await tellor.connect(devWallet).transfer(disputer2.address, BigInt(200E18))
-    
+
     //mint voter big voting balance
     let devBalance = await tellor.balanceOf(DEV_WALLET)
     await tellor.connect(devWallet).transfer(v1.address, devBalance)
 
-    
+
     //stake miner
     await tellor.connect(reporter).depositStake()
 
-    
+
     //miner submits bad value
-    await oracle.connect(reporter).submitValue(requestId, disputedValue)
+    await oracle.connect(reporter).submitValue(requestId, disputedValue, 0)
     let currentBlock = await ethers.provider.getBlock()
     let timestamp = currentBlock.timestamp
-    
+
     //disputer opens dispute within 12 hours of submission
     await governance.connect(disputer1).beginDispute(requestId, timestamp)
     let voteCount = await governance.voteCount()
-    //elapse time (a week forward) to 
-    
+    //elapse time (a week forward) to
+
     await network.provider.send("evm_increaseTime", [3600 * 24 * 7]) //1 week
     await network.provider.send("evm_mine")
     //voter votes
     await governance.connect(v1).vote(voteCount, true, false)
-    
+
     //tally votes
     await governance.tallyVotes(voteCount)
-    
-    //elapse time (a week forward) to 
+
+    //elapse time (a week forward) to
     await network.provider.send("evm_increaseTime", [3600 * 24 * 7]) //1 week
     await network.provider.send("evm_mine")
     //execute vote
     await governance.executeVote(voteCount)
-    
+
     await expect(
       governance.connect(v1).vote(voteCount, true, false),
       "voter was able to vote on finished dispute"
     ).to.be.reverted
     //check vote data
-    
-    
+
+
     await expect(
         governance.connect(disputer1).beginDispute(requestId, timestamp),
         // "account disputed "
     ).to.be.reverted
-    
+
     //pass time, everyone votes
     voteCount = await governance.voteCount()
-    
+
     await expect(
       governance.connect(v1).vote(voteCount, true, false),
       "voter was able to vote on finished dispute"
     ).to.be.reverted
-    
+
     // //tally votes
     // await tellor.tallyVotes(voteCount)
 
@@ -167,7 +167,7 @@ describe("End-to-End Tests - Two", function() {
   it("Upgrade Treasury Contract", async function() {
 
       //read current treasury address
-      
+
       //deploy new treasury contract
       let tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury");
       let treasury = await tfac.deploy()
@@ -181,14 +181,14 @@ describe("End-to-End Tests - Two", function() {
       await tellor.connect(devWallet).transfer(v1.address, devBalance)
       await tellor.connect(govSigner).mint(v1.address, BigInt(1E6)*BigInt(1E18))
 
-      
+
       //propose vote setup
       let f = await ethers.utils.keccak256(ethers.utils.toUtf8Bytes("changeTreasuryContract(address)"))
       let bytes4 = f.substring(0, 10)
       let currentBlock = await ethers.provider.getBlock()
       let timestamp = currentBlock.timestamp
-      
-      
+
+
 
       //propose vote
       await governance.connect(v1).proposeVote(
@@ -203,13 +203,13 @@ describe("End-to-End Tests - Two", function() {
       //dummy accounts vote
       await governance.connect(v1).vote(voteCount, true, false)
 
-      //elapse time (a week forward) to 
+      //elapse time (a week forward) to
       await h.advanceTime(604800)
 
       //tally vote
       await governance.tallyVotes(voteCount)
 
-      //elapse time (a week forward) to 
+      //elapse time (a week forward) to
       await h.advanceTime(1186400)
 
       //execute vote
@@ -236,14 +236,14 @@ describe("End-to-End Tests - Two", function() {
 
       //mint tokens for buyer
       await tellor.connect(devWallet).transfer(buyer.address, BigInt(101E18))
-      
+
       //mint and stake reporter
       await tellor.connect(devWallet).transfer(reporter.address, BigInt(101E18))
       await tellor.connect(reporter).depositStake()
-      
+
       //mint disputer
       await tellor.connect(devWallet).transfer(disputer.address, BigInt(200E18))
-      
+
       //governance issues treasuries
       await treasury.connect(govSigner).issueTreasury(treasuryAmount, treasuryRate, treasuryDuration)
       let treasuryCount = treasury.getTreasuryCount()
@@ -252,10 +252,10 @@ describe("End-to-End Tests - Two", function() {
       await treasury.connect(buyer).buyTreasury(treasuryCount, treasuryBought)
 
       //reporter submits a value
-      await oracle.connect(reporter).submitValue(requestId, disputedValue)
+      await oracle.connect(reporter).submitValue(requestId, disputedValue, 0)
       let currentBlock = await ethers.provider.getBlock()
       let timestamp = currentBlock.timestamp
-      
+
       //disputer disputes value
       await governance.connect(disputer).beginDispute(requestId, timestamp)
       let voteCount = await governance.voteCount()
@@ -264,9 +264,9 @@ describe("End-to-End Tests - Two", function() {
       //user doesn't vote
       await h.advanceTime(86400 * 7) //7 days
 
-      //tally vote      
+      //tally vote
       await governance.tallyVotes(voteCount)
-      
+
       await h.advanceTime(86400*7) //7 days
 
       //execute vote
@@ -276,7 +276,7 @@ describe("End-to-End Tests - Two", function() {
       let voteInfo = await governance.getVoteInfo(voteCount)
       let voteResult = voteInfo[3]
       let invalid = 2
-      
+
       expect(voteResult).to.equal(invalid, "no one voted, outcome wasn't 'invalid'")
 
       //fast forward to treasury expiration
@@ -284,14 +284,67 @@ describe("End-to-End Tests - Two", function() {
 
       //pay treasury
       let oldBalance = Number(await tellor.balanceOf(buyer.address))
-      
+
       await treasury.connect(buyer).payTreasury(buyer.address, treasuryCount)
-      
+
       let newBalance = Number(await tellor.balanceOf(buyer.address))
-      
-      
+
+
       //expect no treasury rewards because buyer didnt vote
       expect(newBalance - oldBalance).to.equal(Number(treasuryBought))
 
     })
+
+    it("Decrease reporter lock time", async function() {
+
+      let oldMiningLock
+      let newMiningLock = 60*60
+      let reportingStake = BigInt(100E18)
+
+      let n = 42
+      let requestId = keccak256("0x"+n.toString(16))
+      let disputedValue = keccak256("0x"+n.toString(16))
+
+      //create reporter
+      let [reporter] = await ethers.getSigners()
+
+      //mint reporter staking tokens
+      await tellor.connect(devWallet).transfer(reporter.address, reportingStake)
+
+      //stake reporter
+      await tellor.connect(reporter).depositStake()
+
+      // read current mining lock
+      oldMiningLock = await oracle.getMiningLock()
+
+      expect(oldMiningLock).to.equal(60*60*12)
+
+      //miner submits
+
+      await oracle.connect(reporter).submitValue(requestId, disputedValue, 0)
+
+
+      //decrease mining lock to 1 hour
+      await oracle.connect(govSigner).changeMiningLock(newMiningLock)
+      expect(await oracle.miningLock()).to.equal(newMiningLock)
+
+      //expect the mining lock still works
+      await expect(
+        oracle.connect(reporter).submitValue(requestId, disputedValue, 1),
+        "mining lock stopped working"
+      ).to.be.reverted
+
+      //expect they can submit after 1 hour now, not 12
+      await h.advanceTime(60*60)
+
+
+      //reporter submits value
+      await oracle.connect(reporter).submitValue(requestId, disputedValue, 1)
+
+
+    })
+
+    // it("Test dispute on old contract, then dispute on new contract", async function() {
+
+    // })
 });

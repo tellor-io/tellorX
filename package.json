@@ -19,14 +19,20 @@
   "homepage": "https://github.com/tellor-io/tellorX#readme",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-solhint": "^2.0.0",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "chai": "^4.3.4",
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.4.4",
-    "hardhat": "^2.6.0"
+    "hardhat": "^2.6.0",
+    "hardhat-gas-reporter": "^1.0.4"
   },
   "dependencies": {
     "@ethersproject/abi": "^5.4.0",
+    "@nomiclabs/hardhat-etherscan": "^2.1.5",
+    "dotenv": "^10.0.0",
+    "hardhat-contract-sizer": "^2.0.3",
+    "solidity-coverage": "^0.7.17",
     "web3": "^1.5.1"
   }
 }

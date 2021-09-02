@@ -6,31 +6,50 @@ import "./TellorVars.sol";
 import "./interfaces/IOracle.sol";
 import "hardhat/console.sol";
 
+/**
+ @author Tellor Inc.
+ @title Transition
+* @dev The Transition contract links to the Oracle contract and 
+* allows parties (like Liquity) to continue to use the master
+* address to acesss values. All parties should be reading values
+* through this address
+*/
 contract Transition is TellorStorage,TellorVars{
-
-     //links to the Oracle contract.  Allows parties (like Liquity) to continue to use the master address to acess values.
-        //all parties should be reading values through this address
-    
+    // Functions
+    /**
+     * @dev Runs once Tellor is migrated over. Changes the underlying storage.
+     * @param _governance is the address of the Governance contract
+     * @param _oracle is the address of the Oracle contract
+     * @param _treasury is the address of the Treasury contract
+     */
     function init(address _governance, address _oracle, address _treasury) external{
-        //run this once migrated over.  This changes the underlying storage
-        require(msg.sender == addresses[_OWNER]);
+        // Ensure sender is owner and transaction only occurs once
+        require(msg.sender == addresses[_OWNER], "Only the owner address can initiate a transition");
         require(addresses[_GOVERNANCE_CONTRACT] == address(0), "Only good once");
+        // Set state amount and switch time
         uints[_STAKE_AMOUNT] = 100e18;
         uints[_SWITCH_TIME] = block.timestamp;
+        // Define contract addresses
         addresses[_GOVERNANCE_CONTRACT] = _governance;
         addresses[_ORACLE_CONTRACT] = _oracle;
         addresses[_TREASURY_CONTRACT] = _treasury;
     }
 
-
+    /**
+     * @dev Returns the latest value for a specific request ID.
+     * @param _requestId the requestId to look up
+     * @return uint256 of the value of the latest value of the request ID
+     * @return bool of whether or not the value was successfully retrieved
+     */
     function getLastNewValueById(uint256 _requestId)
         external
         view
         returns (uint256, bool)
     {
-        //try new contract first
-        uint256 _timeCount =IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountById(bytes32(_requestId));
+        // Try the new contract first 
+        uint256 _timeCount = IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountById(bytes32(_requestId));
         if (_timeCount != 0) {
+            // If timestamps for the ID exist, there is value, so return the value
             return (
                 retrieveData(
                     _requestId,
@@ -39,6 +58,7 @@ contract Transition is TellorStorage,TellorVars{
                 true
             );
         } else {
+                // Else, look at old value + timestamps since mining has not started
                 Request storage _request = requestDetails[_requestId];
                 if (_request.requestTimestamps.length != 0) {
                     return (
@@ -57,8 +77,8 @@ contract Transition is TellorStorage,TellorVars{
     }
 
     /**
-     * @dev Counts the number of values that have been submitted for the request
-     * if called for the currentRequest being mined it can tell you how many miners have submitted a value for that
+     * @dev Counts the number of values that have been submitted for the request.
+     * If called for the currentRequest being mined it can tell you how many miners have submitted a value for that
      * request so far
      * @param _requestId the requestId to look up
      * @return uint count of the number of values received for the requestId
@@ -68,7 +88,7 @@ contract Transition is TellorStorage,TellorVars{
         view
         returns (uint256)
     {
-        //defaults to new one, but will give old value if new mining has not started
+        // Defaults to new one, but will give old value if new mining has not started
         uint256 _val = IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountById(bytes32(_requestId));
         if(_val > 0){
             return _val;
@@ -78,7 +98,7 @@ contract Transition is TellorStorage,TellorVars{
         }
     }
 
-        /**
+    /**
      * @dev Gets the timestamp for the value based on their index
      * @param _requestId is the requestId to look up
      * @param _index is the value index to look up
@@ -89,6 +109,7 @@ contract Transition is TellorStorage,TellorVars{
         view
         returns (uint256)
     {
+        // Try new contract first, but give old timestamp if new mining has not started
         try IOracle(addresses[_ORACLE_CONTRACT]).getReportTimestampByIndex(bytes32(_requestId),_index) returns (uint256 _val){
             return _val;
         }
@@ -123,7 +144,7 @@ contract Transition is TellorStorage,TellorVars{
     }
     
     /**
-     * @dev allows Tellor to read data from the addressVars mapping
+     * @dev Allows Tellor to read data from the addressVars mapping
      * @param _data is the keccak256("variable_name") of the variable that is being accessed.
      * These are examples of how the variables are saved within other functions:
      * addressVars[keccak256("_owner")]
@@ -176,9 +197,98 @@ contract Transition is TellorStorage,TellorVars{
         return migrated[_addy];
     }
 
+        /**
+     * @dev Gets all dispute variables
+     * @param _disputeId to look up
+     * @return bytes32 hash of dispute
+     * bool executed where true if it has been voted on
+     * bool disputeVotePassed
+     * bool isPropFork true if the dispute is a proposed fork
+     * address of reportedMiner
+     * address of reportingParty
+     * address of proposedForkAddress
+     * uint of requestId
+     * uint of timestamp
+     * uint of value
+     * uint of minExecutionDate
+     * uint of numberOfVotes
+     * uint of blocknumber
+     * uint of minerSlot
+     * uint of quorum
+     * uint of fee
+     * int count of the current tally
+     */
+    function getAllDisputeVars(uint256 _disputeId)
+        external
+        view
+        returns (
+            bytes32,
+            bool,
+            bool,
+            bool,
+            address,
+            address,
+            address,
+            uint256[9] memory,
+            int256
+        )
+    {
+        Dispute storage disp = disputesById[_disputeId];
+        return (
+            disp.hash,
+            disp.executed,
+            disp.disputeVotePassed,
+            disp.isPropFork,
+            disp.reportedMiner,
+            disp.reportingParty,
+            disp.proposedForkAddress,
+            [
+                disp.disputeUintVars[_REQUEST_ID],
+                disp.disputeUintVars[_TIMESTAMP],
+                disp.disputeUintVars[_VALUE],
+                disp.disputeUintVars[_MIN_EXECUTION_DATE],
+                disp.disputeUintVars[_NUM_OF_VOTES],
+                disp.disputeUintVars[_BLOCK_NUMBER],
+                disp.disputeUintVars[_MINER_SLOT],
+                disp.disputeUintVars[keccak256("quorum")],
+                disp.disputeUintVars[_FEE]
+            ],
+            disp.tally
+        );
+    }
+
+        /**
+     * @dev Checks if a given hash of miner,requestId has been disputed
+     * @param _hash is the sha256(abi.encodePacked(_miners[2],_requestId,_timestamp));
+     * @return uint disputeId
+     */
+    function getDisputeIdByDisputeHash(bytes32 _hash)
+        external
+        view
+        returns (uint256)
+    {
+        return disputeIdByDisputeHash[_hash];
+    }
+
+        /**
+     * @dev Checks for uint variables in the disputeUintVars mapping based on the disputeId
+     * @param _disputeId is the dispute id;
+     * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
+     * the variables/strings used to save the data in the mapping. The variables names are
+     * commented out under the disputeUintVars under the Dispute struct
+     * @return uint value for the bytes32 data submitted
+     */
+    function getDisputeUintVars(uint256 _disputeId, bytes32 _data)
+        external
+        view
+        returns (uint256)
+    {
+        return disputesById[_disputeId].disputeUintVars[_data];
+    }
+
     
     /**
-     * @dev this function is solely for the parachute contract
+     * @dev Function is solely for the parachute contract
      */
     function getNewCurrentVariables() external view returns (bytes32 _c,uint256[5] memory _r,uint256 _diff,uint256 _tip){
         _r = [uint256(1),uint256(1),uint256(1),uint256(1),uint256(1)];
@@ -188,19 +298,23 @@ contract Transition is TellorStorage,TellorVars{
     }
     
     /**
-     * @dev This allows Tellor X to fallback to the old Tellor if there are current open disputes (or disputes on old Tellor values)
+     * @dev Allows Tellor X to fallback to the old Tellor if there are current open disputes 
+     * (or disputes on old Tellor values)
      */
     fallback() external {
-        address addr = 0xdDB59729045d2292eeb8Ff96c46B8db53B88Daa2;//hardcode this in?
+        address addr = 0xdDB59729045d2292eeb8Ff96c46B8db53B88Daa2; // Main Tellor address (Harcode this in?)
+        // Obtain function header from msg.data
         bytes4 _function;
         for (uint i = 0; i < 4; i++) {
             _function |= bytes4(msg.data[i] & 0xFF) >> (i * 8);
         }
-        require(_function == bytes4(bytes32(keccak256("beginDispute(uint256,uint256,uint256)")))||
+        // Ensure that the function is allowed and related to disputes, voting, and dispute fees
+        require(_function == bytes4(bytes32(keccak256("beginDispute(uint256,uint256,uint256)"))) ||
         _function == bytes4(bytes32(keccak256("vote(uint256,bool)"))) ||
         _function == bytes4(bytes32(keccak256("tallyVotes(uint256)"))) ||
         _function == bytes4(bytes32(keccak256("unlockDisputeFee(uint256)"))),"function should be allowed"); //should autolock out after a week (no disputes can begin past a week)
-        (bool result, ) =  addr.delegatecall(msg.data);
+        // Calls the function in msg.data from main Tellor address
+        (bool result,) = addr.delegatecall(msg.data);
             assembly {
                 returndatacopy(0, 0, returndatasize())
                 switch result
@@ -214,7 +328,12 @@ contract Transition is TellorStorage,TellorVars{
            }
     }
 
-    //Internal    
+    // Internal
+    /**
+     * @dev Utilized to help slice a bytes variable into a uint
+     * @param b is the bytes variable to be sliced
+     * @return _x of the sliced uint256
+     */    
     function _sliceUint(bytes memory b) internal pure returns (uint256 _x){
         uint256 number;
         for(uint256 i=0;i<b.length;i++){
