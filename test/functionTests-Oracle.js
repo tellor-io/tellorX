@@ -207,9 +207,9 @@ describe("TellorX Function Tests - Oracle", function() {
     await oracle.submitValue( ethers.utils.formatBytes32String("1"),150,2);
     await oracle2.submitValue( ethers.utils.formatBytes32String("1"),150,3);
     let blocky2 = await ethers.provider.getBlock();
-    await h.advanceTime(86400)
-    await oracle.submitValue( ethers.utils.formatBytes32String("1"),150,4);
-    await oracle2.submitValue( ethers.utils.formatBytes32String("1"),150,5);
+    // await h.advanceTime(86400)
+    // await oracle.submitValue( ethers.utils.formatBytes32String("1"),150,4);
+    // await oracle2.submitValue( ethers.utils.formatBytes32String("1"),150,5);
     assert(await oracle.getTimestampIndexByTimestamp(ethers.utils.formatBytes32String("1"),blocky2.timestamp) == 3, "index should be correct");
     admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, govSigner);
     await admin.removeValue( ethers.utils.formatBytes32String("1"),blocky1.timestamp);
@@ -328,9 +328,9 @@ describe("TellorX Function Tests - Oracle", function() {
     let blocky = await ethers.provider.getBlock();
     assert(await oracle.getTimeOfLastNewValue() - blocky.timestamp == 0, "blockNumber should be correct")
   });
-
   it("getTimeBasedReward()", async function() {
     let miningLock = await oracle.getTimeBasedReward()
     expect(miningLock).to.equal(BigInt(5E17))
-  })
+  });
+
 });
