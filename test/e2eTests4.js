@@ -22,7 +22,7 @@ describe("End-to-End Tests - Four", function() {
       method: "hardhat_reset",
       params: [{forking: {
             jsonRpcUrl: hre.config.networks.hardhat.forking.url,
-            blockNumber:13004700
+            blockNumber:13147399
           },},],
       });
     await hre.network.provider.request({
@@ -82,7 +82,7 @@ describe("End-to-End Tests - Four", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("stake enough reporters to prove disputeFee hits minimum", async function() {
-    this.timeout(400000)
+    this.timeout(800000)
     await govBig.transfer(DEV_WALLET,await tellor.balanceOf(BIGWALLET))
     let wallet
     console.log("this may take a minute...")
@@ -103,7 +103,7 @@ describe("End-to-End Tests - Four", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue(h.tob32("1"),300);
+    await oracle.submitValue(h.tob32("1"),300,0);
     let dispFee = await governance.disputeFee()
     let initBalReporter = await tellor.balanceOf(accounts[1].address)
     let initBalDisputer = await tellor.balanceOf(accounts[2].address)
@@ -131,7 +131,7 @@ describe("End-to-End Tests - Four", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue(h.tob32("1"),300);
+    await oracle.submitValue(h.tob32("1"),300,0);
     let dispFee = await governance.disputeFee()
     let initBalReporter = await tellor.balanceOf(accounts[1].address)
     let initBalDisputer = await tellor.balanceOf(accounts[2].address)
@@ -209,7 +209,7 @@ describe("End-to-End Tests - Four", function() {
         tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
         await tellorUser.depositStake();
         oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-        await oracle.submitValue(h.tob32("1"),300);
+        await oracle.submitValue(h.tob32("1"),300,0);
         let disputerBal1 = await tellor.balanceOf(accounts[2].address)
         let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
         governance = await ethers.getContractAt("contracts/testing/TestGovernance.sol:TestGovernance",governance.address, accounts[2]);
@@ -247,7 +247,8 @@ describe("End-to-End Tests - Four", function() {
             tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[i]);
             await tellorUser.depositStake();
             oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[i]);
-            await oracle.submitValue(h.tob32("1"),300);
+            nonce = await oracle.getTimestampCountById(h.tob32("1"));
+            await oracle.submitValue(h.tob32("1"),300,nonce);
         }
         disputerBal1 = await tellor.balanceOf(accounts[2].address)
         let _maxIn = await oracle.getTimestampCountById(h.tob32("1"))  - 1
