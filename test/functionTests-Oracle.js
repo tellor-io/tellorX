@@ -7,7 +7,7 @@ const { ethers } = require("hardhat");
 const { stakeAmount } = require("./helpers/helpers");
 const { keccak256 } = require("ethers/lib/utils");
 
-describe("End-to-End Tests - Three", function() {
+describe("TellorX Function Tests - Oracle", function() {
 
   const tellorMaster = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
   const DEV_WALLET = "0x39E419bA25196794B595B2a595Ea8E527ddC9856"
