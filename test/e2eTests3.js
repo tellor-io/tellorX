@@ -84,7 +84,7 @@ describe("End-to-End Tests - Three", function() {
     await accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("2.0")});
     govSigner = await ethers.provider.getSigner(governance.address);
     });
-  
+
   it("Test a valid vote on every approved function", async function() {
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
     await tellor.connect(bigWallet).transfer(accounts[1].address,await tellor.balanceOf(BIGWALLET));
@@ -327,7 +327,7 @@ describe("End-to-End Tests - Three", function() {
     await tellor.connect(bigWallet).transfer(accounts[2].address, web3.utils.toWei("100"));
     await tellor.connect(bigWallet).transfer(accounts[1].address,await tellor.balanceOf(BIGWALLET));
     await tellorUser.depositStake();
-    await oracle.submitValue(h.tob32("1"),300);
+    await oracle.submitValue(h.tob32("1"),300,0);
     let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
     await governance.beginDispute(h.tob32("1"),_t);
     voteCount = await governance.voteCount();
@@ -358,7 +358,7 @@ describe("End-to-End Tests - Three", function() {
     await admin.mint(accounts[1].address, web3.utils.toWei("200000"));
     await admin.mint(accounts[2].address, web3.utils.toWei("100"));
     await tellorUser.depositStake();
-    await oracle.submitValue(h.tob32("1"),300);
+    await oracle.submitValue(h.tob32("1"),300,0);
     let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
     // Round 1
     await governance.beginDispute(h.tob32("1"),_t);
@@ -404,7 +404,7 @@ describe("End-to-End Tests - Three", function() {
     await admin.mint(accounts[1].address, web3.utils.toWei("200000"));
     await admin.mint(accounts[2].address, web3.utils.toWei("100"));
     await tellorUser.depositStake();
-    await oracle.submitValue(h.tob32("1"),300);
+    await oracle.submitValue(h.tob32("1"),300,0);
     let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
     // Round 1
     await governance.beginDispute(h.tob32("1"),_t);
@@ -451,7 +451,7 @@ describe("End-to-End Tests - Three", function() {
     await admin.mint(accounts[2].address, web3.utils.toWei("100"));
     // No votes on dispute
     await tellorUser.depositStake();
-    await oracle.submitValue(h.tob32("1"),300);
+    await oracle.submitValue(h.tob32("1"),300,0);
     let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
     await governance.beginDispute(h.tob32("1"),_t);
     voteCount = await governance.voteCount();
