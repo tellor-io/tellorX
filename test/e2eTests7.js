@@ -24,7 +24,7 @@ describe("End-to-End Tests - Seven", function() {
       method: "hardhat_reset",
       params: [{forking: {
             jsonRpcUrl: hre.config.networks.hardhat.forking.url,
-            blockNumber:13037866
+            blockNumber:13147682
 
           },},],
       });
