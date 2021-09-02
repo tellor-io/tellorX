@@ -5,7 +5,7 @@ var assert = require('assert');
 const web3 = require('web3');
 const fetch = require('node-fetch')
 
-describe("TellorX Function Tests - Controller", function() {
+describe("TellorX Function Tests - Token", function() {
 
     const tellorMaster = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
     const DEV_WALLET = "0x39E419bA25196794B595B2a595Ea8E527ddC9856"
