@@ -16,7 +16,7 @@ describe("TellorX Function Tests - Transition", function() {
     let govSigner = null
     let run = 0;
     let mainnetBlock = 0;
-  
+
   beforeEach("deploy and setup TellorX", async function() {
     this.timeout(100000)
     if(run == 0){
@@ -42,7 +42,7 @@ describe("TellorX Function Tests - Transition", function() {
       params: [BIGWALLET]}
     )
         //Steps to Deploy:
-        //Deploy Governance, Oracle, Treasury, and Controller. 
+        //Deploy Governance, Oracle, Treasury, and Controller.
         //Fork mainnet Ethereum, changeTellorContract to Controller
         //run init in Controller
 
@@ -98,11 +98,11 @@ describe("TellorX Function Tests - Transition", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue(h.uintTob32(1),150);//clear inflationary rewards
+    await oracle2.submitValue(h.uintTob32(1),150,0);//clear inflationary rewards
     let blocky = await ethers.provider.getBlock();
     _t = await tellor.getTimestampbyRequestIDandIndex(1,0);
     assert(_t == blocky.timestamp, "timestamp should be correct")
-  });  
+  });
   it("retrieveData()", async function() {
     let _index = await tellor.getNewValueCountbyRequestId(1);
     let _t = await tellor.getTimestampbyRequestIDandIndex(1,_index -2);
@@ -112,7 +112,7 @@ describe("TellorX Function Tests - Transition", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue(h.uintTob32(1),150);//clear inflationary rewards
+    await oracle2.submitValue(h.uintTob32(1),150,0);//clear inflationary rewards
     _t = tellor.getTimestampbyRequestIDandIndex(1,0);
     rdata = await tellor.retrieveData(1,_t);
     assert(rdata-150 == 0 , "data must be correct")
@@ -125,7 +125,7 @@ describe("TellorX Function Tests - Transition", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue(h.uintTob32(1),150);//clear inflationary rewards
+    await oracle2.submitValue(h.uintTob32(1),150,0);//clear inflationary rewards
     rdata = await tellor.getLastNewValueById(1);
     assert(rdata[0] -150 == 0 , "data must be correct")
     assert(rdata[1], "must get data")
@@ -135,7 +135,7 @@ describe("TellorX Function Tests - Transition", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue( ethers.utils.formatBytes32String("1"),150);//clear inflationary rewards
+    await oracle2.submitValue( ethers.utils.formatBytes32String("1"),150,0);//clear inflationary rewards
     let val = oracle.getCurrentValue(ethers.utils.formatBytes32String("1"))
     assert(await tellor.sliceUintTest(val) - 150 == 0, "sliceUint shoudl work properly")
   });
@@ -213,11 +213,11 @@ describe("TellorX Function Tests - Transition", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue(h.uintTob32(1),150);//clear inflationary rewards
+    await oracle2.submitValue(h.uintTob32(1),150,0);//clear inflationary rewards
     _index = await tellor.getNewValueCountbyRequestId(1);
     assert(_index == 1, "new index should be correct")
     await h.advanceTime(86400 * 2.5)
-    await oracle2.submitValue(h.uintTob32(1),150);//clear inflationary rewards
+    await oracle2.submitValue(h.uintTob32(1),150,1);//clear inflationary rewards
     _index = await tellor.getNewValueCountbyRequestId(1);
     assert(_index == 2, "new index should be correct again")
   });

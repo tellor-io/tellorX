@@ -18,7 +18,7 @@ describe("End-to-End Tests - Five", function() {
     let govSigner = null
     let run = 0;
     let mainnetBlock = 0;
-  
+
   beforeEach("deploy and setup TellorX", async function() {
     this.timeout(100000)
     if(run == 0){
@@ -44,7 +44,7 @@ describe("End-to-End Tests - Five", function() {
       params: [BIGWALLET]}
     )
         //Steps to Deploy:
-        //Deploy Governance, Oracle, Treasury, and Controller. 
+        //Deploy Governance, Oracle, Treasury, and Controller.
         //Fork mainnet Ethereum, changeTellorContract to Controller
         //run init in Controller
 
@@ -87,7 +87,7 @@ describe("End-to-End Tests - Five", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("Test dispute and settling on old contract (transition)", async function() {
-      this.timeout(30000)
+      this.timeout(300000)
         const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
         mainnetBlock = directors.height - 15;
         console.log("     Forking from block: ",mainnetBlock)
