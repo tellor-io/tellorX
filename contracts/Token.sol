@@ -209,7 +209,7 @@ contract Token is TellorStorage,TellorVars{
 
     /**
      * @dev Helps swap the old Tellor contract Tokens to the new one
-     * @param _to is the adress to send minted amount to
+     * @param _to is the address to send minted amount to
      * @param _amount is the amount of TRB to send
     */
     function _doMint(address _to, uint256 _amount) internal {
@@ -236,7 +236,7 @@ contract Token is TellorStorage,TellorVars{
 
     /**
      * @dev Helps burn TRB Tokens
-     * @param _from is the adress to burn or remove TRB amount
+     * @param _from is the address to burn or remove TRB amount
      * @param _amount is the amount of TRB to burn
      */
     function _doBurn(address _from, uint256 _amount) internal {
