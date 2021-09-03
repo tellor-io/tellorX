@@ -11,7 +11,7 @@ import "hardhat/console.sol";
  @title Transition
 * @dev The Transition contract links to the Oracle contract and 
 * allows parties (like Liquity) to continue to use the master
-* address to acesss values. All parties should be reading values
+* address to accesss values. All parties should be reading values
 * through this address
 */
 contract Transition is TellorStorage,TellorVars{
