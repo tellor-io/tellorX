@@ -81,7 +81,7 @@ describe("End-to-End Tests - One", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("Mine 2 values on 50 different ID's", async function() {
-    this.timeout(110000)
+    this.timeout(210000)
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
     await tellor.transfer(accounts[3].address,web3.utils.toWei("200"));
