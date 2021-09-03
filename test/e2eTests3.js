@@ -3,15 +3,20 @@ const { expect } = require("chai");
 const h = require("./helpers/helpers");
 var assert = require('assert');
 const web3 = require('web3');
+const { ethers } = require("hardhat");
+const { stakeAmount } = require("./helpers/helpers");
+const { keccak256 } = require("ethers/lib/utils");
 
 describe("End-to-End Tests - Three", function() {
 
-    const tellorMaster = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
-    const DEV_WALLET = "0x39E419bA25196794B595B2a595Ea8E527ddC9856"
-    let accounts = null
-    let tellor = null
-    let cfac,ofac,tfac,gfac
-    let govSigner = null
+  const tellorMaster = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
+  const DEV_WALLET = "0x39E419bA25196794B595B2a595Ea8E527ddC9856"
+  const PARACHUTE = "0x83eB2094072f6eD9F57d3F19f54820ee0BaE6084"
+  const BIGWALLET = "0xf977814e90da44bfa03b6295a0616a897441acec";
+  let accounts = null
+  let tellor = null
+  let cfac,ofac,tfac,gfac,parachute,govBig,govTeam
+  let govSigner = null
 
   beforeEach("deploy and setup TellorX", async function() {
     accounts = await ethers.getSigners();
@@ -19,19 +24,28 @@ describe("End-to-End Tests - Three", function() {
       method: "hardhat_reset",
       params: [{forking: {
             jsonRpcUrl: hre.config.networks.hardhat.forking.url,
-            blockNumber:12762660
+            blockNumber:13147399
+
           },},],
       });
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
       params: [DEV_WALLET]}
     )
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [PARACHUTE]}
+    )
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [BIGWALLET]}
+    )
         //Steps to Deploy:
         //Deploy Governance, Oracle, Treasury, and Controller.
         //Fork mainnet Ethereum, changeTellorContract to Controller
         //run init in Controller
 
-    oldTellorInstance = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor", tellorMaster)
+    oldTellorInstance = await ethers.getContractAt("contracts/tellor3/ITellor.sol:ITellor", tellorMaster)
     gfac = await ethers.getContractFactory("contracts/testing/TestGovernance.sol:TestGovernance");
     ofac = await ethers.getContractFactory("contracts/Oracle.sol:Oracle");
     tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury");
@@ -45,23 +59,35 @@ describe("End-to-End Tests - Three", function() {
     await treasury.deployed();
     await controller.deployed();
     await accounts[0].sendTransaction({to:DEV_WALLET,value:ethers.utils.parseEther("1.0")});
-    const devWallet = await ethers.provider.getSigner(DEV_WALLET);
+    devWallet = await ethers.provider.getSigner(DEV_WALLET);
+    bigWallet = await ethers.provider.getSigner(BIGWALLET);
     master = await oldTellorInstance.connect(devWallet)
-    await master.changeTellorContract(controller.address);
+    await master.proposeFork(controller.address);
+    let _id = await master.getUintVar(h.hash("_DISPUTE_COUNT"))
+    await master.vote(_id,true)
+    master = await oldTellorInstance.connect(bigWallet)
+    await master.vote(_id,true);
+    await h.advanceTime(86400 * 8)
+    await master.tallyVotes(_id)
+    await h.advanceTime(86400 * 2.5)
+    await master.updateTellor(_id)
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, devWallet);
+    parachute = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",PARACHUTE, devWallet);
+    govTeam = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, devWallet);
+    govBig = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, bigWallet);
     await tellor.deployed();
     await tellor.init(governance.address,oracle.address,treasury.address)
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
       params: [governance.address]}
     )
-    await accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("1.0")});
+    await accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("2.0")});
     govSigner = await ethers.provider.getSigner(governance.address);
-  });
+    });
+
   it("Test a valid vote on every approved function", async function() {
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
-    admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
-    await admin.mint(accounts[1].address, web3.utils.toWei("200000"));
+    await tellor.connect(bigWallet).transfer(accounts[1].address,await tellor.balanceOf(BIGWALLET));
     let voteCount;
 
     // ****************************************
@@ -69,7 +95,8 @@ describe("End-to-End Tests - Three", function() {
     // ****************************************
     let newController = await cfac.deploy();
     await newController.deployed();
-    await governance.proposeVote(tellorMaster, 0x3c46a185, "0x000000000000000000000000d9Ad0E4E18F2430719E73b2f824C54CFA5D703b6", 0);
+    proposalData = ethers.utils.hexZeroPad(newController.address, 32);
+    await governance.proposeVote(tellorMaster, 0x3c46a185, proposalData, 0);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, true, false);
     await h.advanceTime(604800);
@@ -84,7 +111,8 @@ describe("End-to-End Tests - Three", function() {
     // ****************************************
     let newGovernance = await gfac.deploy();
     await newGovernance.deployed();
-    await governance.proposeVote(tellorMaster, 0xe8ce51d7, "0x0000000000000000000000002B63d6e98E66C7e9fe11225Ba349B0B33234D9A2", 0);
+    proposalData = ethers.utils.hexZeroPad(newGovernance.address, 32);
+    await governance.proposeVote(tellorMaster, 0xe8ce51d7, proposalData, 0);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, true, false);
     await h.advanceTime(604800);
@@ -99,7 +127,8 @@ describe("End-to-End Tests - Three", function() {
     // ****************************************
     let newOracle = await ofac.deploy();
     await newOracle.deployed();
-    await governance.proposeVote(tellorMaster, 0x1cbd3151, "0x000000000000000000000000729b7E8D2021F888015416d53b9d82666ec94469", 0);
+    proposalData = ethers.utils.hexZeroPad(newOracle.address, 32);
+    await governance.proposeVote(tellorMaster, 0x1cbd3151, proposalData, 0);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, true, false);
     await h.advanceTime(604800);
@@ -114,7 +143,8 @@ describe("End-to-End Tests - Three", function() {
     // ****************************************
     let newTreasury = await tfac.deploy();
     await newTreasury.deployed();
-    await governance.proposeVote(tellorMaster, 0xbd87e0c9, "0x000000000000000000000000aAC692b4F235B14C855F50f7068944AFe5b75A95", 0);
+    proposalData = ethers.utils.hexZeroPad(newTreasury.address, 32);
+    await governance.proposeVote(tellorMaster, 0xbd87e0c9, proposalData, 0);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, true, false);
     await h.advanceTime(604800);
@@ -213,4 +243,284 @@ describe("End-to-End Tests - Three", function() {
     let blockNumber = await ethers.provider.getBlockNumber();
     assert(await governance.delegateOfAt(treasury.address, blockNumber) == accounts[2].address, "Delegate should be correct")
   });
+
+  it("Upgrade Governance Contract", async function() {
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
+    await tellor.connect(bigWallet).transfer(accounts[1].address,await tellor.balanceOf(BIGWALLET));
+    let voteCount;
+    let newGovernance = await gfac.deploy();
+    await newGovernance.deployed();
+    proposalData = ethers.utils.hexZeroPad(newGovernance.address, 32);
+    await governance.proposeVote(tellorMaster, 0xe8ce51d7, proposalData, 0);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, true, false);
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    await h.advanceTime(86400);
+    await governance.executeVote(voteCount);
+    assert(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == newGovernance.address, "Governance contract address variable should be correct");
+  });
+
+  it("Upgrade Oracle Contract", async function() {
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
+    await tellor.connect(bigWallet).transfer(accounts[1].address,await tellor.balanceOf(BIGWALLET));
+    let voteCount;
+    let newOracle = await ofac.deploy();
+    await newOracle.deployed();
+    proposalData = ethers.utils.hexZeroPad(newOracle.address, 32);
+    await governance.proposeVote(tellorMaster, 0x1cbd3151, proposalData, 0);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, true, false);
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    await h.advanceTime(86400);
+    await governance.executeVote(voteCount);
+    assert(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == newOracle.address, "Oracle contract address variable should be correct");
+  });
+
+  it("Test  a valid vote on a valid function but that reverts (invalid data)", async function() {
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
+    await tellor.connect(bigWallet).transfer(accounts[1].address,await tellor.balanceOf(BIGWALLET));
+    let voteCount;
+    let tofac = await ethers.getContractFactory("contracts/testing/TestToken.sol:TestToken");
+    let newToken = await tofac.deploy();
+    await newToken.deployed();
+    proposalData = ethers.utils.hexZeroPad(newToken.address, 32); // Invalid contract address, no verify() function
+    await governance.proposeVote(tellorMaster, 0x3c46a185, proposalData, 0); //propose changeControllerContract(address)
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, true, false);
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    await h.advanceTime(86400);
+    await governance.executeVote(voteCount);
+    assert(await tellor.getAddressVars(h.hash("_TELLOR_CONTRACT")) == controller.address, "Controller contract address variable should be correct");
+  });
+
+  it("Test  a valid vote on an invalid function", async function() {
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
+    await tellor.connect(bigWallet).transfer(accounts[1].address,await tellor.balanceOf(BIGWALLET));
+    admin = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, govSigner);
+    await admin.setApprovedFunction(0x1a434191, true); //invalid function: changeTreasuryContracts(address)
+    let voteCount;
+    let newTreasury = await tfac.deploy();
+    await newTreasury.deployed();
+    proposalData = ethers.utils.hexZeroPad(newTreasury.address, 32);
+    await governance.proposeVote(tellorMaster, 0x1a434191, proposalData, 0);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, true, false);
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    await h.advanceTime(86400);
+    await governance.executeVote(voteCount);
+    assert(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")) == treasury.address, "Treasury contract address variable should be correct");
+    let voteInfo = await governance.getVoteInfo(voteCount);
+    assert(voteInfo[2][0], "Vote should be executed");
+  });
+
+  it("Test invalid vote result", async function() {
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
+    oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
+    // admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
+    // await admin.mint(accounts[1].address, web3.utils.toWei("200000"));
+    // await admin.mint(accounts[2].address, web3.utils.toWei("100"));
+    await tellor.connect(bigWallet).transfer(accounts[2].address, web3.utils.toWei("100"));
+    await tellor.connect(bigWallet).transfer(accounts[1].address,await tellor.balanceOf(BIGWALLET));
+    await tellorUser.depositStake();
+    await oracle.submitValue(h.tob32("1"),300,0);
+    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    await governance.beginDispute(h.tob32("1"),_t);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, false, true);
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    await h.advanceTime(86400);
+    let disputerBal0 = await tellorUser.balanceOf(accounts[1].address);
+    await governance.executeVote(voteCount);
+    let disputerBal1 = await tellorUser.balanceOf(accounts[1].address);
+    let voteInfo = await governance.getVoteInfo(voteCount);
+    let fee = voteInfo[1][3];
+    let sum = disputerBal0.add(fee);
+    assert(sum.eq(disputerBal1), "Disputer balance should be correct");
+    assert(voteInfo[2][0], "Vote should be executed");
+    assert(voteInfo[3] == 2, "Vote result should be correct");
+    let reporterBal = await tellorUser.balanceOf(accounts[2].address);
+    assert(reporterBal == web3.utils.toWei("100"), "Reporter balance should be correct");
+    let stakerInfo = await tellorUser.getStakerInfo(accounts[2].address);
+    assert(stakerInfo[0] == 1, "Staker info should be correct");
+  });
+
+  it("Test multiple rounds ending in an invalid vote result", async function() {
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
+    oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
+    admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
+    await admin.mint(accounts[1].address, web3.utils.toWei("200000"));
+    await admin.mint(accounts[2].address, web3.utils.toWei("100"));
+    await tellorUser.depositStake();
+    await oracle.submitValue(h.tob32("1"),300,0);
+    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    // Round 1
+    await governance.beginDispute(h.tob32("1"),_t);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, false, true);
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    // Round 2
+    await governance.beginDispute(h.tob32("1"),_t);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, false, true);
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    // Round 3
+    await governance.beginDispute(h.tob32("1"),_t);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, false, true);
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    await h.advanceTime(86400*3);
+    let disputerBal0 = await tellorUser.balanceOf(accounts[1].address);
+    await governance.executeVote(voteCount);
+    let disputerBal1 = await tellorUser.balanceOf(accounts[1].address);
+    let voteInfo1 = await governance.getVoteInfo(1);
+    let voteInfo2 = await governance.getVoteInfo(2);
+    let voteInfo3 = await governance.getVoteInfo(3);
+    let fee = voteInfo1[1][3].add(voteInfo2[1][3].add(voteInfo3[1][3]));
+    let sum = disputerBal0.add(fee);
+    assert(sum.eq(disputerBal1), "Disputer balance should be correct");
+    assert(voteInfo3[2][0], "Vote should be executed");
+    assert(voteInfo3[3] == 2, "Vote result should be correct");
+    let reporterBal = await tellorUser.balanceOf(accounts[2].address);
+    assert(reporterBal == web3.utils.toWei("100"), "Reporter balance should be correct");
+    let stakerInfo = await tellorUser.getStakerInfo(accounts[2].address);
+    assert(stakerInfo[0] == 1, "Staker info should be correct");
+  });
+
+  it("Test multiple vote rounds on an ID", async function() {
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
+    oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
+    admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
+    await admin.mint(accounts[1].address, web3.utils.toWei("200000"));
+    await admin.mint(accounts[2].address, web3.utils.toWei("100"));
+    await tellorUser.depositStake();
+    await oracle.submitValue(h.tob32("1"),300,0);
+    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    // Round 1
+    await governance.beginDispute(h.tob32("1"),_t);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, false, false);
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    // Round 2
+    await governance.beginDispute(h.tob32("1"),_t);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, true, false);
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    // Round 3
+    await governance.beginDispute(h.tob32("1"),_t);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, true, false);
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    await h.advanceTime(86400*3);
+    let disputerBal0 = await tellorUser.balanceOf(accounts[1].address);
+    await governance.executeVote(voteCount);
+    let disputerBal1 = await tellorUser.balanceOf(accounts[1].address);
+    let voteInfo1 = await governance.getVoteInfo(1);
+    let voteInfo2 = await governance.getVoteInfo(2);
+    let voteInfo3 = await governance.getVoteInfo(3);
+    let fee = voteInfo1[1][3].add(voteInfo2[1][3].add(voteInfo3[1][3]));
+    let sum = disputerBal0.add(fee.add(web3.utils.toWei("100")));
+    assert(sum.eq(disputerBal1), "Disputer balance should be correct");
+    assert(voteInfo3[2][0], "Vote should be executed");
+    assert(voteInfo3[3] == 1, "Vote result should be correct");
+    let reporterBal = await tellorUser.balanceOf(accounts[2].address);
+    assert(reporterBal == 0, "Reporter balance should be correct");
+    let stakerInfo = await tellorUser.getStakerInfo(accounts[2].address);
+    assert(stakerInfo[0] == 5, "Staker info should be correct");
+  });
+
+  it("Ensure no votes on a dispute means invalid and on a function vote is failed", async function() {
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
+    oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
+    admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
+    await admin.mint(accounts[1].address, web3.utils.toWei("200000"));
+    await admin.mint(accounts[2].address, web3.utils.toWei("100"));
+    // No votes on dispute
+    await tellorUser.depositStake();
+    await oracle.submitValue(h.tob32("1"),300,0);
+    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    await governance.beginDispute(h.tob32("1"),_t);
+    voteCount = await governance.voteCount();
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    await h.advanceTime(86400);
+    let disputerBal0 = await tellorUser.balanceOf(accounts[1].address);
+    await governance.executeVote(voteCount);
+    let disputerBal1 = await tellorUser.balanceOf(accounts[1].address);
+    let voteInfo = await governance.getVoteInfo(voteCount);
+    let fee = voteInfo[1][3];
+    let sum = disputerBal0.add(fee);
+    assert(sum.eq(disputerBal1), "Disputer balance should be correct");
+    assert(voteInfo[2][0], "Vote should be executed");
+    assert(voteInfo[3] == 2, "Vote result should be correct");
+    let reporterBal = await tellorUser.balanceOf(accounts[2].address);
+    assert(reporterBal == web3.utils.toWei("100"), "Reporter balance should be correct");
+    let stakerInfo = await tellorUser.getStakerInfo(accounts[2].address);
+    assert(stakerInfo[0] == 1, "Staker info should be correct");
+    assert(voteInfo[1][5] == 0, "Quantity of votes for should be correct");
+    assert(voteInfo[1][6] == 0, "Quantity of votes against should be correct");
+    assert(voteInfo[1][7] == 0, "Quantity of votes invalid should be correct");
+    // No votes on function vote
+    let newOracle = await ofac.deploy();
+    await newOracle.deployed();
+    proposalData = ethers.utils.hexZeroPad(newOracle.address, 32);
+    await governance.proposeVote(tellorMaster, 0x1cbd3151, proposalData, 0);
+    voteCount = await governance.voteCount();
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    await h.advanceTime(86400);
+    await governance.executeVote(voteCount);
+    assert(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == oracle.address, "Oracle contract address variable should be correct");
+    voteInfo = await governance.getVoteInfo(voteCount);
+    assert(voteInfo[3] == 0, "Vote result should be correct");
+  });
+
+  it("Treasury buyer votes 2/3 times, does the treasury reward math check out?", async function() {
+    governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
+    admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
+    treasGov = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, govSigner);
+    treasury = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[1]);
+    await admin.mint(accounts[1].address, web3.utils.toWei("130"));
+    let voteCount;
+    let treasDuration = 2592000;
+    let treasRate = 700;
+    let treasAmount = web3.utils.toWei("100");
+    await treasGov.issueTreasury(web3.utils.toWei("100"),treasRate,treasDuration);
+    await treasury.buyTreasury(1,web3.utils.toWei("100"));
+    let newGovernance = await gfac.deploy();
+    // Proposal 1
+    await newGovernance.deployed();
+    proposalData = ethers.utils.hexZeroPad(newGovernance.address, 32);
+    await governance.proposeVote(tellorMaster, 0xe8ce51d7, proposalData, 0);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, true, false);
+    // Proposal 2
+    await governance.proposeVote(tellorMaster, 0xe8ce51d7, proposalData, 0);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, true, false);
+    // Proposal 3
+    await governance.proposeVote(tellorMaster, 0xe8ce51d7, proposalData, 0);
+    voteCount = await governance.voteCount();
+    await h.advanceTime(treasDuration);
+    await treasury.payTreasury(accounts[1].address,1);
+    let realBal = await tellor.balanceOf(accounts[1].address);
+    treasAmount = ethers.BigNumber.from(treasAmount);
+    let expectedBal = treasAmount.mul(treasRate).div(10000).mul(2).div(3).add(treasAmount);
+    assert(realBal.eq(expectedBal), "User balance should be correct");
+  });
+
 });
