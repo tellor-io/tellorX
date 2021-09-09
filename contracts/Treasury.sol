@@ -63,10 +63,10 @@ contract Treasury is TellorVars{
         address governanceContract = IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT);
         if(_treas.accounts[msg.sender].amount == 0) {
           _treas.accounts[msg.sender].startVoteCount = IGovernance(governanceContract).getVoteCount();
+          _treas.owners.push(msg.sender);
         }
         _treas.purchasedAmount += _amount;
         _treas.accounts[msg.sender].amount += _amount;
-        _treas.owners.push(msg.sender);
         totalLocked += _amount;
         emit TreasuryPurchased(msg.sender,_amount);
     }
