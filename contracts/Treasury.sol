@@ -29,9 +29,9 @@ contract Treasury is TellorVars{
     // Internal struct used to keep track of a treasury and its pertinent attributes (amount, interest rate, etc.)
     struct TreasuryDetails{
         uint256 dateStarted; // the date that treasury was started
-        uint256 totalAmount; // the total amount stored in the treasury, in TRB
+        uint256 maxAmount; // the maximum amount stored in the treasury, in TRB
         uint256 rate; // the interest rate of the treasury, in BP
-        uint256 purchased; // the amount of TRB purchased from the treasury
+        uint256 purchasedAmount; // the amount of TRB purchased from the treasury
         uint256 duration; // the time in which the treasury locks participants
         uint256 endVoteCount; // the end vote count for when the treasury duration is over
         bool endVoteCountRecorded; // determines if the vote count has been calculated or not
@@ -43,7 +43,7 @@ contract Treasury is TellorVars{
     event TreasuryIssued(uint256 _id,uint256 _amount,uint256 _rate);
     event TreasuryPaid(address _investor, uint256 _amount);
     event TreasuryPurchased(address _investor,uint256 _amount);
-    
+
     // Functions
     /**
      * @dev This is an external function that is used to deposit money into a treasury.
@@ -52,17 +52,21 @@ contract Treasury is TellorVars{
     */
     function buyTreasury(uint256 _id,uint256 _amount) external {
         // Transfer sender funds to Treasury
-        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_amount));
+        require(_amount > 0, "Amount must be greater than zero.");
+        require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_amount), "Insufficient balance. Try a lower amount.");
         treasuryFundsByUser[msg.sender]+=_amount;
         // Check for sufficient treasury funds
         TreasuryDetails storage _treas = treasury[_id];
-        require(_amount <= _treas.totalAmount - _treas.purchased, "Not enough money in treasury left to purchase.");
-        // Update treasury details -- vote count, purchased, amount, and owners
+        require(_treas.dateStarted + _treas.duration > block.timestamp, "Treasury duration has expired.");
+        require(_amount <= _treas.maxAmount - _treas.purchasedAmount, "Not enough money in treasury left to purchase.");
+        // Update treasury details -- vote count, purchasedAmount, amount, and owners
         address governanceContract = IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT);
-        _treas.accounts[msg.sender].startVoteCount = IGovernance(governanceContract).getVoteCount();
-        _treas.purchased += _amount;
-        _treas.accounts[msg.sender].amount += _amount;      
-        _treas.owners.push(msg.sender);
+        if(_treas.accounts[msg.sender].amount == 0) {
+          _treas.accounts[msg.sender].startVoteCount = IGovernance(governanceContract).getVoteCount();
+          _treas.owners.push(msg.sender);
+        }
+        _treas.purchasedAmount += _amount;
+        _treas.accounts[msg.sender].amount += _amount;
         totalLocked += _amount;
         emit TreasuryPurchased(msg.sender,_amount);
     }
@@ -80,34 +84,34 @@ contract Treasury is TellorVars{
     /**
      * @dev This is an external function that is used to issue a new treasury.
      * Note that only the governance contract can call this function.
-     * @param _totalAmount is the amount of total TRB that treasury stores
+     * @param _maxAmount is the amount of total TRB that treasury stores
      * @param _rate is the treasury's interest rate in BP
      * @param _duration is the amount of time the treasury locks participants
     */
-    function issueTreasury(uint256 _totalAmount, uint256 _rate, uint256 _duration) external{
+    function issueTreasury(uint256 _maxAmount, uint256 _rate, uint256 _duration) external{
         require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT), "Only governance contract is allowed to issue a treasury.");
         // Increment treasury count, and define new treasury and its details (start date, total amount, rate, etc.)
         treasuryCount++;
         TreasuryDetails storage _treas = treasury[treasuryCount];
         _treas.dateStarted = block.timestamp;
-        _treas.totalAmount = _totalAmount;
+        _treas.maxAmount = _maxAmount;
         _treas.rate = _rate;
         _treas.duration = _duration;
-        emit TreasuryIssued(treasuryCount,_totalAmount,_rate);
+        emit TreasuryIssued(treasuryCount,_maxAmount,_rate);
     }
 
     /**
-     * @dev This functions allows an investor to pay the treasury. Internally, the function calculates the number of 
+     * @dev This functions allows an investor to pay the treasury. Internally, the function calculates the number of
      votes in governance contract when issued, and also transfers the amount individually locked + interest to the investor.
      * @param _id is the ID of the treasury the account is stored in
-     * @param _investor is the address of the account in the treasury 
+     * @param _investor is the address of the account in the treasury
      */
     function payTreasury(address _investor,uint256 _id) external{
         // Validate ID of treasury, duration for treasury has not passed, and the user has not paid
         TreasuryDetails storage treas = treasury[_id];
         require(_id <= treasuryCount, "ID does not correspond to a valid treasury.");
-        require(treas.dateStarted + treas.duration <= block.timestamp);
-        require(!treas.accounts[_investor].paid);
+        require(treas.dateStarted + treas.duration <= block.timestamp, "Treasury duration has not expired.");
+        require(!treas.accounts[_investor].paid, "Treasury investor has already been paid.");
         // Calculate non-voting penalty (treasury holders have to vote)
         uint256 numVotesParticipated;
         uint256 votesSinceTreasury;
@@ -184,7 +188,7 @@ contract Treasury is TellorVars{
     }
 
     function getTreasuryDetails(uint256 _id) external view returns(uint256,uint256,uint256,uint256){
-        return(treasury[_id].dateStarted,treasury[_id].totalAmount,treasury[_id].rate,treasury[_id].purchased);
+        return(treasury[_id].dateStarted,treasury[_id].maxAmount,treasury[_id].rate,treasury[_id].purchasedAmount);
     }
 
     /**
