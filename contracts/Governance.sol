@@ -10,7 +10,7 @@ import "hardhat/console.sol";
 /**
  @author Tellor Inc.
  @title Governance
- @dev This is the Governance contract which defines the functionality for 
+ @dev This is the Governance contract which defines the functionality for
  * proposing and executing votes, handling vote mechanism for voters,
  * and distributing funds for initiators and disputed reporters depending
  * on result.
@@ -35,7 +35,7 @@ contract Governance is TellorVars{
 
     struct Dispute {
         bytes32 requestId; // ID of the dispute
-        uint timestamp; // timestamp of when the dispute was initiated 
+        uint timestamp; // timestamp of when the dispute was initiated
         bytes value; // the value being disputed
         address reportedMiner; // miner who submitted the 'bad value' will get disputeFee if dispute vote fails
     }
@@ -145,6 +145,12 @@ contract Governance is TellorVars{
         require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee)); // This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
         // Add an initial tip and change the current staking status of reporter
         IOracle(_oracle).addTip(_requestId,_fee/10);
+        (uint256 _status,) = IController(TELLOR_ADDRESS).getStakerInfo(_thisDispute.reportedMiner);
+        if(_status == 1) {
+            uint256 stakeCount = IController(TELLOR_ADDRESS).getUintVar(_STAKE_COUNT);
+            IController(TELLOR_ADDRESS).changeUint(_STAKE_COUNT, stakeCount-1);
+            updateMinDisputeFee();
+        }
         IController(TELLOR_ADDRESS).changeStakingStatus(_reporter,3);
         emit NewDispute(_id, _requestId, _timestamp, _reporter);
     }
@@ -213,7 +219,7 @@ contract Governance is TellorVars{
     }
 
     /**
-     * @dev Executes vote by using result and transferring balance to either 
+     * @dev Executes vote by using result and transferring balance to either
      * initiator or disputed reporter
      * @param _id is the ID of the vote being executed
      */
@@ -262,6 +268,8 @@ contract Governance is TellorVars{
                     _thisVote = voteInfo[_voteID];
                    _controller.transfer(_thisVote.initiator,_thisVote.fee);
                 }
+                uint256 stakeCount = IController(TELLOR_ADDRESS).getUintVar(_STAKE_COUNT);
+                IController(TELLOR_ADDRESS).changeUint(_STAKE_COUNT, stakeCount+1);
                 _controller.changeStakingStatus(_thisDispute.reportedMiner,1); // Change staking status of disputed reporter, but don't slash
             }else if(_thisVote.result == VoteResult.FAILED){
                 // If vote is in dispute and fails, iterate through each vote round and transfer the dispute to disputed reporter
@@ -270,6 +278,8 @@ contract Governance is TellorVars{
                     _thisVote = voteInfo[_voteID];
                     _controller.transfer(_thisDispute.reportedMiner,_thisVote.fee);
                 }
+                uint256 stakeCount = IController(TELLOR_ADDRESS).getUintVar(_STAKE_COUNT);
+                IController(TELLOR_ADDRESS).changeUint(_STAKE_COUNT, stakeCount-1);
                 _controller.changeStakingStatus(_thisDispute.reportedMiner,1);
             }
             emit VoteExecuted(_id, _thisVote.result);
@@ -397,7 +407,7 @@ contract Governance is TellorVars{
             disputeFee = _stakeAmt - _reducer;
         }
     }
-    
+
     /**
      * @dev Used during the upgrade process to verify valid Tellor Contracts
      */
