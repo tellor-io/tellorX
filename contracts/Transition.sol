@@ -9,7 +9,7 @@ import "hardhat/console.sol";
 /**
  @author Tellor Inc.
  @title Transition
-* @dev The Transition contract links to the Oracle contract and 
+* @dev The Transition contract links to the Oracle contract and
 * allows parties (like Liquity) to continue to use the master
 * address to accesss values. All parties should be reading values
 * through this address
@@ -26,9 +26,10 @@ contract Transition is TellorStorage,TellorVars{
         // Ensure sender is owner and transaction only occurs once
         require(msg.sender == addresses[_OWNER], "Only the owner address can initiate a transition");
         require(addresses[_GOVERNANCE_CONTRACT] == address(0), "Only good once");
-        // Set state amount and switch time
+        // Set state amount, switch time, and minimum dispute fee
         uints[_STAKE_AMOUNT] = 100e18;
         uints[_SWITCH_TIME] = block.timestamp;
+        uints[_MINIMUM_DISPUTE_FEE] = 10e18;
         // Define contract addresses
         addresses[_GOVERNANCE_CONTRACT] = _governance;
         addresses[_ORACLE_CONTRACT] = _oracle;
@@ -46,7 +47,7 @@ contract Transition is TellorStorage,TellorVars{
         view
         returns (uint256, bool)
     {
-        // Try the new contract first 
+        // Try the new contract first
         uint256 _timeCount = IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountById(bytes32(_requestId));
         if (_timeCount != 0) {
             // If timestamps for the ID exist, there is value, so return the value
@@ -142,7 +143,7 @@ contract Transition is TellorStorage,TellorVars{
     function decimals() external pure returns (uint8) {
         return 18;
     }
-    
+
     /**
      * @dev Allows Tellor to read data from the addressVars mapping
      * @param _data is the keccak256("variable_name") of the variable that is being accessed.
@@ -179,7 +180,7 @@ contract Transition is TellorStorage,TellorVars{
     function symbol() external pure returns (string memory) {
         return "TRB";
     }
-    
+
     /**
      * @dev Getter for the total_supply of oracle tokens
      * @return uint total supply
@@ -286,7 +287,7 @@ contract Transition is TellorStorage,TellorVars{
         return disputesById[_disputeId].disputeUintVars[_data];
     }
 
-    
+
     /**
      * @dev Function is solely for the parachute contract
      */
@@ -296,9 +297,9 @@ contract Transition is TellorStorage,TellorVars{
         _tip = 0;
         _c = keccak256(abi.encode(IOracle(addresses[_ORACLE_CONTRACT]).getTimeOfLastNewValue()));
     }
-    
+
     /**
-     * @dev Allows Tellor X to fallback to the old Tellor if there are current open disputes 
+     * @dev Allows Tellor X to fallback to the old Tellor if there are current open disputes
      * (or disputes on old Tellor values)
      */
     fallback() external {
@@ -333,7 +334,7 @@ contract Transition is TellorStorage,TellorVars{
      * @dev Utilized to help slice a bytes variable into a uint
      * @param b is the bytes variable to be sliced
      * @return _x of the sliced uint256
-     */    
+     */
     function _sliceUint(bytes memory b) internal pure returns (uint256 _x){
         uint256 number;
         for(uint256 i=0;i<b.length;i++){

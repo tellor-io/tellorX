@@ -23,4 +23,6 @@ contract TellorVars is TellorVariables{
         0x1436a1a60dca0ebb2be98547e57992a0fa082eb479e7576303cbd384e934f1fa;
     bytes32 constant _SWITCH_TIME =
         0x6c0e91a96227393eb6e42b88e9a99f7c5ebd588098b549c949baf27ac9509d8f;
+    bytes32 constant _MINIMUM_DISPUTE_FEE =
+        0x7335d16d7e7f6cb9f532376441907fe76aa2ea267285c82892601f4755ed15f0;
 }

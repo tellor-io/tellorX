@@ -10,7 +10,7 @@ import "hardhat/console.sol";
 /**
  @author Tellor Inc.
  @title Governance
- @dev This is the Governance contract which defines the functionality for 
+ @dev This is the Governance contract which defines the functionality for
  * proposing and executing votes, handling vote mechanism for voters,
  * and distributing funds for initiators and disputed reporters depending
  * on result.
@@ -35,7 +35,7 @@ contract Governance is TellorVars{
 
     struct Dispute {
         bytes32 requestId; // ID of the dispute
-        uint timestamp; // timestamp of when the dispute was initiated 
+        uint timestamp; // timestamp of when the dispute was initiated
         bytes value; // the value being disputed
         address reportedMiner; // miner who submitted the 'bad value' will get disputeFee if dispute vote fails
     }
@@ -213,7 +213,7 @@ contract Governance is TellorVars{
     }
 
     /**
-     * @dev Executes vote by using result and transferring balance to either 
+     * @dev Executes vote by using result and transferring balance to either
      * initiator or disputed reporter
      * @param _id is the ID of the vote being executed
      */
@@ -385,19 +385,20 @@ contract Governance is TellorVars{
         uint256 _stakeAmt = IController(TELLOR_ADDRESS).uints(_STAKE_AMOUNT);
         uint256 _trgtMiners = IController(TELLOR_ADDRESS).uints(_TARGET_MINERS);
         uint256 _stakeCount = IController(TELLOR_ADDRESS).uints(_STAKE_COUNT);
+        uint256 _minFee = IController(TELLOR_ADDRESS).uints(_MINIMUM_DISPUTE_FEE);
         uint256 _reducer;
         // Calculate total dispute fee using stake count
         if(_stakeCount > 0){
-            _reducer = (_stakeAmt * (_min(_trgtMiners, _stakeCount) * 1000)/_trgtMiners)/1000;
+            _reducer = ((_stakeAmt - _minFee) * (_stakeCount * 1000)/_trgtMiners)/1000;
         }
-        if(_reducer >= _stakeAmt){
-            disputeFee = 15e18;
+        if(_reducer >= _stakeAmt - _minFee){
+            disputeFee = _minFee;
         }
         else{
             disputeFee = _stakeAmt - _reducer;
         }
     }
-    
+
     /**
      * @dev Used during the upgrade process to verify valid Tellor Contracts
      */
@@ -559,11 +560,4 @@ contract Governance is TellorVars{
         }
         emit Voted(_id, _supports, _voter, voteWeight,_invalidQuery);
     }
-
-    /**
-     * @dev Calculates minimum of two uint256s
-     */
-    function _min(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a < b ? a : b;
-    }
-}
+  }
