@@ -395,13 +395,14 @@ contract Governance is TellorVars{
         uint256 _stakeAmt = IController(TELLOR_ADDRESS).uints(_STAKE_AMOUNT);
         uint256 _trgtMiners = IController(TELLOR_ADDRESS).uints(_TARGET_MINERS);
         uint256 _stakeCount = IController(TELLOR_ADDRESS).uints(_STAKE_COUNT);
+        uint256 _minFee = IController(TELLOR_ADDRESS).uints(_MINIMUM_DISPUTE_FEE);
         uint256 _reducer;
         // Calculate total dispute fee using stake count
         if(_stakeCount > 0){
-            _reducer = (_stakeAmt * (_min(_trgtMiners, _stakeCount) * 1000)/_trgtMiners)/1000;
+            _reducer = ((_stakeAmt - _minFee) * (_stakeCount * 1000)/_trgtMiners)/1000;
         }
-        if(_reducer >= _stakeAmt){
-            disputeFee = 15e18;
+        if(_reducer >= _stakeAmt - _minFee){
+            disputeFee = _minFee;
         }
         else{
             disputeFee = _stakeAmt - _reducer;
@@ -569,11 +570,4 @@ contract Governance is TellorVars{
         }
         emit Voted(_id, _supports, _voter, voteWeight,_invalidQuery);
     }
-
-    /**
-     * @dev Calculates minimum of two uint256s
-     */
-    function _min(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a < b ? a : b;
-    }
-}
+  }
