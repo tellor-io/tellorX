@@ -81,7 +81,7 @@ describe("End-to-End Tests - Four", function() {
     await accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("1.0")});
     govSigner = await ethers.provider.getSigner(governance.address);
   });
-  it("stake enough reporters to prove disputeFee hits minimum", async function() {
+  it("stake enough reporters to prove disputeFee hits minimum [ @skip-on-coverage ]", async function() {
     this.timeout(800000)
     await govBig.transfer(DEV_WALLET,await tellor.balanceOf(BIGWALLET))
     let wallet
@@ -198,7 +198,7 @@ describe("End-to-End Tests - Four", function() {
     assert(await governance.didVote(2,accounts[4].address),"user4 should have voted")
     assert(await governance.didVote(2,accounts[5].address),"user5 should have voted")
     })
-    it("Have and print dispute costs by number of ID's disputed and disputeRounds", async function() {
+    it("Have and print dispute costs by number of ID's disputed and disputeRounds [ @skip-on-coverage ]", async function() {
         tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
         await tellor.changeUint(h.hash("_TARGET_MINERS"),1)
         tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, devWallet);
@@ -278,7 +278,7 @@ describe("End-to-End Tests - Four", function() {
         console.log("5 disputes : ", c4)
         console.log()
     })
-    it("Calculate gas costs of using delegate array to vote (1, 10, 100, 200 delegates)", async function() {
+    it("Calculate gas costs of using delegate array to vote (1, 10, 100, 200 delegates) [ @skip-on-coverage ]", async function() {
         this.timeout(400000)
         await govBig.transfer(DEV_WALLET,await tellor.balanceOf(BIGWALLET))
         let wallet

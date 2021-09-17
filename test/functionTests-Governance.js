@@ -84,7 +84,7 @@ describe("TellorX Function Tests - Governance", function() {
   });
   it("constructor()", async function() {
     let initFuncs = [0x3c46a185,0xe8ce51d7,0x1cbd3151,0xbd87e0c9, 0x740358e6,
-      0x40c10f19,0xe48d4b3b,0xfad40294,0xe280e8e8,0x6274885f,0xf3ff955a];
+      0x40c10f19,0xe48d4b3b,0xe280e8e8,0x6274885f,0xf3ff955a];
     for(let _i =0;_i< initFuncs.length;_i++){
       res = await governance.isFunctionApproved(initFuncs[_i])
       assert(res == true, "Function should be approved")

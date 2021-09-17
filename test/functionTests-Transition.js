@@ -83,6 +83,7 @@ describe("TellorX Function Tests - Transition", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("init()", async function() {
+    this.timeout(800000)
     assert(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == governance.address, "Governance Address should be correct");
     assert(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")) == treasury.address, "Governance Address should be correct");
     assert(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == oracle.address, "Governance Address should be correct");
