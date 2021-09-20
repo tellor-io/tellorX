@@ -72,7 +72,7 @@ contract Governance is TellorVars{
      * @dev Initializes approved function hashes and updates the minimum dispute fees
      */
     constructor(){
-        bytes4[11] memory _funcs = [
+        bytes4[10] memory _funcs = [
             bytes4(0x3c46a185), // changeControllerContract(address)
             0xe8ce51d7, // changeGovernanceContract(address)
             0x1cbd3151, // changeOracleContract(address)
@@ -80,7 +80,6 @@ contract Governance is TellorVars{
             0x740358e6, // changeUint(bytes32,uint256)
             0x40c10f19, // mint(address,uint256)
             0xe48d4b3b, // setApprovedFunction(bytes4,bool)
-            0xfad40294, // changeTypeInformation(uint256,uint256,uint256)
             0xe280e8e8, // changeMiningLock(uint256)
             0x6274885f, // issueTreasury(uint256,uint256,uint256)
             0xf3ff955a // delegateVotingPower(address)
@@ -338,7 +337,8 @@ contract Governance is TellorVars{
      * @param _val is the boolean of the function's status (approved or not)
      */
     function setApprovedFunction(bytes4 _func, bool _val) public{
-        require(msg.sender == address(this), "Only the Governance contract can change a function's status");
+        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT),
+            "Only the Governance contract can change a function's status");
         functionApproved[_func] = _val;
     }
 
@@ -436,7 +436,8 @@ contract Governance is TellorVars{
      */
     function voteFor(address[] calldata _addys,uint256 _id, bool _supports, bool _invalidQuery) external{
         for(uint _i=0;_i<_addys.length;_i++){
-            require(delegateOfAt(_addys[_i],voteInfo[_id].blockNumber) == msg.sender, "Sender is not delegated to vote for this address");
+            require(delegateOfAt(_addys[_i],voteInfo[_id].blockNumber) == msg.sender,
+                "Sender is not delegated to vote for this address");
             _vote(_addys[_i],_id,_supports,_invalidQuery);
         }
     }
@@ -552,7 +553,7 @@ contract Governance is TellorVars{
         ITreasury _treasury = ITreasury(_controller.addresses(_TREASURY_CONTRACT));
         // Add to vote weight of voter based on treasury funds, reports submitted, and total tips
         voteWeight += _treasury.getTreasuryFundsByUser(_voter);
-        voteWeight +=  _oracle.getReportsSubmittedByAddress(_voter) * 1e18;
+        voteWeight += _oracle.getReportsSubmittedByAddress(_voter) * 1e18;
         voteWeight += _oracle.getTipsByUser(_voter);
         // Make sure voter can't already be disputed, has already voted, or if balance is 0
         (uint256 _status,) = _controller.getStakerInfo(_voter);
