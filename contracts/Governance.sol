@@ -10,7 +10,7 @@ import "hardhat/console.sol";
 /**
  @author Tellor Inc.
  @title Governance
- @dev This is the Governance contract which defines the functionality for 
+ @dev This is the Governance contract which defines the functionality for
  * proposing and executing votes, handling vote mechanism for voters,
  * and distributing funds for initiators and disputed reporters depending
  * on result.
@@ -35,7 +35,7 @@ contract Governance is TellorVars{
 
     struct Dispute {
         bytes32 requestId; // ID of the dispute
-        uint timestamp; // timestamp of when the dispute was initiated 
+        uint timestamp; // timestamp of when the dispute was initiated
         bytes value; // the value being disputed
         address reportedMiner; // miner who submitted the 'bad value' will get disputeFee if dispute vote fails
     }
@@ -72,7 +72,7 @@ contract Governance is TellorVars{
      * @dev Initializes approved function hashes and updates the minimum dispute fees
      */
     constructor(){
-        bytes4[11] memory _funcs = [
+        bytes4[10] memory _funcs = [
             bytes4(0x3c46a185), // changeControllerContract(address)
             0xe8ce51d7, // changeGovernanceContract(address)
             0x1cbd3151, // changeOracleContract(address)
@@ -80,7 +80,6 @@ contract Governance is TellorVars{
             0x740358e6, // changeUint(bytes32,uint256)
             0x40c10f19, // mint(address,uint256)
             0xe48d4b3b, // setApprovedFunction(bytes4,bool)
-            0xfad40294, // changeTypeInformation(uint256,uint256,uint256)
             0xe280e8e8, // changeMiningLock(uint256)
             0x6274885f, // issueTreasury(uint256,uint256,uint256)
             0xf3ff955a // delegateVotingPower(address)
@@ -145,6 +144,12 @@ contract Governance is TellorVars{
         require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee)); // This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
         // Add an initial tip and change the current staking status of reporter
         IOracle(_oracle).addTip(_requestId,_fee/10);
+        (uint256 _status,) = IController(TELLOR_ADDRESS).getStakerInfo(_thisDispute.reportedMiner);
+        if(_status == 1) {
+            uint256 stakeCount = IController(TELLOR_ADDRESS).getUintVar(_STAKE_COUNT);
+            IController(TELLOR_ADDRESS).changeUint(_STAKE_COUNT, stakeCount-1);
+            updateMinDisputeFee();
+        }
         IController(TELLOR_ADDRESS).changeStakingStatus(_reporter,3);
         emit NewDispute(_id, _requestId, _timestamp, _reporter);
     }
@@ -213,7 +218,7 @@ contract Governance is TellorVars{
     }
 
     /**
-     * @dev Executes vote by using result and transferring balance to either 
+     * @dev Executes vote by using result and transferring balance to either
      * initiator or disputed reporter
      * @param _id is the ID of the vote being executed
      */
@@ -262,6 +267,8 @@ contract Governance is TellorVars{
                     _thisVote = voteInfo[_voteID];
                    _controller.transfer(_thisVote.initiator,_thisVote.fee);
                 }
+                uint256 stakeCount = IController(TELLOR_ADDRESS).getUintVar(_STAKE_COUNT);
+                IController(TELLOR_ADDRESS).changeUint(_STAKE_COUNT, stakeCount+1);
                 _controller.changeStakingStatus(_thisDispute.reportedMiner,1); // Change staking status of disputed reporter, but don't slash
             }else if(_thisVote.result == VoteResult.FAILED){
                 // If vote is in dispute and fails, iterate through each vote round and transfer the dispute to disputed reporter
@@ -270,6 +277,8 @@ contract Governance is TellorVars{
                     _thisVote = voteInfo[_voteID];
                     _controller.transfer(_thisDispute.reportedMiner,_thisVote.fee);
                 }
+                uint256 stakeCount = IController(TELLOR_ADDRESS).getUintVar(_STAKE_COUNT);
+                IController(TELLOR_ADDRESS).changeUint(_STAKE_COUNT, stakeCount-1);
                 _controller.changeStakingStatus(_thisDispute.reportedMiner,1);
             }
             emit VoteExecuted(_id, _thisVote.result);
@@ -328,7 +337,8 @@ contract Governance is TellorVars{
      * @param _val is the boolean of the function's status (approved or not)
      */
     function setApprovedFunction(bytes4 _func, bool _val) public{
-        require(msg.sender == address(this), "Only the Governance contract can change a function's status");
+        require(msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT),
+            "Only the Governance contract can change a function's status");
         functionApproved[_func] = _val;
     }
 
@@ -385,19 +395,20 @@ contract Governance is TellorVars{
         uint256 _stakeAmt = IController(TELLOR_ADDRESS).uints(_STAKE_AMOUNT);
         uint256 _trgtMiners = IController(TELLOR_ADDRESS).uints(_TARGET_MINERS);
         uint256 _stakeCount = IController(TELLOR_ADDRESS).uints(_STAKE_COUNT);
+        uint256 _minFee = IController(TELLOR_ADDRESS).uints(_MINIMUM_DISPUTE_FEE);
         uint256 _reducer;
         // Calculate total dispute fee using stake count
         if(_stakeCount > 0){
-            _reducer = (_stakeAmt * (_min(_trgtMiners, _stakeCount) * 1000)/_trgtMiners)/1000;
+            _reducer = ((_stakeAmt - _minFee) * (_stakeCount * 1000)/_trgtMiners)/1000;
         }
-        if(_reducer >= _stakeAmt){
-            disputeFee = 15e18;
+        if(_reducer >= _stakeAmt - _minFee){
+            disputeFee = _minFee;
         }
         else{
             disputeFee = _stakeAmt - _reducer;
         }
     }
-    
+
     /**
      * @dev Used during the upgrade process to verify valid Tellor Contracts
      */
@@ -425,7 +436,8 @@ contract Governance is TellorVars{
      */
     function voteFor(address[] calldata _addys,uint256 _id, bool _supports, bool _invalidQuery) external{
         for(uint _i=0;_i<_addys.length;_i++){
-            require(delegateOfAt(_addys[_i],voteInfo[_id].blockNumber) == msg.sender, "Sender is not delegated to vote for this address");
+            require(delegateOfAt(_addys[_i],voteInfo[_id].blockNumber) == msg.sender,
+                "Sender is not delegated to vote for this address");
             _vote(_addys[_i],_id,_supports,_invalidQuery);
         }
     }
@@ -541,7 +553,7 @@ contract Governance is TellorVars{
         ITreasury _treasury = ITreasury(_controller.addresses(_TREASURY_CONTRACT));
         // Add to vote weight of voter based on treasury funds, reports submitted, and total tips
         voteWeight += _treasury.getTreasuryFundsByUser(_voter);
-        voteWeight +=  _oracle.getReportsSubmittedByAddress(_voter) * 1e18;
+        voteWeight += _oracle.getReportsSubmittedByAddress(_voter) * 1e18;
         voteWeight += _oracle.getTipsByUser(_voter);
         // Make sure voter can't already be disputed, has already voted, or if balance is 0
         (uint256 _status,) = _controller.getStakerInfo(_voter);
@@ -559,11 +571,4 @@ contract Governance is TellorVars{
         }
         emit Voted(_id, _supports, _voter, voteWeight,_invalidQuery);
     }
-
-    /**
-     * @dev Calculates minimum of two uint256s
-     */
-    function _min(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a < b ? a : b;
-    }
-}
+  }

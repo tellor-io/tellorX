@@ -84,7 +84,7 @@ describe("TellorX Function Tests - Governance", function() {
   });
   it("constructor()", async function() {
     let initFuncs = [0x3c46a185,0xe8ce51d7,0x1cbd3151,0xbd87e0c9, 0x740358e6,
-      0x40c10f19,0xe48d4b3b,0xfad40294,0xe280e8e8,0x6274885f,0xf3ff955a];
+      0x40c10f19,0xe48d4b3b,0xe280e8e8,0x6274885f,0xf3ff955a];
     for(let _i =0;_i< initFuncs.length;_i++){
       res = await governance.isFunctionApproved(initFuncs[_i])
       assert(res == true, "Function should be approved")
@@ -109,15 +109,17 @@ describe("TellorX Function Tests - Governance", function() {
     h.expectThrow(governance.beginDispute(h.tob32("1"),_t + 86400));//not a valid timestamp
     h.expectThrow(governance.beginDispute(h.tob32("1"),_t + 86400));//no tokens to pay fee
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
+    let _stakers0 = await tellor.getUintVar(h.hash("_STAKE_COUNT"))
     await governance.beginDispute(h.tob32("1"),_t);
+    let _stakers1 = await tellor.getUintVar(h.hash("_STAKE_COUNT"))
     let _hash = ethers.utils.solidityKeccak256(['bytes32','uint256'], [h.tob32("1"),_t])
     let voteVars = await governance.getVoteInfo(1)
+    assert(_stakers0 - _stakers1 == 1, "_STAKE_COUNT should be correct")
     assert(voteVars[0] == _hash, "identifier hash should be correct")
     assert(voteVars[1][0] == 1, "vote round should be 1")
     assert(voteVars[1][1] >= _t , "vote start date should be correct")
     assert(voteVars[1][2] > 0, "vote block number should be greater than 0")
-    let _stakers = await tellor.getUintVar(h.hash("_STAKE_COUNT"))
-    let _fee = web3.utils.toWei("100") - web3.utils.toWei("100") * _stakers/web3.utils.toBN("200")
+    let _fee = web3.utils.toWei("100") - (web3.utils.toWei("100") - web3.utils.toWei("10")) * _stakers0/web3.utils.toBN("200")
     assert(voteVars[1][3] ==  _fee * 9/10, "fee should be correct")
     assert(voteVars[1][4] == 0, "tallyDate should be 0")
     assert(voteVars[2][1], "should be a dispute")
@@ -199,17 +201,24 @@ describe("TellorX Function Tests - Governance", function() {
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[3]);
     await oracle.submitValue(h.tob32("2"),300,0);
     _t = await oracle.getReportTimestampByIndex(h.tob32("2"),0);
+    stakeCount0 = await tellor.getUintVar(h.hash("_STAKE_COUNT"))
     await governance.beginDispute(h.tob32("2"),_t);
+    stakeCount1 = await tellor.getUintVar(h.hash("_STAKE_COUNT"))
+    assert(stakeCount0 - stakeCount1 == 1, "_STAKE_COUNT should be correct")
     await h.advanceTime(86400 * 3)
     await governance.tallyVotes(2)
     await governance.beginDispute(h.tob32("2"),_t);
+    assert(stakeCount0 - stakeCount1 == 1, "_STAKE_COUNT should be correct")
     await h.expectThrow(governance.executeVote(2));//must be the final vote
     await h.advanceTime(86400 * 3)
     await governance.tallyVotes(3)
-    h.expectThrow(governance.executeVote(2));//must be the final vot
+    h.expectThrow(governance.executeVote(2));//must be the final vote
     await h.advanceTime(86400 * 2.5)
+    stakeCount0 = await tellor.getUintVar(h.hash("_STAKE_COUNT"))
     await governance.executeVote(3)
+    stakeCount1 = await tellor.getUintVar(h.hash("_STAKE_COUNT"))
     assert(voteVars[2][0] == true, "vote should be executed")
+    assert(stakeCount1 - stakeCount0 == 1, "_STAKE_COUNT should be correct")
   });
   it("proposeVote()", async function() {
     let newController = await cfac.deploy();
@@ -266,10 +275,10 @@ describe("TellorX Function Tests - Governance", function() {
     master= await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
     await master.changeUint(h.hash("_STAKE_COUNT"),1000)
     await governance.updateMinDisputeFee();
-    assert(await governance.disputeFee() - h.to18(15) == 0, "Dispute Fee should be a minimum")
+    assert(await governance.disputeFee() - h.to18(10) == 0, "Dispute Fee should be a minimum")
     await master.changeUint(h.hash("_STAKE_COUNT"),5)
     await governance.updateMinDisputeFee();
-    assert(await governance.disputeFee() - web3.utils.toWei("97.5") == 0, "Dispute Fee should be close to maximum")
+    assert(await governance.disputeFee() - web3.utils.toWei("97.75") == 0, "Dispute Fee should be close to maximum")
     await master.changeUint(h.hash("_STAKE_COUNT"),0)
     await governance.updateMinDisputeFee();
     assert(await governance.disputeFee() - await master.getUintVar(h.hash("_STAKE_AMOUNT")) == 0, "Dispute Fee should be stake")
@@ -375,10 +384,6 @@ describe("TellorX Function Tests - Governance", function() {
     voteVars = await governance.getVoteInfo(2)
     assert(await tellor.balanceOf(accounts[7].address) == 0, "should have no actual TRB balance")
     assert(voteVars[1][5] - web3.utils.toWei("500")== 0, "vote changes properly with treasury input")
-  });
-  it("_min", async function() {
-    assert(await governance.testMin(2,3) == 2, "minimum should be correct")
-    assert(await governance.testMin(12,3) == 3, "minimum should be correct2")
   });
   it("getDelegateInfo()", async function() {
     governance = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, accounts[2]);

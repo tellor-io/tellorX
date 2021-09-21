@@ -12,11 +12,11 @@
  require("@nomiclabs/hardhat-etherscan");
  require("dotenv").config();
  //require("@nomiclabs/hardhat-web3");
- 
+
  //Run this commands to deploy tellor playground:
  //npx hardhat deploy --net rinkeby --network rinkeby
  //npx hardhat deploy --net mainnet --network mainnet
- 
+
  task("deploy", "Deploy and verify the contracts")
  .addParam("net", "network to deploy in")
  .setAction(async taskArgs => {
@@ -54,7 +54,7 @@
     await governance.deployTransaction.wait(3)
 
     console.log('submitting governance contract for verification...');
-    await run("verify:verify", 
+    await run("verify:verify",
       {
       address: governance.address,
       },
@@ -84,7 +84,7 @@
 
     console.log('submitting Oracle contract for verification...');
 
-    await run("verify:verify", 
+    await run("verify:verify",
       {
       address: oracle.address,
       },
@@ -143,7 +143,7 @@
 
     console.log('submitting contract for verification...');
 
-    await run("verify:verify", 
+    await run("verify:verify",
       {
       address: controller.address,
       },
@@ -154,7 +154,7 @@
 
 
  })
- 
+
 module.exports = {
   solidity: {
     compilers: [
@@ -203,7 +203,7 @@ module.exports = {
       //   accounts: [process.env.PRIVATE_KEY],
       //   gas: 10000000 ,
       //   gasPrice: 50000000000
-      // }  
+      // }
   },
   etherscan: {
     // Your API key for Etherscan
@@ -217,7 +217,12 @@ module.exports = {
     disambiguatePaths: false,
   },
 
+  mocha: {
+    grep: "@skip-on-coverage", // Find everything with this tag
+    invert: true               // Run the grep's inverse set.
+  }
 
 
- 
+
+
 }
