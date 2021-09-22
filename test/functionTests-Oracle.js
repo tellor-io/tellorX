@@ -87,10 +87,10 @@ describe("TellorX Function Tests - Oracle", function() {
   it("addTip()", async function() {
     var ts = await tellor.totalSupply()
     oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2),'0x');//must have funds
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"))
-    h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),0));//tip must be greater than 0
-    oracle1.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("100"))
+    h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),0,'0x'));//tip must be greater than 0
+    oracle1.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("100"),'0x')
     assert(await oracle.getTipsByUser(accounts[1].address) == web3.utils.toWei("50"), "tips by user should be correct")
     assert(await oracle.getTipsById(ethers.utils.formatBytes32String("1")) == web3.utils.toWei("50"), "tips by ID should be correct")
     assert(await oracle.tipsInContract() == web3.utils.toWei("50"), "tips in contract should be correct")
@@ -110,7 +110,7 @@ describe("TellorX Function Tests - Oracle", function() {
     await oracle2.submitValue( ethers.utils.formatBytes32String("2"),150,nonce);//clear inflationary rewards
     await tellor.transfer(oracle.address,web3.utils.toWei("200"));//funding the oracle for inflationary rewards
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle2.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("10"))
+    await oracle2.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("10"),'0x')
     let initBal = await tellor.balanceOf(accounts[1].address)
     nonce = await oracle.getTimestampCountById(ethers.utils.formatBytes32String("1"));
     await oracle.submitValue( ethers.utils.formatBytes32String("1"),150,nonce);
@@ -160,7 +160,7 @@ describe("TellorX Function Tests - Oracle", function() {
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
     await oracle.submitValue(ethers.utils.formatBytes32String("1"),150,0);
     let blocky1 = await ethers.provider.getBlock();
-    await oracle.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("5"));
+    await oracle.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("5"),'0x');
     await h.advanceTime(10000);
     let currentReward = await oracle.currentReward(ethers.utils.formatBytes32String("1"));
     assert(currentReward[0] == web3.utils.toWei("2.5"), "Tip should be correct");
@@ -194,8 +194,8 @@ describe("TellorX Function Tests - Oracle", function() {
   it("getTipsById()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.addTip(ethers.utils.formatBytes32String("1"),500)
-    await oracle.addTip(ethers.utils.formatBytes32String("1"),500)
+    await oracle.addTip(ethers.utils.formatBytes32String("1"),500,'0x')
+    await oracle.addTip(ethers.utils.formatBytes32String("1"),500,'0x')
     assert(await oracle.getTipsById(ethers.utils.formatBytes32String("1")) - 500 == 0, "tips should be correct")
   });
   it("getTimestampCountById()", async function() {
@@ -280,8 +280,8 @@ describe("TellorX Function Tests - Oracle", function() {
   it("getTipsByUser()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.addTip(ethers.utils.formatBytes32String("1"),500)
-    await oracle.addTip(ethers.utils.formatBytes32String("1"),500)
+    await oracle.addTip(ethers.utils.formatBytes32String("1"),500,'0x')
+    await oracle.addTip(ethers.utils.formatBytes32String("1"),500,'0x')
     assert(await oracle.getTipsByUser(accounts[1].address) - 500 == 0, "tips should be correct")
   });
   it("getValueByTimestamp()", async function() {

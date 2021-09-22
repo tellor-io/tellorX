@@ -105,7 +105,7 @@ describe("End-to-End Tests - One", function() {
         }
         _i = _count % 4 + 1
         oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[_i]);
-        await oracle.addTip(h.uintTob32(_id),_count*100)
+        await oracle.addTip(h.uintTob32(_id),_count*100,'0x')
         nonce = await oracle.getTimestampCountById(h.uintTob32(_id));
         await oracle.submitValue(h.uintTob32(_id), (_count * 1000), nonce)
         blocky = await ethers.provider.getBlock();
@@ -193,19 +193,19 @@ describe("End-to-End Tests - One", function() {
   it("Staked miners should not be able to tip or get under their stake amount", async function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2,'0x'));//must have funds
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     await tellorUser.depositStake();
-    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2,'0x'));//must have funds
     await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
     await tellorUser.requestStakingWithdraw()
-    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2,'0x'));//must have funds
     await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
   })
   it("Check reducing stake amount in the future", async function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2,'0x'));//must have funds
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     await tellorUser.depositStake();
     //vote to reduce the stakeAmount
@@ -219,14 +219,14 @@ describe("End-to-End Tests - One", function() {
     await h.advanceTime(86400 * 3)
     await governance.executeVote(1)
     assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) == web3.utils.toWei("50"), "stake amount should change properly")
-    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("51")));//must have funds
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("51"),'0x'));//must have funds
     await h.expectThrow(tellorUser.transfer(accounts[2].address,web3.utils.toWei("52")));//must have funds
     await tellorUser.transfer(accounts[4].address,web3.utils.toWei("50"))
   })
   it("Check reducing stake amount in the future", async function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2,'0x'));//must have funds
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     await tellorUser.depositStake();
     //vote to reduce the stakeAmount
@@ -247,7 +247,7 @@ describe("End-to-End Tests - One", function() {
     await govTeam.vote(2,true,false);
     assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) == web3.utils.toWei("50"), "stake amount should change properly")
     await tellorUser.transfer(accounts[4].address,web3.utils.toWei("50"))
-    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2,'0x'));//must have funds
     await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
     await h.advanceTime(86400 * 8)
     await governance.tallyVotes(2);
@@ -296,7 +296,7 @@ describe("End-to-End Tests - One", function() {
   it("Check increasing stake amount in the future", async function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2,'0x'));//must have funds
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     await tellorUser.depositStake();
     //vote to reduce the stakeAmount
@@ -310,7 +310,7 @@ describe("End-to-End Tests - One", function() {
     await h.advanceTime(86400 * 3)
     await governance.executeVote(1)
     assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) == web3.utils.toWei("200"), "stake amount should change properly")
-    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("51")));//must have funds
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),web3.utils.toWei("51"),'0x'));//must have funds
     await h.expectThrow(tellorUser.transfer(accounts[2].address,web3.utils.toWei("52")));//must have funds
     await tellor.transfer(accounts[1].address,web3.utils.toWei("50"));
     await h.expectThrow(tellorUser.transfer(accounts[4].address,web3.utils.toWei("50")));
@@ -325,7 +325,7 @@ describe("End-to-End Tests - One", function() {
   it("Check increasing stake amount in the future", async function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2,'0x'));//must have funds
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     await tellorUser.depositStake();
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
@@ -345,7 +345,7 @@ describe("End-to-End Tests - One", function() {
     await govTeam.vote(2,true,false);
     assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) == web3.utils.toWei("200"), "stake amount should change properly")
     await h.expectThrow(tellorUser.transfer(accounts[4].address,web3.utils.toWei("50")))
-    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2));//must have funds
+    await h.expectThrow(oracle1.addTip(ethers.utils.formatBytes32String("1"),2,'0x'));//must have funds
     await h.expectThrow(tellorUser.transfer(accounts[2].address,2));//must have funds
     await h.advanceTime(86400 * 8)
     await governance.tallyVotes(2);

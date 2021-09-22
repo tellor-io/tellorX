@@ -18,7 +18,7 @@ describe("TellorX Function Tests - Transition", function() {
     let mainnetBlock = 0;
 
   beforeEach("deploy and setup TellorX", async function() {
-    this.timeout(100000)
+    this.timeout(1000000)
     if(run == 0){
       const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
       mainnetBlock = directors.height - 15;
@@ -184,7 +184,7 @@ describe("TellorX Function Tests - Transition", function() {
     await tellorUser.tallyVotes(newId);
     await h.advanceTime(86400 * 2.5)
     await tellorUser.unlockDisputeFee(newId);
-    await h.expectThrow(tellorUser.addTip(1,5))
+    await h.expectThrow(tellorUser.addTip(1,5,'0x'))
     await h.expectThrow(tellorUser.getNewVariablesOnDeck())
   }).timeout(40000);
   it("name()", async function() {

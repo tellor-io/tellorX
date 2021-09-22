@@ -336,7 +336,7 @@ describe("TellorX Function Tests - Governance", function() {
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
     oracle6 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[6]);
     oracle5 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[5]);
-    await oracle5.addTip(ethers.utils.formatBytes32String("1"), 10)
+    await oracle5.addTip(ethers.utils.formatBytes32String("1"), 10,'0x')
     for(i=0;i<5;i++){
       await h.advanceTime(86400 * .6)
       nonce = await oracle.getTimestampCountById(ethers.utils.formatBytes32String("3"));

@@ -10,7 +10,7 @@ interface IOracle{
     function removeValue(bytes32 _id, uint256 _timestamp) external;
     function getReportsSubmittedByAddress(address _reporter) external view returns(uint256);
     function getTipsByUser(address _user) external view returns(uint256);
-    function addTip(bytes32 _id, uint256 _tip) external;
+    function addTip(bytes32 _id, uint256 _tip, bytes calldata _data) external;
     function submitValue(bytes32 _id, bytes calldata _value) external;
     function burnTips() external;
     function verify() external pure returns(uint);
