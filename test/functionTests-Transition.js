@@ -18,7 +18,7 @@ describe("TellorX Function Tests - Transition", function() {
     let mainnetBlock = 0;
 
   beforeEach("deploy and setup TellorX", async function() {
-    this.timeout(100000)
+    this.timeout(20000000)
     if(run == 0){
       const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
       mainnetBlock = directors.height - 15;
@@ -83,7 +83,7 @@ describe("TellorX Function Tests - Transition", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("init()", async function() {
-    this.timeout(800000)
+    this.timeout(20000000)
     assert(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == governance.address, "Governance Address should be correct");
     assert(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")) == treasury.address, "Governance Address should be correct");
     assert(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == oracle.address, "Governance Address should be correct");
@@ -184,7 +184,7 @@ describe("TellorX Function Tests - Transition", function() {
     await tellorUser.tallyVotes(newId);
     await h.advanceTime(86400 * 2.5)
     await tellorUser.unlockDisputeFee(newId);
-    await h.expectThrow(tellorUser.addTip(1,5))
+    await h.expectThrow(tellorUser.addTip(1,5,'0x'))
     await h.expectThrow(tellorUser.getNewVariablesOnDeck())
   }).timeout(40000);
   it("name()", async function() {

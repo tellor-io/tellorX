@@ -19,6 +19,7 @@ describe("End-to-End Tests - Two", function() {
   let govSigner = null
 
   beforeEach("deploy and setup TellorX", async function() {
+    this.timeout(20000000)
     accounts = await ethers.getSigners();
     await hre.network.provider.request({
       method: "hardhat_reset",
@@ -85,7 +86,7 @@ describe("End-to-End Tests - Two", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
     });
   it("What happens if a staked miner is disputed twice? (maybe have window for disputes to prevent this?)", async function() {
-
+    this.timeout(20000000)
     //create miner and two disputers
     let n = 42
     let [v1, reporter, disputer1, disputer2] = await ethers.getSigners()

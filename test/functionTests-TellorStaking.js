@@ -18,7 +18,7 @@ describe("TellorX Function Tests - TellorStaking", function() {
     let mainnetBlock = 0;
 
   beforeEach("deploy and setup TellorX", async function() {
-    this.timeout(100000)
+    this.timeout(20000000)
     if(run == 0){
       const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
       mainnetBlock = directors.height - 20;
@@ -83,6 +83,7 @@ describe("TellorX Function Tests - TellorStaking", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("depositStake()", async function() {
+    this.timeout(20000000)
     let iStakeCount = await tellor.getUintVar(h.hash("_STAKE_COUNT"));
     let iDispFee = await governance.disputeFee();
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);

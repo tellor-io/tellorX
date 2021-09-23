@@ -17,6 +17,7 @@ describe("End-to-End Tests - Four", function() {
     let govSigner = null
 
   beforeEach("deploy and setup TellorX", async function() {
+    this.timeout(20000000)
     accounts = await ethers.getSigners();
     await hre.network.provider.request({
       method: "hardhat_reset",
@@ -82,7 +83,6 @@ describe("End-to-End Tests - Four", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("stake enough reporters to prove disputeFee hits minimum [ @skip-on-coverage ]", async function() {
-    this.timeout(800000)
     await govBig.transfer(DEV_WALLET,await tellor.balanceOf(BIGWALLET))
     let wallet
     console.log("this may take a minute...")
@@ -98,6 +98,7 @@ describe("End-to-End Tests - Four", function() {
     assert(await governance.disputeFee() == web3.utils.toWei("15"), "dispute fee should be at a minimum")
   })
   it("Nobody votes on reporter dispute", async function() {
+    this.timeout(20000000)
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
@@ -158,7 +159,7 @@ describe("End-to-End Tests - Four", function() {
     await governance.executeVote(2);
   })
   it("Test delegate then delegates", async function() {
-
+    this.timeout(20000000)
     let newController = await cfac.deploy();
     await newController.deployed();
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
@@ -279,7 +280,6 @@ describe("End-to-End Tests - Four", function() {
         console.log()
     })
     it("Calculate gas costs of using delegate array to vote (1, 10, 100, 200 delegates) [ @skip-on-coverage ]", async function() {
-        this.timeout(400000)
         await govBig.transfer(DEV_WALLET,await tellor.balanceOf(BIGWALLET))
         let wallet
         let delArr = []

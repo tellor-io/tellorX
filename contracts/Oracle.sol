@@ -33,7 +33,7 @@ contract Oracle is TellorVars{
     }
 
     // Events
-    event TipAdded(address _user, bytes32 _id,uint256 _tip, uint256 _totalTip);
+    event TipAdded(address _user, bytes32 indexed _id,uint256 _tip, uint256 _totalTip, bytes _data);
     event NewReport(bytes32 _id, uint256 _time, bytes _value, uint256 _reward);
     event MiningLockChanged(uint _newMiningLock);
     event TimeBasedRewardsChanged(uint _newTimeBasedReward);
@@ -42,11 +42,13 @@ contract Oracle is TellorVars{
      * @dev Adds tips to incentivize reporters to submit values for specific data IDs.
      * @param _id is ID of the specific data feed
      * @param _tip is the amount to tip the given data ID
+     * @param _data is the extra bytes data needed to fulfill the request
     */
-    function addTip(bytes32 _id, uint256 _tip) external{
+    function addTip(bytes32 _id, uint256 _tip, bytes memory _data) external{
         // Require tip to be greater than 1 and be paid
         require(_tip > 1, "Tip should be greater than 1");
         require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_tip), "tip must be paid");
+        require(_id == keccak256(_data) || uint256(_id) <= 100 || msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT), "id must be hash of bytes data");
         // Burn half the tip
         _tip = _tip/2;
         IController(TELLOR_ADDRESS).burn(_tip);
@@ -54,7 +56,7 @@ contract Oracle is TellorVars{
         tips[_id] += _tip;
         tipsByUser[msg.sender] += _tip;
         tipsInContract += _tip;
-        emit TipAdded(msg.sender, _id, _tip, tips[_id]);
+        emit TipAdded(msg.sender, _id, _tip, tips[_id], _data);
     }
 
     /**

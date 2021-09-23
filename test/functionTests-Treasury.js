@@ -18,7 +18,7 @@ describe("TellorX Function Tests - Treasury", function() {
     let mainnetBlock = 0;
 
   beforeEach("deploy and setup TellorX", async function() {
-    this.timeout(100000)
+    this.timeout(20000000)
     if(run == 0){
       const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
       mainnetBlock = directors.height - 20;
@@ -83,7 +83,7 @@ describe("TellorX Function Tests - Treasury", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("buyTreasury()", async function() {
-    this.timeout(800000)
+    this.timeout(20000000)
     tellorUser = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[1]);
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     await h.expectThrow(tellorUser.buyTreasury(1, web3.utils.toWei("200")));//no treasury issued

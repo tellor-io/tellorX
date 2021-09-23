@@ -48,6 +48,6 @@ interface IController{
     function vote(uint256 _disputeId, bool _supportsDispute) external;
     function tallyVotes(uint256 _disputeId) external;
     //test functions
-    function addTip(uint,uint) external;
+    function addTip(uint,uint,bytes memory) external;
     function getNewVariablesOnDeck() external view returns (uint256[5] memory idsOnDeck, uint256[5] memory tipsOnDeck);
 }

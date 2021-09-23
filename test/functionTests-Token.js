@@ -18,7 +18,7 @@ describe("TellorX Function Tests - Token", function() {
     let mainnetBlock = 0;
 
   beforeEach("deploy and setup TellorX", async function() {
-    this.timeout(100000)
+    this.timeout(20000000)
     if(run == 0){
       const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
       mainnetBlock = directors.height - 20;
@@ -84,6 +84,7 @@ describe("TellorX Function Tests - Token", function() {
   });
 
 	  it("approve and allowance", async function() {
+      this.timeout(20000000)
 		  //create user account, mint it tokens
 		  let acc = await ethers.getSigner()
 		  await tellor.connect(devWallet).transfer(acc.address, BigInt(5E20))
