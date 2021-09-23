@@ -46,121 +46,6 @@ contract Transition is TellorStorage, TellorVars {
         addresses[_TREASURY_CONTRACT] = _treasury;
     }
 
-    /**
-     * @dev Returns the latest value for a specific request ID.
-     * @param _requestId the requestId to look up
-     * @return uint256 of the value of the latest value of the request ID
-     * @return bool of whether or not the value was successfully retrieved
-     */
-    function getLastNewValueById(uint256 _requestId)
-        external
-        view
-        returns (uint256, bool)
-    {
-        // Try the new contract first
-        uint256 _timeCount = IOracle(addresses[_ORACLE_CONTRACT])
-            .getTimestampCountById(bytes32(_requestId));
-        if (_timeCount != 0) {
-            // If timestamps for the ID exist, there is value, so return the value
-            return (
-                retrieveData(
-                    _requestId,
-                    IOracle(addresses[_ORACLE_CONTRACT])
-                        .getReportTimestampByIndex(
-                            bytes32(_requestId),
-                            _timeCount - 1
-                        )
-                ),
-                true
-            );
-        } else {
-            // Else, look at old value + timestamps since mining has not started
-            Request storage _request = requestDetails[_requestId];
-            if (_request.requestTimestamps.length != 0) {
-                return (
-                    retrieveData(
-                        _requestId,
-                        _request.requestTimestamps[
-                            _request.requestTimestamps.length - 1
-                        ]
-                    ),
-                    true
-                );
-            } else {
-                return (0, false);
-            }
-        }
-    }
-
-    /**
-     * @dev Counts the number of values that have been submitted for the request.
-     * If called for the currentRequest being mined it can tell you how many miners have submitted a value for that
-     * request so far
-     * @param _requestId the requestId to look up
-     * @return uint count of the number of values received for the requestId
-     */
-    function getNewValueCountbyRequestId(uint256 _requestId)
-        external
-        view
-        returns (uint256)
-    {
-        // Defaults to new one, but will give old value if new mining has not started
-        uint256 _val = IOracle(addresses[_ORACLE_CONTRACT])
-            .getTimestampCountById(bytes32(_requestId));
-        if (_val > 0) {
-            return _val;
-        } else {
-            return requestDetails[_requestId].requestTimestamps.length;
-        }
-    }
-
-    /**
-     * @dev Gets the timestamp for the value based on their index
-     * @param _requestId is the requestId to look up
-     * @param _index is the value index to look up
-     * @return uint256 timestamp
-     */
-    function getTimestampbyRequestIDandIndex(uint256 _requestId, uint256 _index)
-        external
-        view
-        returns (uint256)
-    {
-        // Try new contract first, but give old timestamp if new mining has not started
-        try
-            IOracle(addresses[_ORACLE_CONTRACT]).getReportTimestampByIndex(
-                bytes32(_requestId),
-                _index
-            )
-        returns (uint256 _val) {
-            return _val;
-        } catch {
-            return requestDetails[_requestId].requestTimestamps[_index];
-        }
-    }
-
-    /**
-     * @dev Retrieve value from oracle based on timestamp
-     * @param _requestId being requested
-     * @param _timestamp to retrieve data/value from
-     * @return value for timestamp submitted
-     */
-    function retrieveData(uint256 _requestId, uint256 _timestamp)
-        public
-        view
-        returns (uint256)
-    {
-        if (_timestamp < uints[_SWITCH_TIME]) {
-            return requestDetails[_requestId].finalValues[_timestamp];
-        }
-        return
-            _sliceUint(
-                IOracle(addresses[_ORACLE_CONTRACT]).getValueByTimestamp(
-                    bytes32(_requestId),
-                    _timestamp
-                )
-            );
-    }
-
     //Getters
     /**
      * @dev Allows users to access the number of decimals
@@ -179,48 +64,6 @@ contract Transition is TellorStorage, TellorVars {
      */
     function getAddressVars(bytes32 _data) external view returns (address) {
         return addresses[_data];
-    }
-
-    /**
-     * @dev Getter for the variables saved under the TellorStorageStruct uints variable
-     * @param _data the variable to pull from the mapping. _data = keccak256("variable_name")
-     * where variable_name is the variables/strings used to save the data in the mapping.
-     * The variables names in the TellorVariables contract
-     * @return uint of specified variable
-     */
-    function getUintVar(bytes32 _data) external view returns (uint256) {
-        return uints[_data];
-    }
-
-    /**
-     * @dev Allows users to access the token's name
-     */
-    function name() external pure returns (string memory) {
-        return "Tellor Tributes";
-    }
-
-    /**
-     * @dev Allows users to access the token's symbol
-     */
-    function symbol() external pure returns (string memory) {
-        return "TRB";
-    }
-
-    /**
-     * @dev Getter for the total_supply of oracle tokens
-     * @return uint total supply
-     */
-    function totalSupply() external view returns (uint256) {
-        return uints[_TOTAL_SUPPLY];
-    }
-
-    /**
-     * @dev Getter for if the party is migrated
-     * @param _addy address of party
-     * @return if the party is migrated
-     */
-    function isMigrated(address _addy) external view returns (bool) {
-        return migrated[_addy];
     }
 
     /**
@@ -313,6 +156,52 @@ contract Transition is TellorStorage, TellorVars {
     }
 
     /**
+     * @dev Returns the latest value for a specific request ID.
+     * @param _requestId the requestId to look up
+     * @return uint256 of the value of the latest value of the request ID
+     * @return bool of whether or not the value was successfully retrieved
+     */
+    function getLastNewValueById(uint256 _requestId)
+        external
+        view
+        returns (uint256, bool)
+    {
+        // Try the new contract first
+        uint256 _timeCount = IOracle(addresses[_ORACLE_CONTRACT])
+            .getTimestampCountById(bytes32(_requestId));
+        if (_timeCount != 0) {
+            // If timestamps for the ID exist, there is value, so return the value
+            return (
+                retrieveData(
+                    _requestId,
+                    IOracle(addresses[_ORACLE_CONTRACT])
+                        .getReportTimestampByIndex(
+                            bytes32(_requestId),
+                            _timeCount - 1
+                        )
+                ),
+                true
+            );
+        } else {
+            // Else, look at old value + timestamps since mining has not started
+            Request storage _request = requestDetails[_requestId];
+            if (_request.requestTimestamps.length != 0) {
+                return (
+                    retrieveData(
+                        _requestId,
+                        _request.requestTimestamps[
+                            _request.requestTimestamps.length - 1
+                        ]
+                    ),
+                    true
+                );
+            } else {
+                return (0, false);
+            }
+        }
+    }
+
+    /**
      * @dev Function is solely for the parachute contract
      */
     function getNewCurrentVariables()
@@ -336,6 +225,117 @@ contract Transition is TellorStorage, TellorVars {
     }
 
     /**
+     * @dev Counts the number of values that have been submitted for the request.
+     * If called for the currentRequest being mined it can tell you how many miners have submitted a value for that
+     * request so far
+     * @param _requestId the requestId to look up
+     * @return uint count of the number of values received for the requestId
+     */
+    function getNewValueCountbyRequestId(uint256 _requestId)
+        external
+        view
+        returns (uint256)
+    {
+        // Defaults to new one, but will give old value if new mining has not started
+        uint256 _val = IOracle(addresses[_ORACLE_CONTRACT])
+            .getTimestampCountById(bytes32(_requestId));
+        if (_val > 0) {
+            return _val;
+        } else {
+            return requestDetails[_requestId].requestTimestamps.length;
+        }
+    }
+
+    /**
+     * @dev Gets the timestamp for the value based on their index
+     * @param _requestId is the requestId to look up
+     * @param _index is the value index to look up
+     * @return uint256 timestamp
+     */
+    function getTimestampbyRequestIDandIndex(uint256 _requestId, uint256 _index)
+        external
+        view
+        returns (uint256)
+    {
+        // Try new contract first, but give old timestamp if new mining has not started
+        try
+            IOracle(addresses[_ORACLE_CONTRACT]).getReportTimestampByIndex(
+                bytes32(_requestId),
+                _index
+            )
+        returns (uint256 _val) {
+            return _val;
+        } catch {
+            return requestDetails[_requestId].requestTimestamps[_index];
+        }
+    }
+
+    /**
+     * @dev Getter for the variables saved under the TellorStorageStruct uints variable
+     * @param _data the variable to pull from the mapping. _data = keccak256("variable_name")
+     * where variable_name is the variables/strings used to save the data in the mapping.
+     * The variables names in the TellorVariables contract
+     * @return uint of specified variable
+     */
+    function getUintVar(bytes32 _data) external view returns (uint256) {
+        return uints[_data];
+    }
+
+    /**
+     * @dev Getter for if the party is migrated
+     * @param _addy address of party
+     * @return if the party is migrated
+     */
+    function isMigrated(address _addy) external view returns (bool) {
+        return migrated[_addy];
+    }
+
+    /**
+     * @dev Allows users to access the token's name
+     */
+    function name() external pure returns (string memory) {
+        return "Tellor Tributes";
+    }
+
+    /**
+     * @dev Retrieve value from oracle based on timestamp
+     * @param _requestId being requested
+     * @param _timestamp to retrieve data/value from
+     * @return value for timestamp submitted
+     */
+    function retrieveData(uint256 _requestId, uint256 _timestamp)
+        public
+        view
+        returns (uint256)
+    {
+        if (_timestamp < uints[_SWITCH_TIME]) {
+            return requestDetails[_requestId].finalValues[_timestamp];
+        }
+        return
+            _sliceUint(
+                IOracle(addresses[_ORACLE_CONTRACT]).getValueByTimestamp(
+                    bytes32(_requestId),
+                    _timestamp
+                )
+            );
+    }
+
+    /**
+     * @dev Allows users to access the token's symbol
+     */
+    function symbol() external pure returns (string memory) {
+        return "TRB";
+    }
+
+    /**
+     * @dev Getter for the total_supply of oracle tokens
+     * @return uint total supply
+     */
+    function totalSupply() external view returns (uint256) {
+        return uints[_TOTAL_SUPPLY];
+    }
+
+    /**
      * @dev Allows Tellor X to fallback to the old Tellor if there are current open disputes
      * (or disputes on old Tellor values)
      */
@@ -343,7 +343,7 @@ contract Transition is TellorStorage, TellorVars {
         address addr = 0xdDB59729045d2292eeb8Ff96c46B8db53B88Daa2; // Main Tellor address (Harcode this in?)
         // Obtain function header from msg.data
         bytes4 _function;
-        for (uint i = 0; i < 4; i++) {
+        for (uint256 i = 0; i < 4; i++) {
             _function |= bytes4(msg.data[i] & 0xFF) >> (i * 8);
         }
         // Ensure that the function is allowed and related to disputes, voting, and dispute fees

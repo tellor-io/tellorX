@@ -117,7 +117,7 @@ contract Controller is TellorStaking, Transition {
     /**
      * @dev Used during the upgrade process to verify valid Tellor Contracts
      */
-    function verify() external pure returns (uint) {
+    function verify() external pure returns (uint256) {
         return 9999;
     }
 

@@ -162,7 +162,7 @@ describe("TellorX Function Tests - Oracle", function() {
     assert(await oracle.getTimestampIndexByTimestamp(h.uintTob32(1),blocky.timestamp) == 0, "index should be correct")
     assert(await oracle.getValueByTimestamp(h.uintTob32(1),blocky.timestamp) == "0x", "value should be correct")
   });
-  it("currentReward()", async function() {
+  it("getCurrentReward()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("105"));
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
@@ -171,13 +171,13 @@ describe("TellorX Function Tests - Oracle", function() {
     let blocky1 = await ethers.provider.getBlock();
     await oracle.addTip(h.uintTob32(1),web3.utils.toWei("5"),'0x');
     await h.advanceTime(10000);
-    let currentReward = await oracle.currentReward(h.uintTob32(1));
+    let currentReward = await oracle.getCurrentReward(h.uintTob32(1));
     assert(currentReward[0] == web3.utils.toWei("2.5"), "Tip should be correct");
     assert(currentReward[1] == 0, "Current accumulated reward should be zero");
     await tellor.transfer(oracle.address, web3.utils.toWei("100"));
     let blocky2 = await ethers.provider.getBlock();
     let timeDiff = blocky2.timestamp - blocky1.timestamp;
-    currentReward = await oracle.currentReward(h.uintTob32(1));
+    currentReward = await oracle.getCurrentReward(h.uintTob32(1));
     let tbr = await oracle.timeBasedReward();
     let expectedReward = tbr.mul(timeDiff).div(300);
     assert(currentReward[0] == web3.utils.toWei("2.5"), "Tips in contract should be correct");

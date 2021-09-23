@@ -16,7 +16,7 @@ contract Treasury is TellorVars {
     // Storage
     uint256 public totalLocked; // amount of TRB locked across all treasuries
     uint256 public treasuryCount; // number of total treasuries
-    mapping(uint => TreasuryDetails) public treasury; // maps an ID to a treasury and its corresponding details
+    mapping(uint256 => TreasuryDetails) public treasury; // maps an ID to a treasury and its corresponding details
     mapping(address => uint256) treasuryFundsByUser; // maps a treasury investor to their total treasury funds, in TRB
 
     // Structs
@@ -301,7 +301,7 @@ contract Treasury is TellorVars {
     /**
      * @dev This function is used during the upgrade process to verify valid Tellor Contracts
      */
-    function verify() external pure returns (uint) {
+    function verify() external pure returns (uint256) {
         return 9999;
     }
 

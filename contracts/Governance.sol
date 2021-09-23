@@ -21,10 +21,10 @@ contract Governance is TellorVars {
     uint256 public disputeFee; // dispute fee for a vote
     mapping(address => Delegation[]) delegateInfo; // mapping of delegate addresses to an array of their delegations
     mapping(bytes4 => bool) functionApproved; // mapping of function hashes to bools of whether the functions are approved
-    mapping(bytes32 => uint[]) voteRounds; //shows if a certain vote has already started
-    mapping(uint => Vote) voteInfo; // mapping of vote IDs to the details of the vote
-    mapping(uint => Dispute) disputeInfo; // mapping of dispute IDs to the details of the dispute
-    mapping(bytes32 => uint) openDisputesOnId; // mapping of a price feed ID to the number of disputes
+    mapping(bytes32 => uint256[]) voteRounds; //shows if a certain vote has already started
+    mapping(uint256 => Vote) voteInfo; // mapping of vote IDs to the details of the vote
+    mapping(uint256 => Dispute) disputeInfo; // mapping of dispute IDs to the details of the dispute
+    mapping(bytes32 => uint256) openDisputesOnId; // mapping of a price feed ID to the number of disputes
     enum VoteResult {
         FAILED,
         PASSED,
@@ -34,12 +34,12 @@ contract Governance is TellorVars {
     // Structs
     struct Delegation {
         address delegate; // address of holder delegating
-        uint fromBlock; // block number address started delegating
+        uint256 fromBlock; // block number address started delegating
     }
 
     struct Dispute {
         bytes32 requestId; // ID of the dispute
-        uint timestamp; // timestamp of when the dispute was initiated
+        uint256 timestamp; // timestamp of when the dispute was initiated
         bytes value; // the value being disputed
         address reportedMiner; // miner who submitted the 'bad value' will get disputeFee if dispute vote fails
     }
@@ -47,12 +47,12 @@ contract Governance is TellorVars {
     struct Vote {
         bytes32 identifierHash; // identifier hash of the vote
         uint256 voteRound; // the round of voting associated with the vote
-        uint startDate; // timestamp of when vote was initiated
-        uint blockNumber; // block number of when vote was initiated
+        uint256 startDate; // timestamp of when vote was initiated
+        uint256 blockNumber; // block number of when vote was initiated
         uint256 fee; // fee associated with the vote
-        uint tallyDate; // timestamp of when the votes were tallied
-        uint doesSupport; // number of votes in favor
-        uint against; // number of votes against
+        uint256 tallyDate; // timestamp of when the votes were tallied
+        uint256 doesSupport; // number of votes in favor
+        uint256 against; // number of votes against
         bool executed; // boolean of is the dispute settled
         VoteResult result; // VoteResult of did the vote pass?
         bool isDispute; // boolean of is the vote is is still in dispute
@@ -76,7 +76,7 @@ contract Governance is TellorVars {
         uint256 _voteId,
         bool _supports,
         address _voter,
-        uint _voteWeight,
+        uint256 _voteWeight,
         bool _invalidQuery
     ); // Emitted when an address casts their vote
     event VoteExecuted(uint256 _id, VoteResult _result); // Emitted when a vote is executed
@@ -538,13 +538,6 @@ contract Governance is TellorVars {
     }
 
     /**
-     * @dev Used during the upgrade process to verify valid Tellor Contracts
-     */
-    function verify() external pure returns (uint) {
-        return 9999;
-    }
-
-    /**
      * @dev Enables the sender address to cast a vote
      * @param _id is the ID of the vote
      * @param _supports is the address's vote: whether or not they support or are against
@@ -575,7 +568,7 @@ contract Governance is TellorVars {
         bool _supports,
         bool _invalidQuery
     ) external {
-        for (uint _i = 0; _i < _addys.length; _i++) {
+        for (uint256 _i = 0; _i < _addys.length; _i++) {
             require(
                 delegateOfAt(_addys[_i], voteInfo[_id].blockNumber) ==
                     msg.sender,
@@ -605,7 +598,7 @@ contract Governance is TellorVars {
     function getDelegateInfo(address _holder)
         external
         view
-        returns (address, uint)
+        returns (address, uint256)
     {
         return (
             delegateOfAt(_holder, block.number),
@@ -717,6 +710,13 @@ contract Governance is TellorVars {
      */
     function isFunctionApproved(bytes4 _func) external view returns (bool) {
         return functionApproved[_func];
+    }
+
+    /**
+     * @dev Used during the upgrade process to verify valid Tellor Contracts
+     */
+    function verify() external pure returns (uint256) {
+        return 9999;
     }
 
     // Internal

@@ -8,7 +8,7 @@ import "hardhat/console.sol";
 /**
  @author Tellor Inc.
  @title Token
- @dev Contains the methods related to transfers and ERC20, its storage 
+ @dev Contains the methods related to transfers and ERC20, its storage
  * and hashes of tellor variables that are used to save gas on transactions.
 */
 contract Token is TellorStorage, TellorVars {
@@ -184,36 +184,32 @@ contract Token is TellorStorage, TellorVars {
 
     // Internal
     /**
-     * @dev Completes transfers by updating the balances on the current block number
-     * and ensuring the amount does not contain tokens staked for mining
-     * @param _from address to transfer from
-     * @param _to address to transfer to
-     * @param _amount to transfer
+     * @dev Helps burn TRB Tokens
+     * @param _from is the address to burn or remove TRB amount
+     * @param _amount is the amount of TRB to burn
      */
-    function _doTransfer(
-        address _from,
-        address _to,
-        uint256 _amount
-    ) internal {
-        // Ensure user has a correct balance and to address
-        require(_amount != 0, "Tried to send non-positive amount");
-        require(_to != address(0), "Receiver is 0 address");
+    function _doBurn(address _from, uint256 _amount) internal {
+        // Ensure that amount of balance are valid
+        if (_amount == 0) return;
         require(
             allowedToTrade(_from, _amount),
             "Should have sufficient balance to trade"
         );
-        // Update balance of _from address
         uint128 previousBalance = uint128(balanceOf(_from));
         uint128 _sizedAmount = uint128(_amount);
-        _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
-        // Check for overflow, and update balance of _to address
-        previousBalance = uint128(balanceOf(_to));
+        // Check for overflow
         require(
-            previousBalance + _sizedAmount >= previousBalance,
+            previousBalance - _sizedAmount <= previousBalance,
             "Overflow happened"
         );
-        _updateBalanceAtNow(_to, previousBalance + _sizedAmount);
-        emit Transfer(_from, _to, _amount);
+        uint256 previousSupply = uints[_TOTAL_SUPPLY];
+        require(
+            previousSupply - _amount <= previousSupply,
+            "Overflow happened"
+        );
+        // Update total supply and balance of _from
+        _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
+        uints[_TOTAL_SUPPLY] -= _amount;
     }
 
     /**
@@ -244,32 +240,36 @@ contract Token is TellorStorage, TellorVars {
     }
 
     /**
-     * @dev Helps burn TRB Tokens
-     * @param _from is the address to burn or remove TRB amount
-     * @param _amount is the amount of TRB to burn
+     * @dev Completes transfers by updating the balances on the current block number
+     * and ensuring the amount does not contain tokens staked for mining
+     * @param _from address to transfer from
+     * @param _to address to transfer to
+     * @param _amount to transfer
      */
-    function _doBurn(address _from, uint256 _amount) internal {
-        // Ensure that amount of balance are valid
-        if (_amount == 0) return;
+    function _doTransfer(
+        address _from,
+        address _to,
+        uint256 _amount
+    ) internal {
+        // Ensure user has a correct balance and to address
+        require(_amount != 0, "Tried to send non-positive amount");
+        require(_to != address(0), "Receiver is 0 address");
         require(
             allowedToTrade(_from, _amount),
             "Should have sufficient balance to trade"
         );
+        // Update balance of _from address
         uint128 previousBalance = uint128(balanceOf(_from));
         uint128 _sizedAmount = uint128(_amount);
-        // Check for overflow
-        require(
-            previousBalance - _sizedAmount <= previousBalance,
-            "Overflow happened"
-        );
-        uint256 previousSupply = uints[_TOTAL_SUPPLY];
-        require(
-            previousSupply - _amount <= previousSupply,
-            "Overflow happened"
-        );
-        // Update total supply and balance of _from
         _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
-        uints[_TOTAL_SUPPLY] -= _amount;
+        // Check for overflow, and update balance of _to address
+        previousBalance = uint128(balanceOf(_to));
+        require(
+            previousBalance + _sizedAmount >= previousBalance,
+            "Overflow happened"
+        );
+        _updateBalanceAtNow(_to, previousBalance + _sizedAmount);
+        emit Transfer(_from, _to, _amount);
     }
 
     /**

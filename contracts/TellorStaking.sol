@@ -25,7 +25,7 @@ contract TellorStaking is Token {
      * @param _reporter is the address of the reporter to change staking status for
      * @param _status is the new status of the reporter
      */
-    function changeStakingStatus(address _reporter, uint _status) external {
+    function changeStakingStatus(address _reporter, uint256 _status) external {
         require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
         StakeInfo storage stakes = stakerDetails[_reporter];
         stakes.currentStatus = _status;

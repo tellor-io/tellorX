@@ -13,11 +13,11 @@ import "hardhat/console.sol";
 */
 contract Oracle is TellorVars {
     // Storage
-    mapping(bytes32 => uint256) public tips; // mapping of data IDs to the amount of TRB they are tipped
     uint256 public tipsInContract; // number of tips within the contract
     uint256 public timeOfLastNewValue = block.timestamp; // time of the last new value, originally set to the block timestamp
     uint256 public miningLock = 12 hours; // amount of time before a reporter is able to submit a value again
     uint256 public timeBasedReward = 5e17; // time based reward for a reporter for successfully submitting a value
+    mapping(bytes32 => uint256) public tips; // mapping of data IDs to the amount of TRB they are tipped
     mapping(bytes32 => Report) reports; // mapping of data IDs to a report
     mapping(address => uint256) reporterLastTimestamp; // mapping of reporter addresses to the timestamp of their last reported value
     mapping(address => uint256) reportsSubmittedByAddress; // mapping of reporter addresses to the number of reports they've submitted
@@ -34,21 +34,21 @@ contract Oracle is TellorVars {
 
     // Events
     event TipAdded(
-        address _user,
+        address indexed _user,
         bytes32 indexed _id,
         uint256 _tip,
         uint256 _totalTip,
         bytes _data
     );
     event NewReport(bytes32 _id, uint256 _time, bytes _value, uint256 _reward);
-    event MiningLockChanged(uint _newMiningLock);
-    event TimeBasedRewardsChanged(uint _newTimeBasedReward);
+    event MiningLockChanged(uint256 _newMiningLock);
+    event TimeBasedRewardsChanged(uint256 _newTimeBasedReward);
 
     /**
      * @dev Adds tips to incentivize reporters to submit values for specific data IDs.
      * @param _id is ID of the specific data feed
      * @param _tip is the amount to tip the given data ID
-     * @param _data is the extra bytes data needed to fulfill the request
+     * @param _data is required for IDs greater than 100, informs reporters how to fulfill request. See github.com/tellor-io/dataSpecs
      */
     function addTip(
         bytes32 _id,
@@ -180,7 +180,7 @@ contract Oracle is TellorVars {
         rep.valueByTimestamp[block.timestamp] = _value;
         rep.reporterByTimestamp[block.timestamp] = msg.sender;
         // Send tips + timeBasedReward to reporter of value, and reset tips for ID
-        (uint256 _tip, uint256 _reward) = currentReward(_id);
+        (uint256 _tip, uint256 _reward) = getCurrentReward(_id);
         tipsInContract -= _tip;
         if (_reward + _tip > 0) {
             _tellor.transfer(msg.sender, _reward + _tip);
@@ -190,21 +190,6 @@ contract Oracle is TellorVars {
         timeOfLastNewValue = block.timestamp;
         reportsSubmittedByAddress[msg.sender]++;
         emit NewReport(_id, block.timestamp, _value, _tip + _reward);
-    }
-
-    /**
-     * @dev Calculates the current reward for a reporter given tips
-     * and time based reward
-     * @param _id is ID of the specific data feed
-     */
-    function currentReward(bytes32 _id) public view returns (uint256, uint256) {
-        IController _tellor = IController(TELLOR_ADDRESS);
-        uint256 _timeDiff = block.timestamp - timeOfLastNewValue;
-        uint256 _reward = (_timeDiff * timeBasedReward) / 300; //.5 TRB per 5 minutes (should we make this upgradeable)
-        if (_tellor.balanceOf(address(this)) < _reward + tipsInContract) {
-            _reward = _tellor.balanceOf(address(this)) - tipsInContract;
-        }
-        return (tips[_id], _reward);
     }
 
     //Getters
@@ -220,6 +205,37 @@ contract Oracle is TellorVars {
         returns (uint256)
     {
         return reports[_id].timestampToBlockNum[_timestamp];
+    }
+
+    /**
+     * @dev Calculates the current reward for a reporter given tips
+     * and time based reward
+     * @param _id is ID of the specific data feed
+     */
+    function getCurrentReward(bytes32 _id)
+        public
+        view
+        returns (uint256, uint256)
+    {
+        IController _tellor = IController(TELLOR_ADDRESS);
+        uint256 _timeDiff = block.timestamp - timeOfLastNewValue;
+        uint256 _reward = (_timeDiff * timeBasedReward) / 300; //.5 TRB per 5 minutes (should we make this upgradeable)
+        if (_tellor.balanceOf(address(this)) < _reward + tipsInContract) {
+            _reward = _tellor.balanceOf(address(this)) - tipsInContract;
+        }
+        return (tips[_id], _reward);
+    }
+
+    /**
+     * @dev Returns the current value of a data feed given a specific ID
+     * @param _id is the ID of the specific data feed
+     * @return bytes memory of the current value of data
+     */
+    function getCurrentValue(bytes32 _id) external view returns (bytes memory) {
+        return
+            reports[_id].valueByTimestamp[
+                reports[_id].timestamps[reports[_id].timestamps.length - 1]
+            ];
     }
 
     function getMiningLock() external view returns (uint256) {
@@ -343,21 +359,9 @@ contract Oracle is TellorVars {
     }
 
     /**
-     * @dev Returns the current value of a data feed given a specific ID
-     * @param _id is the ID of the specific data feed
-     * @return bytes memory of the current value of data
-     */
-    function getCurrentValue(bytes32 _id) external view returns (bytes memory) {
-        return
-            reports[_id].valueByTimestamp[
-                reports[_id].timestamps[reports[_id].timestamps.length - 1]
-            ];
-    }
-
-    /**
      * @dev Used during the upgrade process to verify valid Tellor Contracts
      */
-    function verify() external pure returns (uint) {
+    function verify() external pure returns (uint256) {
         return 9999;
     }
 }
