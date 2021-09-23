@@ -11,7 +11,7 @@ import "hardhat/console.sol";
  @dev Contains the methods related to transfers and ERC20, its storage 
  * and hashes of tellor variables that are used to save gas on transactions.
 */
-contract Token is TellorStorage,TellorVars{
+contract Token is TellorStorage, TellorVars {
     // Events
     event Approval(
         address indexed _owner,
@@ -26,7 +26,7 @@ contract Token is TellorStorage,TellorVars{
      * @param _user address of party with the balance
      * @param _spender address of spender of parties said balance
      * @return Returns the remaining allowance of tokens granted to the _spender from the _user
-    */
+     */
     function allowance(address _user, address _spender)
         external
         view
@@ -41,7 +41,7 @@ contract Token is TellorStorage,TellorVars{
      * @param _user address of user
      * @param _amount to check if the user can spend
      * @return true if they are allowed to spend the amount being checked
-    */
+     */
     function allowedToTrade(address _user, uint256 _amount)
         public
         view
@@ -63,7 +63,10 @@ contract Token is TellorStorage,TellorVars{
      * @param _amount amount the spender is being approved for
      * @return true if spender approved successfully
      */
-    function approve(address _spender, uint256 _amount) external returns (bool) {
+    function approve(address _spender, uint256 _amount)
+        external
+        returns (bool)
+    {
         require(_spender != address(0), "ERC20: approve to the zero address");
         _allowances[msg.sender][_spender] = _amount;
         emit Approval(msg.sender, _spender, _amount);
@@ -77,11 +80,17 @@ contract Token is TellorStorage,TellorVars{
      * @param _amount is the number of tokens to transfer
      * @return true if spender approved successfully
      */
-    function approveAndTransferFrom(address _from, address _to, uint256 _amount) external returns(bool){
-        require((msg.sender == addresses[_GOVERNANCE_CONTRACT] ||
-            msg.sender == addresses[_TREASURY_CONTRACT] ||
-            msg.sender == addresses[_ORACLE_CONTRACT]),
-            "Only the Governance, Treasury, or Oracle Contract can approve and transfer tokens");
+    function approveAndTransferFrom(
+        address _from,
+        address _to,
+        uint256 _amount
+    ) external returns (bool) {
+        require(
+            (msg.sender == addresses[_GOVERNANCE_CONTRACT] ||
+                msg.sender == addresses[_TREASURY_CONTRACT] ||
+                msg.sender == addresses[_ORACLE_CONTRACT]),
+            "Only the Governance, Treasury, or Oracle Contract can approve and transfer tokens"
+        );
         _doTransfer(_from, _to, _amount);
         return true;
     }
@@ -135,10 +144,10 @@ contract Token is TellorStorage,TellorVars{
      * @dev Burns an amount of tokens
      * @param _amount is the amount of tokens to burn
      */
-    function burn(uint256 _amount) external{
+    function burn(uint256 _amount) external {
         _doBurn(msg.sender, _amount);
     }
-    
+
     /**
      * @dev Allows for a transfer of tokens to _to
      * @param _to The address to send tokens to
@@ -158,7 +167,7 @@ contract Token is TellorStorage,TellorVars{
      * @param _from The address holding the tokens being transferred
      * @param _to The address of the recipient
      * @param _amount The amount of tokens to be transferred
-    */
+     */
     function transferFrom(
         address _from,
         address _to,
@@ -180,7 +189,7 @@ contract Token is TellorStorage,TellorVars{
      * @param _from address to transfer from
      * @param _to address to transfer to
      * @param _amount to transfer
-    */
+     */
     function _doTransfer(
         address _from,
         address _to,
@@ -195,7 +204,7 @@ contract Token is TellorStorage,TellorVars{
         );
         // Update balance of _from address
         uint128 previousBalance = uint128(balanceOf(_from));
-        uint128 _sizedAmount  = uint128(_amount);
+        uint128 _sizedAmount = uint128(_amount);
         _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
         // Check for overflow, and update balance of _to address
         previousBalance = uint128(balanceOf(_to));
@@ -211,13 +220,13 @@ contract Token is TellorStorage,TellorVars{
      * @dev Helps swap the old Tellor contract Tokens to the new one
      * @param _to is the address to send minted amount to
      * @param _amount is the amount of TRB to send
-    */
+     */
     function _doMint(address _to, uint256 _amount) internal {
         // Ensure to address and mint amount are valid
         require(_amount != 0, "Tried to mint non-positive amount");
         require(_to != address(0), "Receiver is 0 address");
         uint128 previousBalance = uint128(balanceOf(_to));
-        uint128 _sizedAmount  = uint128(_amount);
+        uint128 _sizedAmount = uint128(_amount);
         // Check for overflow for balance and supply
         require(
             previousBalance + _sizedAmount >= previousBalance,
@@ -247,7 +256,7 @@ contract Token is TellorStorage,TellorVars{
             "Should have sufficient balance to trade"
         );
         uint128 previousBalance = uint128(balanceOf(_from));
-        uint128 _sizedAmount  = uint128(_amount);
+        uint128 _sizedAmount = uint128(_amount);
         // Check for overflow
         require(
             previousBalance - _sizedAmount <= previousBalance,
@@ -283,8 +292,9 @@ contract Token is TellorStorage,TellorVars{
             );
         } else {
             // Else, update old checkpoint
-            TellorStorage.Checkpoint storage oldCheckPoint =
-                checkpoints[checkpoints.length - 1];
+            TellorStorage.Checkpoint storage oldCheckPoint = checkpoints[
+                checkpoints.length - 1
+            ];
             oldCheckPoint.value = _value;
         }
     }

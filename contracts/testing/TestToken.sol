@@ -2,12 +2,15 @@
 pragma solidity 0.8.3;
 
 import "../Token.sol";
-contract TestToken is Token{
+
+contract TestToken is Token {
     event Received(address, uint);
+
     receive() external payable {
         emit Received(msg.sender, msg.value);
     }
+
     function mint(address _to, uint _amount) external {
-       _doMint(_to, _amount);
+        _doMint(_to, _amount);
     }
 }

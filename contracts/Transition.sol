@@ -14,7 +14,7 @@ import "hardhat/console.sol";
 * address to accesss values. All parties should be reading values
 * through this address
 */
-contract Transition is TellorStorage,TellorVars{
+contract Transition is TellorStorage, TellorVars {
     // Functions
     /**
      * @dev Runs once Tellor is migrated over. Changes the underlying storage.
@@ -22,10 +22,20 @@ contract Transition is TellorStorage,TellorVars{
      * @param _oracle is the address of the Oracle contract
      * @param _treasury is the address of the Treasury contract
      */
-    function init(address _governance, address _oracle, address _treasury) external{
+    function init(
+        address _governance,
+        address _oracle,
+        address _treasury
+    ) external {
         // Ensure sender is owner and transaction only occurs once
-        require(msg.sender == addresses[_OWNER], "Only the owner address can initiate a transition");
-        require(addresses[_GOVERNANCE_CONTRACT] == address(0), "Only good once");
+        require(
+            msg.sender == addresses[_OWNER],
+            "Only the owner address can initiate a transition"
+        );
+        require(
+            addresses[_GOVERNANCE_CONTRACT] == address(0),
+            "Only good once"
+        );
         // Set state amount, switch time, and minimum dispute fee
         uints[_STAKE_AMOUNT] = 100e18;
         uints[_SWITCH_TIME] = block.timestamp;
@@ -48,32 +58,37 @@ contract Transition is TellorStorage,TellorVars{
         returns (uint256, bool)
     {
         // Try the new contract first
-        uint256 _timeCount = IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountById(bytes32(_requestId));
+        uint256 _timeCount = IOracle(addresses[_ORACLE_CONTRACT])
+            .getTimestampCountById(bytes32(_requestId));
         if (_timeCount != 0) {
             // If timestamps for the ID exist, there is value, so return the value
             return (
                 retrieveData(
                     _requestId,
-                    IOracle(addresses[_ORACLE_CONTRACT]).getReportTimestampByIndex(bytes32(_requestId),_timeCount- 1)
+                    IOracle(addresses[_ORACLE_CONTRACT])
+                        .getReportTimestampByIndex(
+                            bytes32(_requestId),
+                            _timeCount - 1
+                        )
                 ),
                 true
             );
         } else {
-                // Else, look at old value + timestamps since mining has not started
-                Request storage _request = requestDetails[_requestId];
-                if (_request.requestTimestamps.length != 0) {
-                    return (
-                        retrieveData(
-                            _requestId,
-                            _request.requestTimestamps[
-                                _request.requestTimestamps.length - 1
-                            ]
-                        ),
-                        true
-                    );
-                } else {
-                    return (0, false);
-                }
+            // Else, look at old value + timestamps since mining has not started
+            Request storage _request = requestDetails[_requestId];
+            if (_request.requestTimestamps.length != 0) {
+                return (
+                    retrieveData(
+                        _requestId,
+                        _request.requestTimestamps[
+                            _request.requestTimestamps.length - 1
+                        ]
+                    ),
+                    true
+                );
+            } else {
+                return (0, false);
+            }
         }
     }
 
@@ -90,11 +105,11 @@ contract Transition is TellorStorage,TellorVars{
         returns (uint256)
     {
         // Defaults to new one, but will give old value if new mining has not started
-        uint256 _val = IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountById(bytes32(_requestId));
-        if(_val > 0){
+        uint256 _val = IOracle(addresses[_ORACLE_CONTRACT])
+            .getTimestampCountById(bytes32(_requestId));
+        if (_val > 0) {
             return _val;
-        }
-        else{
+        } else {
             return requestDetails[_requestId].requestTimestamps.length;
         }
     }
@@ -111,10 +126,14 @@ contract Transition is TellorStorage,TellorVars{
         returns (uint256)
     {
         // Try new contract first, but give old timestamp if new mining has not started
-        try IOracle(addresses[_ORACLE_CONTRACT]).getReportTimestampByIndex(bytes32(_requestId),_index) returns (uint256 _val){
+        try
+            IOracle(addresses[_ORACLE_CONTRACT]).getReportTimestampByIndex(
+                bytes32(_requestId),
+                _index
+            )
+        returns (uint256 _val) {
             return _val;
-        }
-        catch{
+        } catch {
             return requestDetails[_requestId].requestTimestamps[_index];
         }
     }
@@ -130,10 +149,16 @@ contract Transition is TellorStorage,TellorVars{
         view
         returns (uint256)
     {
-        if(_timestamp < uints[_SWITCH_TIME]){
-                return requestDetails[_requestId].finalValues[_timestamp];
+        if (_timestamp < uints[_SWITCH_TIME]) {
+            return requestDetails[_requestId].finalValues[_timestamp];
         }
-        return _sliceUint(IOracle(addresses[_ORACLE_CONTRACT]).getValueByTimestamp(bytes32(_requestId), _timestamp));
+        return
+            _sliceUint(
+                IOracle(addresses[_ORACLE_CONTRACT]).getValueByTimestamp(
+                    bytes32(_requestId),
+                    _timestamp
+                )
+            );
     }
 
     //Getters
@@ -198,7 +223,7 @@ contract Transition is TellorStorage,TellorVars{
         return migrated[_addy];
     }
 
-        /**
+    /**
      * @dev Gets all dispute variables
      * @param _disputeId to look up
      * @return bytes32 hash of dispute
@@ -258,7 +283,7 @@ contract Transition is TellorStorage,TellorVars{
         );
     }
 
-        /**
+    /**
      * @dev Checks if a given hash of miner,requestId has been disputed
      * @param _hash is the sha256(abi.encodePacked(_miners[2],_requestId,_timestamp));
      * @return uint disputeId
@@ -271,7 +296,7 @@ contract Transition is TellorStorage,TellorVars{
         return disputeIdByDisputeHash[_hash];
     }
 
-        /**
+    /**
      * @dev Checks for uint variables in the disputeUintVars mapping based on the disputeId
      * @param _disputeId is the dispute id;
      * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
@@ -287,15 +312,27 @@ contract Transition is TellorStorage,TellorVars{
         return disputesById[_disputeId].disputeUintVars[_data];
     }
 
-
     /**
      * @dev Function is solely for the parachute contract
      */
-    function getNewCurrentVariables() external view returns (bytes32 _c,uint256[5] memory _r,uint256 _diff,uint256 _tip){
-        _r = [uint256(1),uint256(1),uint256(1),uint256(1),uint256(1)];
+    function getNewCurrentVariables()
+        external
+        view
+        returns (
+            bytes32 _c,
+            uint256[5] memory _r,
+            uint256 _diff,
+            uint256 _tip
+        )
+    {
+        _r = [uint256(1), uint256(1), uint256(1), uint256(1), uint256(1)];
         _diff = 0;
         _tip = 0;
-        _c = keccak256(abi.encode(IOracle(addresses[_ORACLE_CONTRACT]).getTimeOfLastNewValue()));
+        _c = keccak256(
+            abi.encode(
+                IOracle(addresses[_ORACLE_CONTRACT]).getTimeOfLastNewValue()
+            )
+        );
     }
 
     /**
@@ -310,23 +347,31 @@ contract Transition is TellorStorage,TellorVars{
             _function |= bytes4(msg.data[i] & 0xFF) >> (i * 8);
         }
         // Ensure that the function is allowed and related to disputes, voting, and dispute fees
-        require(_function == bytes4(bytes32(keccak256("beginDispute(uint256,uint256,uint256)"))) ||
-        _function == bytes4(bytes32(keccak256("vote(uint256,bool)"))) ||
-        _function == bytes4(bytes32(keccak256("tallyVotes(uint256)"))) ||
-        _function == bytes4(bytes32(keccak256("unlockDisputeFee(uint256)"))),"function should be allowed"); //should autolock out after a week (no disputes can begin past a week)
+        require(
+            _function ==
+                bytes4(
+                    bytes32(keccak256("beginDispute(uint256,uint256,uint256)"))
+                ) ||
+                _function == bytes4(bytes32(keccak256("vote(uint256,bool)"))) ||
+                _function ==
+                bytes4(bytes32(keccak256("tallyVotes(uint256)"))) ||
+                _function ==
+                bytes4(bytes32(keccak256("unlockDisputeFee(uint256)"))),
+            "function should be allowed"
+        ); //should autolock out after a week (no disputes can begin past a week)
         // Calls the function in msg.data from main Tellor address
-        (bool result,) = addr.delegatecall(msg.data);
-            assembly {
-                returndatacopy(0, 0, returndatasize())
-                switch result
-                    // delegatecall returns 0 on error.
-                    case 0 {
-                        revert(0, returndatasize())
-                    }
-                    default {
-                        return(0, returndatasize())
-                    }
-           }
+        (bool result, ) = addr.delegatecall(msg.data);
+        assembly {
+            returndatacopy(0, 0, returndatasize())
+            switch result
+            // delegatecall returns 0 on error.
+            case 0 {
+                revert(0, returndatasize())
+            }
+            default {
+                return(0, returndatasize())
+            }
+        }
     }
 
     // Internal
@@ -335,10 +380,13 @@ contract Transition is TellorStorage,TellorVars{
      * @param b is the bytes variable to be sliced
      * @return _x of the sliced uint256
      */
-    function _sliceUint(bytes memory b) internal pure returns (uint256 _x){
+    function _sliceUint(bytes memory b) internal pure returns (uint256 _x) {
         uint256 number;
-        for(uint256 i=0;i<b.length;i++){
-            number = number + uint256(uint8(b[i]))*(2**(8*(b.length-(i+1))));
+        for (uint256 i = 0; i < b.length; i++) {
+            number =
+                number +
+                uint256(uint8(b[i])) *
+                (2**(8 * (b.length - (i + 1))));
         }
         return number;
     }
