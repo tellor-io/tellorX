@@ -18,7 +18,7 @@ describe("TellorX Function Tests - Governance", function() {
     let mainnetBlock = 0;
 
   beforeEach("deploy and setup TellorX", async function() {
-    this.timeout(100000)
+    this.timeout(20000000)
     if(run == 0){
       const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
       mainnetBlock = directors.height - 20;
@@ -83,6 +83,7 @@ describe("TellorX Function Tests - Governance", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("constructor()", async function() {
+    this.timeout(20000000)
     let initFuncs = [0x3c46a185,0xe8ce51d7,0x1cbd3151,0xbd87e0c9, 0x740358e6,
       0x40c10f19,0xe48d4b3b,0xe280e8e8,0x6274885f,0xf3ff955a];
     for(let _i =0;_i< initFuncs.length;_i++){

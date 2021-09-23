@@ -16,7 +16,7 @@ describe("End-to-End Tests - One", function() {
     let govSigner = null
 
   beforeEach("deploy and setup TellorX", async function() {
-    this.timeout(2100000)
+    this.timeout(20000000)
     accounts = await ethers.getSigners();
     await hre.network.provider.request({
       method: "hardhat_reset",
@@ -82,7 +82,7 @@ describe("End-to-End Tests - One", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("Mine 2 values on 50 different ID's", async function() {
-    this.timeout(210000)
+    this.timeout(20000000)
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
     await tellor.transfer(accounts[3].address,web3.utils.toWei("200"));
