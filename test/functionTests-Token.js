@@ -84,6 +84,7 @@ describe("TellorX Function Tests - Token", function() {
   });
 
 	  it("approve and allowance", async function() {
+      this.timeout(20000000)
 		  //create user account, mint it tokens
 		  let acc = await ethers.getSigner()
 		  await tellor.connect(devWallet).transfer(acc.address, BigInt(5E20))

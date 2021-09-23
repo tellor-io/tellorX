@@ -83,6 +83,7 @@ describe("TellorX Function Tests - Treasury", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("buyTreasury()", async function() {
+    this.timeout(20000000)
     tellorUser = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[1]);
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     await h.expectThrow(tellorUser.buyTreasury(1, web3.utils.toWei("200")));//no treasury issued

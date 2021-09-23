@@ -98,6 +98,7 @@ describe("End-to-End Tests - Four", function() {
     assert(await governance.disputeFee() == web3.utils.toWei("15"), "dispute fee should be at a minimum")
   })
   it("Nobody votes on reporter dispute", async function() {
+    this.timeout(20000000)
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
@@ -158,7 +159,7 @@ describe("End-to-End Tests - Four", function() {
     await governance.executeVote(2);
   })
   it("Test delegate then delegates", async function() {
-
+    this.timeout(20000000)
     let newController = await cfac.deploy();
     await newController.deployed();
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);

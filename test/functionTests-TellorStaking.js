@@ -83,6 +83,7 @@ describe("TellorX Function Tests - TellorStaking", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("depositStake()", async function() {
+    this.timeout(20000000)
     let iStakeCount = await tellor.getUintVar(h.hash("_STAKE_COUNT"));
     let iDispFee = await governance.disputeFee();
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);

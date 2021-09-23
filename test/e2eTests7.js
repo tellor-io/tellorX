@@ -86,6 +86,7 @@ describe("End-to-End Tests - Seven", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
     });
   it("Make sure correct value is removed after multiple disputes on an id", async function() {
+    this.timeout(20000000)
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);

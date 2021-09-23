@@ -87,6 +87,7 @@ describe("End-to-End Tests - Five", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("Test dispute and settling on old contract (transition)", async function() {
+    this.timeout(20000000)
         const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
         mainnetBlock = directors.height - 15;
         console.log("     Forking from block: ",mainnetBlock)

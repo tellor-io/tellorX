@@ -112,7 +112,7 @@ describe("End-to-End Tests - Six", function() {
     });
 
     it("Test dispute on old contract, then dispute on new contract", async function() {
-
+        this.timeout(20000000)
         let disputeId = await tellor.getDisputeIdByDisputeHash(disputeHash)
         assert(disputeId > 0, "Should return non-zero dispute id")
         let tellorToOld = await ethers.getContractAt("contracts/tellor3/ITellor.sol:ITellor",tellorMaster, devWallet)

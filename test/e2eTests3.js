@@ -87,6 +87,7 @@ describe("End-to-End Tests - Three", function() {
     });
 
   it("Test a valid vote on every approved function", async function() {
+    this.timeout(20000000)
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
     await tellor.connect(bigWallet).transfer(accounts[1].address,await tellor.balanceOf(BIGWALLET));
     let voteCount;

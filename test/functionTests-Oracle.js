@@ -86,6 +86,7 @@ describe("TellorX Function Tests - Oracle", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
     });
   it("addTip()", async function() {
+    this.timeout(20000000)
     var ts = await tellor.totalSupply()
     oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
     h.expectThrow(oracle1.addTip(h.uintTob32(1),2,'0x'));//must have funds

@@ -83,6 +83,7 @@ describe("TellorX Function Tests - Controller", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("changeControllerContract()", async function() {
+    this.timeout(20000000)
     newController = await cfac.deploy();
     await newController.deployed();
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
