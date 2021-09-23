@@ -19,6 +19,7 @@ describe("End-to-End Tests - Seven", function() {
   let govSigner = null
 
   beforeEach("deploy and setup TellorX", async function() {
+    this.timeout(20000000)
     accounts = await ethers.getSigners();
     await hre.network.provider.request({
       method: "hardhat_reset",

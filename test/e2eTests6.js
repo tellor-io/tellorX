@@ -20,7 +20,7 @@ describe("End-to-End Tests - Six", function() {
   let disputeHash, badMiner, timestamp, d1
 
   beforeEach("deploy and setup TellorX", async function() {
-    this.timeout(100000)
+    this.timeout(20000000)
     accounts = await ethers.getSigners();
     await hre.network.provider.request({
       method: "hardhat_reset",

@@ -17,6 +17,7 @@ describe("End-to-End Tests - Four", function() {
     let govSigner = null
 
   beforeEach("deploy and setup TellorX", async function() {
+    this.timeout(20000000)
     accounts = await ethers.getSigners();
     await hre.network.provider.request({
       method: "hardhat_reset",
@@ -82,7 +83,6 @@ describe("End-to-End Tests - Four", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
   it("stake enough reporters to prove disputeFee hits minimum [ @skip-on-coverage ]", async function() {
-    this.timeout(800000)
     await govBig.transfer(DEV_WALLET,await tellor.balanceOf(BIGWALLET))
     let wallet
     console.log("this may take a minute...")
@@ -279,7 +279,6 @@ describe("End-to-End Tests - Four", function() {
         console.log()
     })
     it("Calculate gas costs of using delegate array to vote (1, 10, 100, 200 delegates) [ @skip-on-coverage ]", async function() {
-        this.timeout(400000)
         await govBig.transfer(DEV_WALLET,await tellor.balanceOf(BIGWALLET))
         let wallet
         let delArr = []
