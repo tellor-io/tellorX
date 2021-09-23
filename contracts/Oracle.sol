@@ -44,10 +44,11 @@ contract Oracle is TellorVars{
      * @param _tip is the amount to tip the given data ID
      * @param _data is the extra bytes data needed to fulfill the request
     */
-    function addTip(bytes32 _id, uint256 _tip, bytes calldata _data) external{
+    function addTip(bytes32 _id, uint256 _tip, bytes memory _data) external{
         // Require tip to be greater than 1 and be paid
         require(_tip > 1, "Tip should be greater than 1");
         require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender,address(this),_tip), "tip must be paid");
+        require(_id == keccak256(_data) || uint256(_id) <= 100 || msg.sender == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT), "id must be hash of bytes data");
         // Burn half the tip
         _tip = _tip/2;
         IController(TELLOR_ADDRESS).burn(_tip);

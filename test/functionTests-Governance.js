@@ -103,16 +103,16 @@ describe("TellorX Function Tests - Governance", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue( ethers.utils.formatBytes32String("1"),300,0);
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    await oracle.submitValue( h.uintTob32(1),300,0);
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
-    h.expectThrow(governance.beginDispute(h.tob32("1"),_t + 86400));//not a valid timestamp
-    h.expectThrow(governance.beginDispute(h.tob32("1"),_t + 86400));//no tokens to pay fee
+    h.expectThrow(governance.beginDispute(h.uintTob32(1),_t + 86400));//not a valid timestamp
+    h.expectThrow(governance.beginDispute(h.uintTob32(1),_t + 86400));//no tokens to pay fee
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
     let _stakers0 = await tellor.getUintVar(h.hash("_STAKE_COUNT"))
-    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.beginDispute(h.uintTob32(1),_t);
     let _stakers1 = await tellor.getUintVar(h.hash("_STAKE_COUNT"))
-    let _hash = ethers.utils.solidityKeccak256(['bytes32','uint256'], [h.tob32("1"),_t])
+    let _hash = ethers.utils.solidityKeccak256(['bytes32','uint256'], [h.uintTob32(1),_t])
     let voteVars = await governance.getVoteInfo(1)
     assert(_stakers0 - _stakers1 == 1, "_STAKE_COUNT should be correct")
     assert(voteVars[0] == _hash, "identifier hash should be correct")
@@ -125,13 +125,13 @@ describe("TellorX Function Tests - Governance", function() {
     assert(voteVars[2][1], "should be a dispute")
     assert(voteVars[6][1] == accounts[2].address, "initiator should be correct")
     let dispVars = await governance.getDisputeInfo(1);
-    assert(dispVars[0] == h.tob32("1"), "requestId should be correct")
+    assert(dispVars[0] == h.uintTob32(1), "requestId should be correct")
     assert(dispVars[1] - _t == 0, "timestamp should be correct")
     assert(dispVars[2] - 300 == 0, "value should be correct")
     assert(dispVars[3] == accounts[1].address, "reported Miner should be correct")
-    assert(await governance.getOpenDisputesOnId(h.tob32("1")) == 1, "number of disputes open on ID should be correct")
-    assert(await oracle.getValueByTimestamp(h.tob32("1"),_t) == "0x", "value should be removed")
-    assert(await oracle.getTipsById(h.tob32("1")) -.1 * _fee/2 == 0, "tip should have been added")
+    assert(await governance.getOpenDisputesOnId(h.uintTob32(1)) == 1, "number of disputes open on ID should be correct")
+    assert(await oracle.getValueByTimestamp(h.uintTob32(1),_t) == "0x", "value should be removed")
+    assert(await oracle.getTipsById(h.uintTob32(1)) -.1 * _fee/2 == 0, "tip should have been added")
     let _stakerInfo = await tellor.getStakerInfo(accounts[1].address) ;
     assert(_stakerInfo[0] - 3 ==0, "miner should be disputed")
     await h.advanceTime(86400 * 2.5)
@@ -140,11 +140,11 @@ describe("TellorX Function Tests - Governance", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[3]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[3]);
-    await oracle.submitValue(h.tob32("2"),301,0);
-    let _t2 = oracle.getReportTimestampByIndex(h.tob32("2"),0);
+    await oracle.submitValue(h.uintTob32(2),301,0);
+    let _t2 = oracle.getReportTimestampByIndex(h.uintTob32(2),0);
     await h.advanceTime(86400+1000)
-    h.expectThrow(governance.beginDispute(h.tob32("1"),_t))//cannot open a new round past a day
-    h.expectThrow(governance.beginDispute(h.tob32("2"),_t2))// must dispute withing 12 hours
+    h.expectThrow(governance.beginDispute(h.uintTob32(1),_t))//cannot open a new round past a day
+    h.expectThrow(governance.beginDispute(h.uintTob32(2),_t2))// must dispute withing 12 hours
   });
   it("delegate()", async function() {
     governance = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, accounts[2]);
@@ -173,15 +173,15 @@ describe("TellorX Function Tests - Governance", function() {
     h.expectThrow(governance.executeVote(2));//ID not yet valid
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue(h.tob32("1"),300,0);
+    await oracle.submitValue(h.uintTob32(1),300,0);
     let initBalReporter = await tellor.balanceOf(accounts[1].address)
     let initBalDisputer = await tellor.balanceOf(accounts[2].address)
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     governance = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, accounts[2]);
     devGovernance = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, devWallet);
-    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.beginDispute(h.uintTob32(1),_t);
     await devGovernance.vote(1,true,false)
-    let _hash = ethers.utils.solidityKeccak256(['bytes32','uint256'], [h.tob32("1"),_t])
+    let _hash = ethers.utils.solidityKeccak256(['bytes32','uint256'], [h.uintTob32(1),_t])
     await h.advanceTime(86400 * 2.5)
     h.expectThrow(governance.executeVote(1));//must be tallied
     await governance.tallyVotes(1)
@@ -199,15 +199,15 @@ describe("TellorX Function Tests - Governance", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[3]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[3]);
-    await oracle.submitValue(h.tob32("2"),300,0);
-    _t = await oracle.getReportTimestampByIndex(h.tob32("2"),0);
+    await oracle.submitValue(h.uintTob32(2),300,0);
+    _t = await oracle.getReportTimestampByIndex(h.uintTob32(2),0);
     stakeCount0 = await tellor.getUintVar(h.hash("_STAKE_COUNT"))
-    await governance.beginDispute(h.tob32("2"),_t);
+    await governance.beginDispute(h.uintTob32(2),_t);
     stakeCount1 = await tellor.getUintVar(h.hash("_STAKE_COUNT"))
     assert(stakeCount0 - stakeCount1 == 1, "_STAKE_COUNT should be correct")
     await h.advanceTime(86400 * 3)
     await governance.tallyVotes(2)
-    await governance.beginDispute(h.tob32("2"),_t);
+    await governance.beginDispute(h.uintTob32(2),_t);
     assert(stakeCount0 - stakeCount1 == 1, "_STAKE_COUNT should be correct")
     await h.expectThrow(governance.executeVote(2));//must be the final vote
     await h.advanceTime(86400 * 3)
@@ -252,12 +252,12 @@ describe("TellorX Function Tests - Governance", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue(h.tob32("1"),300,0);
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    await oracle.submitValue(h.uintTob32(1),300,0);
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     teamGovernance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, devWallet);
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
-    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.beginDispute(h.uintTob32(1),_t);
     await teamGovernance.vote(1,true,false);
     await h.expectThrow(governance.tallyVotes(1));//time for voting hasn't elapsed
     await h.advanceTime(86400 * 2.5)
@@ -336,14 +336,14 @@ describe("TellorX Function Tests - Governance", function() {
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
     oracle6 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[6]);
     oracle5 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[5]);
-    await oracle5.addTip(ethers.utils.formatBytes32String("1"), 10,'0x')
+    await oracle5.addTip(h.uintTob32(1), 10,'0x')
     for(i=0;i<5;i++){
       await h.advanceTime(86400 * .6)
-      nonce = await oracle.getTimestampCountById(ethers.utils.formatBytes32String("3"));
-      await oracle6.submitValue( ethers.utils.formatBytes32String("3"),300,nonce);
+      nonce = await oracle.getTimestampCountById(h.uintTob32(3));
+      await oracle6.submitValue( h.uintTob32(3),300,nonce);
     }
-    await oracle.submitValue( ethers.utils.formatBytes32String("1"),300,0);
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    await oracle.submitValue( h.uintTob32(1),300,0);
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     governance3 = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[3]);
     governance4 = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[4]);
@@ -352,7 +352,7 @@ describe("TellorX Function Tests - Governance", function() {
     governance1 = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
     h.expectThrow(governance.vote(1,true,false));//vote should exist
-    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.beginDispute(h.uintTob32(1),_t);
     await governance.vote(1,true,false); //weight is balance (200 TRB)
     await governance5.vote(1,true,true);//weight should be 5 (1/2 10 tip)
     await governance6.vote(1,false,false);//weight should be 100e18 (stake) + 5 mines
@@ -370,7 +370,7 @@ describe("TellorX Function Tests - Governance", function() {
     assert(voteVars[1][6] - h.to18(105) == 0, "against should be right")
     assert(voteVars[1][7] - 5 == 0, "invalidQuery should be right")
     await oracle6.submitValue( ethers.utils.formatBytes32String("44"),30110,0);
-    _t = await oracle.getReportTimestampByIndex(h.tob32("44"),0);
+    _t = await oracle.getReportTimestampByIndex(h.uintTob32(44),0);
     treasury = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[7]);
     admintreasury = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, govSigner);
     admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
@@ -378,7 +378,7 @@ describe("TellorX Function Tests - Governance", function() {
     await admin.mint(accounts[7].address,web3.utils.toWei("500"))
     await admintreasury.issueTreasury(web3.utils.toWei("1000"),10,86400*100);
     await treasury.buyTreasury(1,web3.utils.toWei("500"))
-    await governance.beginDispute(h.tob32("44"),_t);
+    await governance.beginDispute(h.uintTob32(44),_t);
     governance7= await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[7]);
     await governance7.vote(2,true,false);//500 in treasury purchased
     voteVars = await governance.getVoteInfo(2)
@@ -403,21 +403,21 @@ describe("TellorX Function Tests - Governance", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue(h.tob32("1"),300,0);
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    await oracle.submitValue(h.uintTob32(1),300,0);
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     governance = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, accounts[2]);
-    await governance.beginDispute(h.tob32("1"),_t);
-    let _hash = ethers.utils.solidityKeccak256(['bytes32','uint256'], [h.tob32("1"),_t])
+    await governance.beginDispute(h.uintTob32(1),_t);
+    let _hash = ethers.utils.solidityKeccak256(['bytes32','uint256'], [h.uintTob32(1),_t])
     await h.advanceTime(86400 * 2.5)
     await governance.tallyVotes(1)
     await tellor.transfer(accounts[3].address,web3.utils.toWei("100"));
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[3]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[3]);
-    await oracle.submitValue(h.tob32("2"),300,0);
-    _t2 = await oracle.getReportTimestampByIndex(h.tob32("2"),0);
-    await governance.beginDispute(h.tob32("2"),_t2);
-    await governance.beginDispute(h.tob32("1"),_t);
+    await oracle.submitValue(h.uintTob32(2),300,0);
+    _t2 = await oracle.getReportTimestampByIndex(h.uintTob32(2),0);
+    await governance.beginDispute(h.uintTob32(2),_t2);
+    await governance.beginDispute(h.uintTob32(1),_t);
     let vars = await governance.getVoteRounds(_hash);
     assert(vars[0] == 1, "voteround 1 is correct")
     assert(vars[1] == 3, "vote round 2 is correct")

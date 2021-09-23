@@ -143,7 +143,7 @@ contract Governance is TellorVars{
         _thisVote.fee = _fee * 9 / 10;
         require(IController(TELLOR_ADDRESS).approveAndTransferFrom(msg.sender, address(this), _fee)); // This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
         // Add an initial tip and change the current staking status of reporter
-        IOracle(_oracle).addTip(_requestId,_fee/10,'0x');
+        IOracle(_oracle).addTip(_requestId,_fee/10,bytes(""));
         (uint256 _status,) = IController(TELLOR_ADDRESS).getStakerInfo(_thisDispute.reportedMiner);
         if(_status == 1) {
             uint256 stakeCount = IController(TELLOR_ADDRESS).getUintVar(_STAKE_COUNT);
