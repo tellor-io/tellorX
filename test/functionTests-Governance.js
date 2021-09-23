@@ -369,7 +369,7 @@ describe("TellorX Function Tests - Governance", function() {
     assert(voteVars[1][5] - await tellor.balanceOf(accounts[2].address) == 0, "does Support should be account 2 balance")
     assert(voteVars[1][6] - h.to18(105) == 0, "against should be right")
     assert(voteVars[1][7] - 5 == 0, "invalidQuery should be right")
-    await oracle6.submitValue( ethers.utils.formatBytes32String("44"),30110,0);
+    await oracle6.submitValue( h.uintTob32(44),30110,0);
     _t = await oracle.getReportTimestampByIndex(h.uintTob32(44),0);
     treasury = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[7]);
     admintreasury = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, govSigner);

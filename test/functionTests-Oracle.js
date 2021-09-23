@@ -87,15 +87,22 @@ describe("TellorX Function Tests - Oracle", function() {
   it("addTip()", async function() {
     var ts = await tellor.totalSupply()
     oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    h.expectThrow(oracle1.addTip(h.uintTob32(1),2),'0x');//must have funds
+    h.expectThrow(oracle1.addTip(h.uintTob32(1),2,'0x'));//must have funds
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"))
     h.expectThrow(oracle1.addTip(h.uintTob32(1),0,'0x'));//tip must be greater than 0
-    oracle1.addTip(h.uintTob32(1),web3.utils.toWei("100"),'0x')
+    await oracle1.addTip(h.uintTob32(1),web3.utils.toWei("100"),'0x')
     assert(await oracle.getTipsByUser(accounts[1].address) == web3.utils.toWei("50"), "tips by user should be correct")
     assert(await oracle.getTipsById(h.uintTob32(1)) == web3.utils.toWei("50"), "tips by ID should be correct")
     assert(await oracle.tipsInContract() == web3.utils.toWei("50"), "tips in contract should be correct")
     var ts2 = await tellor.totalSupply()
     assert(ts - ts2  - web3.utils.toWei("50") < 100000000, "half of tip should be burned")//should be close enough (rounding errors)
+    h.expectThrow(oracle1.addTip(h.hash("This is a test"),web3.utils.toWei("100"),'0x'))//ids greater than 100 should equal hash(bytes _data)
+    await oracle1.addTip(h.hash("This is a test"),web3.utils.toWei("100"), web3.utils.toHex("This is a test"))
+    assert(await oracle.getTipsByUser(accounts[1].address) == web3.utils.toWei("100"), "tips by user should be correct")
+    assert(await oracle.getTipsById(h.hash("This is a test")) == web3.utils.toWei("50"), "tips by ID should be correct")
+    assert(await oracle.tipsInContract() == web3.utils.toWei("100"), "tips in contract should be correct")
+    var ts3 = await tellor.totalSupply()
+    assert(ts2 - ts3  - web3.utils.toWei("50") < 100000000, "half of tip should be burned")//should be close enough (rounding errors)
   });
   it("submitValue()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
