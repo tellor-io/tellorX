@@ -369,7 +369,7 @@ contract Governance is TellorVars {
                 );
                 _controller.changeStakingStatus(_thisDispute.reportedMiner, 1);
             }
-            emit VoteExecuted(_id, _thisVote.result);
+            emit VoteExecuted(_id, voteInfo[_id].result);
         }
     }
 
@@ -737,9 +737,6 @@ contract Governance is TellorVars {
         // Ensure that dispute has not been executed and that vote does not exist and is not tallied
         require(_id <= voteCount, "Vote does not exist");
         Vote storage _thisVote = voteInfo[_id];
-        if (_thisVote.isDispute) {
-            require(!_thisVote.executed, "Dispute has been already executed");
-        }
         require(_thisVote.tallyDate == 0, "Vote has already been tallied");
         IController _controller = IController(TELLOR_ADDRESS);
         uint256 voteWeight = _controller.balanceOfAt(

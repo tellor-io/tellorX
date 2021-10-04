@@ -26,7 +26,7 @@ describe("End-to-End Tests - Eight", function() {
       method: "hardhat_reset",
       params: [{forking: {
             jsonRpcUrl: hre.config.networks.hardhat.forking.url,
-            blockNumber:13186300
+            blockNumber:13348402
 
           },},],
       });
@@ -127,27 +127,97 @@ describe("End-to-End Tests - Eight", function() {
     await accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("1.0")});
     govSigner = await ethers.provider.getSigner(governance.address);
     });
+    //
+    // it("Manually verify that Liquity still work (mainnet fork their state after oracle updates)", async function() {
+    //   let liquityPriceFeed = await ethers.getContractAt("contracts/testing/IPriceFeed.sol:IPriceFeed", LIQUITY_PRICE_FEED)
+    //   await liquityPriceFeed.fetchPrice()
+    //   lastGoodPrice = await liquityPriceFeed.lastGoodPrice()
+    //   assert(lastGoodPrice == "3395140000000000000000", "Liquity ether price should be correct")
+    //   await tellor.connect(bigWallet).transfer(accounts[10].address, web3.utils.toWei("100"))
+    //   await tellor.connect(accounts[10]).depositStake()
+    //   await oracle.connect(accounts[10]).submitValue(h.uintTob32("1"),h.uintTob32("3395150000"),0)
+    //   await liquityPriceFeed.fetchPrice()
+    //   lastGoodPrice = await liquityPriceFeed.lastGoodPrice()
+    //   assert(lastGoodPrice == "3395150000000000000000", "Liquity ether price should be correct")
+    //   await h.advanceTime(60*60*12)
+    //   await oracle.connect(accounts[10]).submitValue(h.uintTob32("1"),h.uintTob32("3395160000"),1)
+    //   await liquityPriceFeed.fetchPrice()
+    //   lastGoodPrice = await liquityPriceFeed.lastGoodPrice()
+    //   assert(lastGoodPrice == "3395160000000000000000", "Liquity ether price should be correct")
+    //   await h.advanceTime(60*60*12)
+    //   await oracle.connect(accounts[10]).submitValue(h.uintTob32("1"),h.uintTob32("3395170000"),2)
+    //   await liquityPriceFeed.fetchPrice()
+    //   lastGoodPrice = await liquityPriceFeed.lastGoodPrice()
+    //   assert(lastGoodPrice == "3395170000000000000000", "Liquity ether price should be correct")
+    // });
+    //
+    // it("Manually verify that Ampleforth still works", async function() {
+    //   this.timeout(1000000)
+    //   let mofac = await ethers.getContractFactory("contracts/testing/MedianOracle.sol:MedianOracle");
+    //   let tpfac = await ethers.getContractFactory("contracts/testing/TellorProvider.sol:TellorProvider");
+    //   medianOracle = await mofac.deploy();
+    //   await medianOracle.deployed();
+    //   tellorProvider = await tpfac.deploy(tellorMaster, medianOracle.address);
+    //   await tellorProvider.pushTellor()
+    //   currentValue = await tellor.getLastNewValueById(10)
+    //   payload = await medianOracle.payload_();
+    //   assert(currentValue[0] - payload == 0, "Ample price should be retrieved correctly")
+    //   await tellor.transfer(accounts[10].address,web3.utils.toWei("100"));
+    //   await tellor.connect(accounts[10]).depositStake();
+    //   await oracle.connect(accounts[10]).submitValue(h.uintTob32(10),h.uintTob32(950000),0);
+    //   await tellorProvider.pushTellor()
+    //   payload = await medianOracle.payload_();
+    //   assert(payload == 950000, "Ample price should be retrieved correctly")
+    // });
+    //
+    // it("Test updating all of the old ID's (mapping of bytes to uint correct and granularity preserved)", async function() {
+    //   this.timeout(1000000)
+    //   await tellor.transfer(accounts[10].address,web3.utils.toWei("100"));
+    //   await tellor.connect(accounts[10]).depositStake();
+    //
+    //   value1 = await tellor.getLastNewValueById(1)
+    //   assert(value1[0] > 0, "Value should be set")
+    //   await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),0);
+    //   value1 = await tellor.getLastNewValueById(1)
+    //   assert(value1[0] == 950000, "Value should be set")
+    //   await h.advanceTime(60*60*12)
+    //
+    //   value10 = await tellor.getLastNewValueById(10)
+    //   assert(value10[0] > 0, "Value should be set")
+    //   await oracle.connect(accounts[10]).submitValue(h.uintTob32(10),h.uintTob32(960000),0);
+    //   value10 = await tellor.getLastNewValueById(10)
+    //   assert(value10[0] == 960000, "Value should be set")
+    //   await h.advanceTime(60*60*12)
+    //
+    //   value22 = await tellor.getLastNewValueById(22)
+    //   assert(value22[0] > 0, "Value should be set")
+    //   await oracle.connect(accounts[10]).submitValue(h.uintTob32(22),h.uintTob32(970000),0);
+    //   value22 = await tellor.getLastNewValueById(22)
+    //   assert(value22[0] == 970000, "Value should be set")
+    //   await h.advanceTime(60*60*12)
+    //
+    //   value54 = await tellor.getLastNewValueById(54)
+    //   assert(value54[0] > 0, "Value should be set")
+    //   await oracle.connect(accounts[10]).submitValue(h.uintTob32(54),h.uintTob32(980000),0);
+    //   value54 = await tellor.getLastNewValueById(54)
+    //   assert(value54[0] == 980000, "Value should be set")
+    //   await h.advanceTime(60*60*12)
+    // });
 
-    it("Manually verify that Liquity still work (mainnet fork their state after oracle updates)", async function() {
-      let liquityPriceFeed = await ethers.getContractAt("contracts/testing/IPriceFeed.sol:IPriceFeed", LIQUITY_PRICE_FEED)
-      await liquityPriceFeed.fetchPrice()
-      lastGoodPrice = await liquityPriceFeed.lastGoodPrice()
-      assert(lastGoodPrice == "3395140000000000000000", "Liquity ether price should be correct")
-      await tellor.connect(bigWallet).transfer(accounts[10].address, web3.utils.toWei("100"))
-      await tellor.connect(accounts[10]).depositStake()
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32("1"),h.uintTob32("3395150000"),0)
-      await liquityPriceFeed.fetchPrice()
-      lastGoodPrice = await liquityPriceFeed.lastGoodPrice()
-      assert(lastGoodPrice == "3395150000000000000000", "Liquity ether price should be correct")
-      await h.advanceTime(60*60*12)
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32("1"),h.uintTob32("3395160000"),1)
-      await liquityPriceFeed.fetchPrice()
-      lastGoodPrice = await liquityPriceFeed.lastGoodPrice()
-      assert(lastGoodPrice == "3395160000000000000000", "Liquity ether price should be correct")
-      await h.advanceTime(60*60*12)
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32("1"),h.uintTob32("3395170000"),2)
-      await liquityPriceFeed.fetchPrice()
-      lastGoodPrice = await liquityPriceFeed.lastGoodPrice()
-      assert(lastGoodPrice == "3395170000000000000000", "Liquity ether price should be correct")
+    it("Test old using Tellor still works", async function() {
+      let utfac = await ethers.getContractFactory("contracts/testing/IsUsingTellor.sol:IsUsingTellor");
+      usingTellor = await utfac.deploy(tellorMaster)
+      await tellor.transfer(accounts[10].address,web3.utils.toWei("100"));
+      await tellor.connect(accounts[10]).depositStake();
+
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),0);
+      let blocky = await ethers.provider.getBlock()
+      console.log("val: " + await usingTellor.retrieveData(1, blocky.timestamp));
+
+
     });
+
+    // Test old using Tellor still works
+    // Switch happens when multiple disputes are open
+    // Test upper limit when many values are submitted for a requestId in 12 hour period and early value gets disputed
 })
