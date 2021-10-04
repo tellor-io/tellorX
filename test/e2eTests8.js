@@ -213,6 +213,9 @@ describe("End-to-End Tests - Eight", function() {
       await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),0);
       let blocky = await ethers.provider.getBlock()
       console.log("val: " + await usingTellor.retrieveData(1, blocky.timestamp));
+      value = await usingTellor.retrieveData(1, blocky.timestamp)
+      assert(value == 950000, "Value should be retrieved correctly")
+
 
 
     });
