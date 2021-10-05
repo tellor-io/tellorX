@@ -225,15 +225,14 @@ describe("End-to-End Tests - Eight", function() {
       let retrievedTimestamp = await usingTellor.getTimestampbyRequestIDandIndex(1,1)
       assert(retrievedTimestamp == blocky.timestamp, "Timestamp should be retrieved correctly")
       // getCurrentValue() - not present
-      currentValue = await usingTellor.getCurrentValue(1) == 950000
-      assert(currentValue[1] == 950000, "Current value should be retrieved correctly")
+      // getIndexForDataBefore() - not present
+      // getDataBefore() - not present
+    });
 
-
-
+    it("Test upper limit when many values are submitted for a requestId in 12 hour period and early value gets disputed", async function() {
 
     });
 
-    // Test old using Tellor still works
     // Switch happens when multiple disputes are open
     // Test upper limit when many values are submitted for a requestId in 12 hour period and early value gets disputed
 })
