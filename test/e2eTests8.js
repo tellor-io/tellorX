@@ -210,11 +210,24 @@ describe("End-to-End Tests - Eight", function() {
       await tellor.transfer(accounts[10].address,web3.utils.toWei("100"));
       await tellor.connect(accounts[10]).depositStake();
 
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),0);
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(940000),0);
+      await h.advanceTime(60*60*12)
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),1);
       let blocky = await ethers.provider.getBlock()
-      console.log("val: " + await usingTellor.retrieveData(1, blocky.timestamp));
+      // retrieveData()
       value = await usingTellor.retrieveData(1, blocky.timestamp)
       assert(value == 950000, "Value should be retrieved correctly")
+      // isInDispute() - not present
+      // getNewValueCountbyRequestId
+      let count = await usingTellor.getNewValueCountbyRequestId(1)
+      assert(count == 2, "Value count should be correct")
+      // getTimestampbyRequestIDandIndex()
+      let retrievedTimestamp = await usingTellor.getTimestampbyRequestIDandIndex(1,1)
+      assert(retrievedTimestamp == blocky.timestamp, "Timestamp should be retrieved correctly")
+      // getCurrentValue() - not present
+      currentValue = await usingTellor.getCurrentValue(1) == 950000
+      assert(currentValue[1] == 950000, "Current value should be retrieved correctly")
+
 
 
 
