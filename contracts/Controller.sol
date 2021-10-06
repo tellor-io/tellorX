@@ -9,7 +9,7 @@ import "hardhat/console.sol";
 /**
  @author Tellor Inc.
  @title Controller
- @dev This is the Controller contract which defines the functionality for 
+ @dev This is the Controller contract which defines the functionality for
  * changing contract addresses, as well as minting and migrating tokens
 */
 contract Controller is TellorStaking, Transition {
@@ -102,16 +102,16 @@ contract Controller is TellorStaking, Transition {
     /**
      * @dev Mints TRB for a certain address
      * Note: this function is only callable by the Governance contract.
-     * @param _reciever is the address of the contract that will receive the minted tokens
+     * @param _receiver is the address of the contract that will receive the minted tokens
      * @param _amount is the amount of tokens that will be minted for the _receiver address
      */
-    function mint(address _reciever, uint256 _amount) external {
+    function mint(address _receiver, uint256 _amount) external {
         require(
             msg.sender == addresses[_GOVERNANCE_CONTRACT] ||
                 msg.sender == addresses[_TREASURY_CONTRACT],
             "Only an admin can mint tokens"
         );
-        _doMint(_reciever, _amount);
+        _doMint(_receiver, _amount);
     }
 
     /**
