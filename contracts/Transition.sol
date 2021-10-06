@@ -340,7 +340,7 @@ contract Transition is TellorStorage, TellorVars {
      * (or disputes on old Tellor values)
      */
     fallback() external {
-        address addr = 0xdDB59729045d2292eeb8Ff96c46B8db53B88Daa2; // Main Tellor address (Harcode this in?)
+        address addr = 0x2754da26f634E04b26c4deCD27b3eb144Cf40582; // Main Tellor address (Harcode this in?)
         // Obtain function header from msg.data
         bytes4 _function;
         for (uint256 i = 0; i < 4; i++) {
