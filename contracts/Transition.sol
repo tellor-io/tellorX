@@ -226,8 +226,6 @@ contract Transition is TellorStorage, TellorVars {
 
     /**
      * @dev Counts the number of values that have been submitted for the request.
-     * If called for the currentRequest being mined it can tell you how many miners have submitted a value for that
-     * request so far
      * @param _requestId the requestId to look up
      * @return uint count of the number of values received for the requestId
      */
