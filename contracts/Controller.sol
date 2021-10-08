@@ -5,7 +5,6 @@ import "./TellorStaking.sol";
 import "./interfaces/IController.sol";
 import "./Transition.sol";
 import "./Getters.sol";
-import "hardhat/console.sol";
 
 /**
  @author Tellor Inc.

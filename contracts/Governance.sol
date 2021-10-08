@@ -5,7 +5,6 @@ import "./TellorVars.sol";
 import "./interfaces/IOracle.sol";
 import "./interfaces/IController.sol";
 import "./interfaces/ITreasury.sol";
-import "hardhat/console.sol";
 
 /**
  @author Tellor Inc.

@@ -3,12 +3,11 @@ pragma solidity 0.8.3;
 
 import "./Token.sol";
 import "./interfaces/IGovernance.sol";
-import "hardhat/console.sol";
 
 /**
  @author Tellor Inc.
  @title TellorStaking
- @dev This is the TellorStaking contract which defines the functionality for 
+ @dev This is the TellorStaking contract which defines the functionality for
  * updating staking statuses for reporters, including depositing and withdrawing
  * stakes.
 */

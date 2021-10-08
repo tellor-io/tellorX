@@ -4,7 +4,6 @@ pragma solidity 0.8.3;
 import "./tellor3/TellorStorage.sol";
 import "./TellorVars.sol";
 import "./interfaces/IOracle.sol";
-import "hardhat/console.sol";
 
 /**
  @author Tellor Inc.
