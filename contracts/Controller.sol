@@ -4,6 +4,7 @@ pragma solidity 0.8.3;
 import "./TellorStaking.sol";
 import "./interfaces/IController.sol";
 import "./Transition.sol";
+import "./Getters.sol";
 import "hardhat/console.sol";
 
 /**
@@ -12,7 +13,7 @@ import "hardhat/console.sol";
  @dev This is the Controller contract which defines the functionality for
  * changing contract addresses, as well as minting and migrating tokens
 */
-contract Controller is TellorStaking, Transition {
+contract Controller is TellorStaking, Transition, Getters {
     // Functions
     /**
      * @dev Changes Controller contract to a new address
