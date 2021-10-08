@@ -155,6 +155,10 @@ contract Oracle is TellorVars {
             block.timestamp - reporterLastTimestamp[msg.sender] > miningLock,
             "still in reporter time lock, please wait!"
         );
+        require(
+            address(this) ==
+                IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT)
+        );
         reporterLastTimestamp[msg.sender] = block.timestamp;
         IController _tellor = IController(TELLOR_ADDRESS);
         // Checks that reporter is not already staking TRB
