@@ -40,7 +40,8 @@ contract TellorStaking is Token {
                 uints[_STAKE_AMOUNT],
             "Balance is lower than stake amount"
         );
-        // Ensure staker is not currently staked or is locked for withdraw
+        // Ensure staker is currently either not staked or locked for withdraw.
+        // Note that slashed reporters cannot stake again from slashed address.
         require(
             stakerDetails[msg.sender].currentStatus == 0 ||
                 stakerDetails[msg.sender].currentStatus == 2,
