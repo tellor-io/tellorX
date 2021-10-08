@@ -121,8 +121,10 @@ contract Oracle is TellorVars {
     function removeValue(bytes32 _id, uint256 _timestamp) external {
         require(
             msg.sender ==
-                IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT),
-            "caller must be the governance contract"
+                IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT) ||
+                msg.sender ==
+                IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT),
+            "caller must be the governance contract or the oracle contract"
         );
         Report storage rep = reports[_id];
         uint256 _index = rep.timestampIndex[_timestamp];
