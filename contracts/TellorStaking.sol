@@ -79,7 +79,7 @@ contract TellorStaking is Token {
      * @param _reporter is the address of the reporter being slashed
      * @param _disputer is the address of the disputer receiving the reporter's stake
      */
-    function slashMiner(address _reporter, address _disputer) external {
+    function slashReporter(address _reporter, address _disputer) external {
         require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
         stakerDetails[_reporter].currentStatus = 5; // Change status of reporter to slashed
         // Transfer stake amount of reporter has a balance bigger than the stake amount
