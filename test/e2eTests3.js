@@ -219,6 +219,18 @@ describe("End-to-End Tests - Three", function() {
     assert(await oracle.miningLock() == 24, "Mining lock should be correct");
 
     // ****************************************
+    // * changeTimeBasedReward(uint256)
+    // ****************************************
+    await governance.proposeVote(oracle.address, 0x6d53585f, "0x0000000000000000000000000000000000000000000000000853a0d2313c0000", 0);
+    voteCount = await governance.voteCount();
+    await governance.vote(voteCount, true, false);
+    await h.advanceTime(604800);
+    await governance.tallyVotes(voteCount);
+    await h.advanceTime(86400);
+    await governance.executeVote(voteCount);
+    assert(await oracle.getTimeBasedReward() == 600000000000000000, "Time based reward should be correct");
+
+    // ****************************************
     // * issueTreasury(uint256,uint256,uint256)
     // ****************************************
     await governance.proposeVote(treasury.address, 0x6274885f, "0x00000000000000000000000000000000000000000000003635c9adc5dea0000000000000000000000000000000000000000000000000000000000000000001f400000000000000000000000000000000000000000000000000000000002dc6c0", 0);

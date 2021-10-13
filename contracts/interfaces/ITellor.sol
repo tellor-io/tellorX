@@ -44,6 +44,9 @@ interface ITellor{
     function getStakerInfo(address _staker) external view returns (uint256, uint256);
     function getTimestampbyRequestIDandIndex(uint256 _requestID, uint256 _index) external view returns (uint256);
     function getNewCurrentVariables()external view returns (bytes32 _c,uint256[5] memory _r,uint256 _d,uint256 _t);
+    function getNewValueCountbyRequestId(bytes32 _id) external view returns(uint256);
+    function getTimestampbyRequestIDandIndex(bytes32 _id, uint256 _index) external view returns(uint256);
+    function retrieveData(bytes32 _id, uint256 _timestamp) external view returns(bytes memory);
     //Governance
     enum VoteResult {FAILED,PASSED,INVALID}
     function setApprovedFunction(bytes4 _func, bool _val) external;

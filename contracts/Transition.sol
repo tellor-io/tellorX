@@ -4,14 +4,13 @@ pragma solidity 0.8.3;
 import "./tellor3/TellorStorage.sol";
 import "./TellorVars.sol";
 import "./interfaces/IOracle.sol";
-import "hardhat/console.sol";
 
 /**
  @author Tellor Inc.
  @title Transition
 * @dev The Transition contract links to the Oracle contract and
 * allows parties (like Liquity) to continue to use the master
-* address to accesss values. All parties should be reading values
+* address to access values. All parties should be reading values
 * through this address
 */
 contract Transition is TellorStorage, TellorVars {
@@ -226,8 +225,6 @@ contract Transition is TellorStorage, TellorVars {
 
     /**
      * @dev Counts the number of values that have been submitted for the request.
-     * If called for the currentRequest being mined it can tell you how many miners have submitted a value for that
-     * request so far
      * @param _requestId the requestId to look up
      * @return uint count of the number of values received for the requestId
      */
@@ -340,7 +337,7 @@ contract Transition is TellorStorage, TellorVars {
      * (or disputes on old Tellor values)
      */
     fallback() external {
-        address addr = 0xdDB59729045d2292eeb8Ff96c46B8db53B88Daa2; // Main Tellor address (Harcode this in?)
+        address addr = 0x2754da26f634E04b26c4deCD27b3eb144Cf40582; // Main Tellor address (Harcode this in?)
         // Obtain function header from msg.data
         bytes4 _function;
         for (uint256 i = 0; i < 4; i++) {

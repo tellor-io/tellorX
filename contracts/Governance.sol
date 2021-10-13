@@ -5,7 +5,6 @@ import "./TellorVars.sol";
 import "./interfaces/IOracle.sol";
 import "./interfaces/IController.sol";
 import "./interfaces/ITreasury.sol";
-import "hardhat/console.sol";
 
 /**
  @author Tellor Inc.
@@ -87,7 +86,7 @@ contract Governance is TellorVars {
      * @dev Initializes approved function hashes and updates the minimum dispute fees
      */
     constructor() {
-        bytes4[10] memory _funcs = [
+        bytes4[11] memory _funcs = [
             bytes4(0x3c46a185), // changeControllerContract(address)
             0xe8ce51d7, // changeGovernanceContract(address)
             0x1cbd3151, // changeOracleContract(address)
@@ -96,6 +95,7 @@ contract Governance is TellorVars {
             0x40c10f19, // mint(address,uint256)
             0xe48d4b3b, // setApprovedFunction(bytes4,bool)
             0xe280e8e8, // changeMiningLock(uint256)
+            0x6d53585f, // changeTimeBasedReward(uint256)
             0x6274885f, // issueTreasury(uint256,uint256,uint256)
             0xf3ff955a // delegateVotingPower(address)
         ];
@@ -369,7 +369,7 @@ contract Governance is TellorVars {
                 );
                 _controller.changeStakingStatus(_thisDispute.reportedMiner, 1);
             }
-            emit VoteExecuted(_id, _thisVote.result);
+            emit VoteExecuted(_id, voteInfo[_id].result);
         }
     }
 
@@ -737,9 +737,6 @@ contract Governance is TellorVars {
         // Ensure that dispute has not been executed and that vote does not exist and is not tallied
         require(_id <= voteCount, "Vote does not exist");
         Vote storage _thisVote = voteInfo[_id];
-        if (_thisVote.isDispute) {
-            require(!_thisVote.executed, "Dispute has been already executed");
-        }
         require(_thisVote.tallyDate == 0, "Vote has already been tallied");
         IController _controller = IController(TELLOR_ADDRESS);
         uint256 voteWeight = _controller.balanceOfAt(

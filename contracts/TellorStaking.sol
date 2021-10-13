@@ -3,12 +3,11 @@ pragma solidity 0.8.3;
 
 import "./Token.sol";
 import "./interfaces/IGovernance.sol";
-import "hardhat/console.sol";
 
 /**
  @author Tellor Inc.
  @title TellorStaking
- @dev This is the TellorStaking contract which defines the functionality for 
+ @dev This is the TellorStaking contract which defines the functionality for
  * updating staking statuses for reporters, including depositing and withdrawing
  * stakes.
 */
@@ -41,7 +40,8 @@ contract TellorStaking is Token {
                 uints[_STAKE_AMOUNT],
             "Balance is lower than stake amount"
         );
-        // Ensure staker is not currently staked or is locked for withdraw
+        // Ensure staker is currently either not staked or locked for withdraw.
+        // Note that slashed reporters cannot stake again from slashed address.
         require(
             stakerDetails[msg.sender].currentStatus == 0 ||
                 stakerDetails[msg.sender].currentStatus == 2,

@@ -3,7 +3,6 @@ pragma solidity 0.8.3;
 
 import "./interfaces/IController.sol";
 import "./TellorVars.sol";
-import "hardhat/console.sol";
 
 /**
  @author Tellor Inc.
@@ -121,8 +120,10 @@ contract Oracle is TellorVars {
     function removeValue(bytes32 _id, uint256 _timestamp) external {
         require(
             msg.sender ==
-                IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT),
-            "caller must be the governance contract"
+                IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT) ||
+                msg.sender ==
+                IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT),
+            "caller must be the governance contract or the oracle contract"
         );
         Report storage rep = reports[_id];
         uint256 _index = rep.timestampIndex[_timestamp];
@@ -152,6 +153,10 @@ contract Oracle is TellorVars {
         require(
             block.timestamp - reporterLastTimestamp[msg.sender] > miningLock,
             "still in reporter time lock, please wait!"
+        );
+        require(
+            address(this) ==
+                IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT)
         );
         reporterLastTimestamp[msg.sender] = block.timestamp;
         IController _tellor = IController(TELLOR_ADDRESS);
