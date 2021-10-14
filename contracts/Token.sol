@@ -196,7 +196,6 @@ contract Token is TellorStorage, TellorVars {
         );
         uint128 previousBalance = uint128(balanceOf(_from));
         uint128 _sizedAmount = uint128(_amount);
-        uint256 previousSupply = uints[_TOTAL_SUPPLY];
         // Update total supply and balance of _from
         _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
         uints[_TOTAL_SUPPLY] -= _amount;
@@ -213,7 +212,6 @@ contract Token is TellorStorage, TellorVars {
         require(_to != address(0), "Receiver is 0 address");
         uint128 previousBalance = uint128(balanceOf(_to));
         uint128 _sizedAmount = uint128(_amount);
-        uint256 previousSupply = uints[_TOTAL_SUPPLY];
         // Update total supply and balance of _to address
         uints[_TOTAL_SUPPLY] += _amount;
         _updateBalanceAtNow(_to, previousBalance + _sizedAmount);
