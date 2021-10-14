@@ -61,7 +61,7 @@ contract TellorStaking is Token {
      * @dev Allows a reporter to request to withdraw their stake
      */
     function requestStakingWithdraw() external {
-        // Ensures reporter is not already staked
+        // Ensures reporter is already staked
         StakeInfo storage stakes = stakerDetails[msg.sender];
         require(stakes.currentStatus == 1, "Reporter is not staked");
         // Change status to reflect withdraw request and updates start date for staking

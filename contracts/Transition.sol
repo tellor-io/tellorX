@@ -126,7 +126,7 @@ contract Transition is TellorStorage, TellorVars {
     }
 
     /**
-     * @dev Checks if a given hash of miner,requestId has been disputed
+     * @dev Gets id if a given hash has been disputed
      * @param _hash is the sha256(abi.encodePacked(_miners[2],_requestId,_timestamp));
      * @return uint disputeId
      */

@@ -108,8 +108,6 @@ contract Governance is TellorVars {
 
     /**
      * @dev Helps initialize a dispute by assigning it a disputeId
-     * when a miner returns a false/bad value on the validate array(in Tellor.ProofOfWork) it sends the
-     * invalidated value information to POS voting
      * @param _requestId being disputed
      * @param _timestamp being disputed
      */
