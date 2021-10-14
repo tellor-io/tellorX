@@ -80,6 +80,7 @@ contract Governance is TellorVars {
     ); // Emitted when an address casts their vote
     event VoteExecuted(uint256 _id, VoteResult _result); // Emitted when a vote is executed
     event VoteTallied(uint256 _id, VoteResult _result); // Emitted when all casting for a vote is tallied
+    event DelegateSet(address _delegate, address _delegator); // Emitted when voting delegate is set
 
     // Functions
     /**
@@ -224,6 +225,7 @@ contract Governance is TellorVars {
             ];
             oldCheckPoint.delegate = _delegate;
         }
+        emit DelegateSet(_delegate, msg.sender);
     }
 
     /**
