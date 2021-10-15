@@ -61,7 +61,7 @@ contract TellorStaking is Token {
      * @dev Allows a reporter to request to withdraw their stake
      */
     function requestStakingWithdraw() external {
-        // Ensures reporter is not already staked
+        // Ensures reporter is already staked
         StakeInfo storage stakes = stakerDetails[msg.sender];
         require(stakes.currentStatus == 1, "Reporter is not staked");
         // Change status to reflect withdraw request and updates start date for staking
@@ -79,7 +79,7 @@ contract TellorStaking is Token {
      * @param _reporter is the address of the reporter being slashed
      * @param _disputer is the address of the disputer receiving the reporter's stake
      */
-    function slashMiner(address _reporter, address _disputer) external {
+    function slashReporter(address _reporter, address _disputer) external {
         require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
         stakerDetails[_reporter].currentStatus = 5; // Change status of reporter to slashed
         // Transfer stake amount of reporter has a balance bigger than the stake amount

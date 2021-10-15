@@ -80,6 +80,7 @@ contract Governance is TellorVars {
     ); // Emitted when an address casts their vote
     event VoteExecuted(uint256 _id, VoteResult _result); // Emitted when a vote is executed
     event VoteTallied(uint256 _id, VoteResult _result); // Emitted when all casting for a vote is tallied
+    event DelegateSet(address _delegate, address _delegator); // Emitted when voting delegate is set
 
     // Functions
     /**
@@ -108,8 +109,6 @@ contract Governance is TellorVars {
 
     /**
      * @dev Helps initialize a dispute by assigning it a disputeId
-     * when a miner returns a false/bad value on the validate array(in Tellor.ProofOfWork) it sends the
-     * invalidated value information to POS voting
      * @param _requestId being disputed
      * @param _timestamp being disputed
      */
@@ -226,6 +225,7 @@ contract Governance is TellorVars {
             ];
             oldCheckPoint.delegate = _delegate;
         }
+        emit DelegateSet(_delegate, msg.sender);
     }
 
     /**
@@ -320,7 +320,7 @@ contract Governance is TellorVars {
                     _thisVote = voteInfo[_voteID];
                     // If the first vote round, also make sure to slash the reporter and send their balance to the initiator
                     if (_i == 1) {
-                        _controller.slashMiner(
+                        _controller.slashReporter(
                             _thisDispute.reportedMiner,
                             _thisVote.initiator
                         );

@@ -140,13 +140,13 @@ describe("TellorX Function Tests - TellorStaking", function() {
     vars = await tellor.getStakerInfo(accounts[1].address)
     assert(vars[0] - 5 == 0, "status should be correct")
   });
-  it("slashMiner", async function() {
+  it("slashReporter", async function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     let initBal = await tellor.balanceOf(accounts[1].address)
     await tellorUser.depositStake();
     admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
-    await admin.slashMiner(accounts[1].address, accounts[2].address)
+    await admin.slashReporter(accounts[1].address, accounts[2].address)
     let blocky = await ethers.provider.getBlock();
     let vars = await tellor.getStakerInfo(accounts[1].address)
     assert(vars[0] - 5 == 0, "status should be correct")

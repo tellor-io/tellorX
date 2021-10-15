@@ -196,16 +196,6 @@ contract Token is TellorStorage, TellorVars {
         );
         uint128 previousBalance = uint128(balanceOf(_from));
         uint128 _sizedAmount = uint128(_amount);
-        // Check for overflow
-        require(
-            previousBalance - _sizedAmount <= previousBalance,
-            "Overflow happened"
-        );
-        uint256 previousSupply = uints[_TOTAL_SUPPLY];
-        require(
-            previousSupply - _amount <= previousSupply,
-            "Overflow happened"
-        );
         // Update total supply and balance of _from
         _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
         uints[_TOTAL_SUPPLY] -= _amount;
@@ -222,16 +212,6 @@ contract Token is TellorStorage, TellorVars {
         require(_to != address(0), "Receiver is 0 address");
         uint128 previousBalance = uint128(balanceOf(_to));
         uint128 _sizedAmount = uint128(_amount);
-        // Check for overflow for balance and supply
-        require(
-            previousBalance + _sizedAmount >= previousBalance,
-            "Overflow happened"
-        );
-        uint256 previousSupply = uints[_TOTAL_SUPPLY];
-        require(
-            previousSupply + _amount >= previousSupply,
-            "Overflow happened"
-        );
         // Update total supply and balance of _to address
         uints[_TOTAL_SUPPLY] += _amount;
         _updateBalanceAtNow(_to, previousBalance + _sizedAmount);
@@ -261,12 +241,8 @@ contract Token is TellorStorage, TellorVars {
         uint128 previousBalance = uint128(balanceOf(_from));
         uint128 _sizedAmount = uint128(_amount);
         _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
-        // Check for overflow, and update balance of _to address
+        // Update balance of _to address
         previousBalance = uint128(balanceOf(_to));
-        require(
-            previousBalance + _sizedAmount >= previousBalance,
-            "Overflow happened"
-        );
         _updateBalanceAtNow(_to, previousBalance + _sizedAmount);
         emit Transfer(_from, _to, _amount);
     }
