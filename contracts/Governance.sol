@@ -18,12 +18,12 @@ contract Governance is TellorVars {
     // Storage
     uint256 public voteCount; // total number of votes initiated
     uint256 public disputeFee; // dispute fee for a vote
-    mapping(address => Delegation[]) delegateInfo; // mapping of delegate addresses to an array of their delegations
-    mapping(bytes4 => bool) functionApproved; // mapping of function hashes to bools of whether the functions are approved
-    mapping(bytes32 => uint256[]) voteRounds; //shows if a certain vote has already started
-    mapping(uint256 => Vote) voteInfo; // mapping of vote IDs to the details of the vote
-    mapping(uint256 => Dispute) disputeInfo; // mapping of dispute IDs to the details of the dispute
-    mapping(bytes32 => uint256) openDisputesOnId; // mapping of a price feed ID to the number of disputes
+    mapping(address => Delegation[]) public delegateInfo; // mapping of delegate addresses to an array of their delegations
+    mapping(bytes4 => bool) public functionApproved; // mapping of function hashes to bools of whether the functions are approved
+    mapping(bytes32 => uint256[]) public voteRounds; //shows if a certain vote has already started
+    mapping(uint256 => Vote) public voteInfo; // mapping of vote IDs to the details of the vote
+    mapping(uint256 => Dispute) public disputeInfo; // mapping of dispute IDs to the details of the dispute
+    mapping(bytes32 => uint256) public openDisputesOnId; // mapping of a price feed ID to the number of disputes
     enum VoteResult {
         FAILED,
         PASSED,
