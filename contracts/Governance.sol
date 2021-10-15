@@ -320,7 +320,7 @@ contract Governance is TellorVars {
                     _thisVote = voteInfo[_voteID];
                     // If the first vote round, also make sure to slash the reporter and send their balance to the initiator
                     if (_i == 1) {
-                        _controller.slashMiner(
+                        _controller.slashReporter(
                             _thisDispute.reportedMiner,
                             _thisVote.initiator
                         );
