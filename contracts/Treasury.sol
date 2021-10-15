@@ -118,6 +118,16 @@ contract Treasury is TellorVars {
                 IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT),
             "Only governance contract is allowed to issue a treasury."
         );
+        require(
+            _maxAmount > 0 &&
+                _maxAmount <= IController(TELLOR_ADDRESS).totalSupply(),
+            "Invalid maxAmount value"
+        );
+        require(
+            _duration > 0 && _duration <= 315360000,
+            "Invalid duration value"
+        );
+        require(_rate > 0 && _rate <= 10000, "Invalid rate value");
         // Increment treasury count, and define new treasury and its details (start date, total amount, rate, etc.)
         treasuryCount++;
         TreasuryDetails storage _treas = treasury[treasuryCount];

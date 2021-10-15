@@ -35,10 +35,7 @@ contract Transition is TellorStorage, TellorVars {
             addresses[_GOVERNANCE_CONTRACT] == address(0),
             "Only good once"
         );
-        require(
-            _governance != address(0),
-            "New contract is invalid"
-        );
+        require(_governance != address(0), "New contract is invalid");
         // Set state amount, switch time, and minimum dispute fee
         uints[_STAKE_AMOUNT] = 100e18;
         uints[_SWITCH_TIME] = block.timestamp;

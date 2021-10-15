@@ -92,6 +92,7 @@ contract Oracle is TellorVars {
                 IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT),
             "Only governance contract can change mining lock."
         );
+        require(_newMiningLock < 8640000, "Invalid _newMiningLock value");
         miningLock = _newMiningLock;
         emit MiningLockChanged(_newMiningLock);
     }
