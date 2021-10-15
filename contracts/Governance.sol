@@ -18,12 +18,12 @@ contract Governance is TellorVars {
     // Storage
     uint256 public voteCount; // total number of votes initiated
     uint256 public disputeFee; // dispute fee for a vote
-    mapping(address => Delegation[]) public delegateInfo; // mapping of delegate addresses to an array of their delegations
-    mapping(bytes4 => bool) public functionApproved; // mapping of function hashes to bools of whether the functions are approved
-    mapping(bytes32 => uint256[]) public voteRounds; //shows if a certain vote has already started
-    mapping(uint256 => Vote) public voteInfo; // mapping of vote IDs to the details of the vote
-    mapping(uint256 => Dispute) public disputeInfo; // mapping of dispute IDs to the details of the dispute
-    mapping(bytes32 => uint256) public openDisputesOnId; // mapping of a price feed ID to the number of disputes
+    mapping(address => Delegation[]) private delegateInfo; // mapping of delegate addresses to an array of their delegations
+    mapping(bytes4 => bool) private functionApproved; // mapping of function hashes to bools of whether the functions are approved
+    mapping(bytes32 => uint256[]) private voteRounds; //shows if a certain vote has already started
+    mapping(uint256 => Vote) private voteInfo; // mapping of vote IDs to the details of the vote
+    mapping(uint256 => Dispute) private disputeInfo; // mapping of dispute IDs to the details of the dispute
+    mapping(bytes32 => uint256) private openDisputesOnId; // mapping of a price feed ID to the number of disputes
     enum VoteResult {
         FAILED,
         PASSED,
@@ -182,7 +182,7 @@ contract Governance is TellorVars {
             )
         ); // This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
         // Add an initial tip and change the current staking status of reporter
-        IOracle(_oracle).addTip(_requestId, _fee / 10, bytes(""));
+        IOracle(_oracle).addTip(_requestId, _fee - _thisVote.fee, bytes(""));
         (uint256 _status, ) = IController(TELLOR_ADDRESS).getStakerInfo(
             _thisDispute.reportedMiner
         );

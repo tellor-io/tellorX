@@ -17,10 +17,10 @@ contract Oracle is TellorVars {
     uint256 public miningLock = 12 hours; // amount of time before a reporter is able to submit a value again
     uint256 public timeBasedReward = 5e17; // time based reward for a reporter for successfully submitting a value
     mapping(bytes32 => uint256) public tips; // mapping of data IDs to the amount of TRB they are tipped
-    mapping(bytes32 => Report) public reports; // mapping of data IDs to a report
-    mapping(address => uint256) public reporterLastTimestamp; // mapping of reporter addresses to the timestamp of their last reported value
-    mapping(address => uint256) public reportsSubmittedByAddress; // mapping of reporter addresses to the number of reports they've submitted
-    mapping(address => uint256) public tipsByUser; // mapping of a user to the amount of tips they've paid
+    mapping(bytes32 => Report) private reports; // mapping of data IDs to a report
+    mapping(address => uint256) private reporterLastTimestamp; // mapping of reporter addresses to the timestamp of their last reported value
+    mapping(address => uint256) private reportsSubmittedByAddress; // mapping of reporter addresses to the number of reports they've submitted
+    mapping(address => uint256) private tipsByUser; // mapping of a user to the amount of tips they've paid
 
     // Structs
     struct Report {
