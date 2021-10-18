@@ -150,6 +150,11 @@ contract Oracle is TellorVars {
         bytes calldata _value,
         uint256 _nonce
     ) external {
+        Report storage rep = reports[_id];
+        require(
+            _nonce == rep.timestamps.length,
+            "nonce must match timestamp index"
+        );
         // Require reporter to abide by given mining lock
         require(
             block.timestamp - reporterLastTimestamp[msg.sender] > miningLock,
@@ -170,11 +175,6 @@ contract Oracle is TellorVars {
             "balance must be greater than stake amount"
         );
         // Checks for no double reporting of timestamps
-        Report storage rep = reports[_id];
-        require(
-            _nonce == rep.timestamps.length,
-            "nonce must match timestamp index"
-        );
         require(
             rep.reporterByTimestamp[block.timestamp] == address(0),
             "timestamp already reported for"
