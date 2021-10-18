@@ -179,7 +179,8 @@ contract Governance is TellorVars {
                 msg.sender,
                 address(this),
                 _fee
-            )
+            ),
+            "Fee must be paid"
         ); // This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
         // Add an initial tip and change the current staking status of reporter
         IOracle(_oracle).addTip(_requestId, _fee - _thisVote.fee, bytes(""));
@@ -348,6 +349,7 @@ contract Governance is TellorVars {
                 _controller.changeStakingStatus(_thisDispute.reportedMiner, 1); // Change staking status of disputed reporter, but don't slash
             } else if (_thisVote.result == VoteResult.FAILED) {
                 // If vote is in dispute and fails, iterate through each vote round and transfer the dispute to disputed reporter
+                uint256 reporterReward = 0;
                 for (
                     _i = voteRounds[_thisVote.identifierHash].length;
                     _i > 0;
@@ -355,11 +357,12 @@ contract Governance is TellorVars {
                 ) {
                     _voteID = voteRounds[_thisVote.identifierHash][_i - 1];
                     _thisVote = voteInfo[_voteID];
-                    _controller.transfer(
-                        _thisDispute.reportedMiner,
-                        _thisVote.fee
-                    );
+                    reporterReward += _thisVote.fee;
                 }
+                _controller.transfer(
+                    _thisDispute.reportedMiner,
+                    reporterReward
+                );
                 uint256 stakeCount = IController(TELLOR_ADDRESS).getUintVar(
                     _STAKE_COUNT
                 );

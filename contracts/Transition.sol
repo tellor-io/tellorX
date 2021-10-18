@@ -378,13 +378,11 @@ contract Transition is TellorStorage, TellorVars {
      * @param b is the bytes variable to be sliced
      * @return _x of the sliced uint256
      */
-    function _sliceUint(bytes memory b) internal pure returns (uint256 _x) {
-        uint256 number;
-        for (uint256 i = 0; i < b.length; i++) {
-            number =
-                number +
-                uint256(uint8(b[i])) *
-                (2**(8 * (b.length - (i + 1))));
+    function _sliceUint(bytes memory b) public pure returns (uint256 _x) {
+        uint256 number = 0;
+        for (uint256 i=0;i<b.length;i++) {
+            number = number * 2**8;
+            number = number + uint8(b[i]);
         }
         return number;
     }
