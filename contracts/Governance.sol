@@ -603,10 +603,14 @@ contract Governance is TellorVars {
         view
         returns (address, uint256)
     {
+      if(delegateInfo[_holder].length > 0) {
         return (
             delegateOfAt(_holder, block.number),
             delegateInfo[_holder][delegateInfo[_holder].length - 1].fromBlock
         );
+      } else {
+        return (address(0), 0);
+      }
     }
 
     /**
