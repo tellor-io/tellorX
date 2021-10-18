@@ -380,7 +380,7 @@ contract Transition is TellorStorage, TellorVars {
      */
     function _sliceUint(bytes memory b) public pure returns (uint256 _x) {
         uint256 number = 0;
-        for (uint256 i=0;i<b.length;i++) {
+        for (uint256 i = 0; i < b.length; i++) {
             number = number * 2**8;
             number = number + uint8(b[i]);
         }
