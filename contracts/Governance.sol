@@ -179,7 +179,8 @@ contract Governance is TellorVars {
                 msg.sender,
                 address(this),
                 _fee
-            )
+            ),
+            "Fee must be paid"
         ); // This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
         // Add an initial tip and change the current staking status of reporter
         IOracle(_oracle).addTip(_requestId, _fee - _thisVote.fee, bytes(""));
