@@ -348,6 +348,7 @@ contract Governance is TellorVars {
                 _controller.changeStakingStatus(_thisDispute.reportedMiner, 1); // Change staking status of disputed reporter, but don't slash
             } else if (_thisVote.result == VoteResult.FAILED) {
                 // If vote is in dispute and fails, iterate through each vote round and transfer the dispute to disputed reporter
+                uint256 reporterReward = 0;
                 for (
                     _i = voteRounds[_thisVote.identifierHash].length;
                     _i > 0;
@@ -355,11 +356,12 @@ contract Governance is TellorVars {
                 ) {
                     _voteID = voteRounds[_thisVote.identifierHash][_i - 1];
                     _thisVote = voteInfo[_voteID];
-                    _controller.transfer(
-                        _thisDispute.reportedMiner,
-                        _thisVote.fee
-                    );
+                    reporterReward += _thisVote.fee;
                 }
+                _controller.transfer(
+                    _thisDispute.reportedMiner,
+                    reporterReward
+                );
                 uint256 stakeCount = IController(TELLOR_ADDRESS).getUintVar(
                     _STAKE_COUNT
                 );
