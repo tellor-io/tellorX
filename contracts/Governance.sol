@@ -717,10 +717,13 @@ contract Governance is TellorVars {
      */
     function isApprovedGovernanceContract(address _contract)
         external
-        view
         returns (bool)
     {
-        return true;
+        if (_contract == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT)) {
+          return true;
+        } else {
+          return false;
+        }
     }
 
     /**
