@@ -54,7 +54,7 @@ describe("TellorX Function Tests - Governance", function() {
     governance = await gfac.deploy();
     oracle = await ofac.deploy();
     treasury = await tfac.deploy();
-    controller = await cfac.deploy();
+    controller = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await governance.deployed();
     await oracle.deployed();
     await treasury.deployed();
@@ -74,7 +74,7 @@ describe("TellorX Function Tests - Governance", function() {
     await master.updateTellor(_id)
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, devWallet);
     await tellor.deployed();
-    await tellor.init(governance.address,oracle.address,treasury.address)
+    await tellor.init()
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
       params: [governance.address]}
