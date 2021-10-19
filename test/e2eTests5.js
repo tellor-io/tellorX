@@ -115,7 +115,7 @@ describe("End-to-End Tests - Five", function() {
       governance = await gfac.deploy();
       oracle = await ofac.deploy();
       treasury = await tfac.deploy();
-      controller = await cfac.deploy();
+      controller = await cfac.deploy(governance.address, oracle.address, treasury.address);
       await governance.deployed();
       await oracle.deployed();
       await treasury.deployed();
@@ -142,7 +142,7 @@ describe("End-to-End Tests - Five", function() {
       await master.updateTellor(_id)
       tellor = await ethers.getContractAt("contracts/testing/TestController.sol:TestController",tellorMaster, devWallet);
       await tellor.deployed();
-      await tellor.init(governance.address,oracle.address,treasury.address)
+      await tellor.init()
       let dispVars = await tellor.getAllDisputeVars(newId)
       let minerBal1 = await tellor.balanceOf(dispVars[4])
       assert(dispVars[1] == false, "dispute should not be executed")

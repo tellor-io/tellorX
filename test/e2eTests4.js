@@ -160,7 +160,7 @@ describe("End-to-End Tests - Four", function() {
   })
   it("Test delegate then delegates", async function() {
     this.timeout(20000000)
-    let newController = await cfac.deploy();
+    let newController = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await newController.deployed();
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     await governance.delegate(DEV_WALLET);

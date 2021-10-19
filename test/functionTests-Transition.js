@@ -88,7 +88,7 @@ describe("TellorX Function Tests - Transition", function() {
     assert(await tellor.getAddressVars(h.hash("_TREASURY_CONTRACT")) == treasury.address, "Governance Address should be correct");
     assert(await tellor.getAddressVars(h.hash("_ORACLE_CONTRACT")) == oracle.address, "Governance Address should be correct");
     assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) - h.to18(100) == 0, "stake amount should peroperly change");
-    await h.expectThrow(tellor.init(oracle.address,oracle.address,oracle.address));
+    await h.expectThrow(tellor.init());
     assert(await tellor.getUintVar(h.hash("_SWITCH_TIME")) > 0, "switch time should be correct")
   });
   it("getTimestampbyRequestIDandIndex()", async function() {
@@ -160,7 +160,7 @@ describe("TellorX Function Tests - Transition", function() {
     governance = await gfac.deploy();
     oracle = await ofac.deploy();
     treasury = await tfac.deploy();
-    controller = await cfac.deploy();
+    controller = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await governance.deployed();
     await oracle.deployed();
     await treasury.deployed();
@@ -172,7 +172,7 @@ describe("TellorX Function Tests - Transition", function() {
     await master.changeTellorContract(controller.address)
     tellor = await ethers.getContractAt("contracts/testing/TestController.sol:TestController",tellorMaster, devWallet);
     await tellor.deployed();
-    await tellor.init(governance.address,oracle.address,treasury.address)
+    await tellor.init()
     await tellor.transfer(accounts[2].address,web3.utils.toWei("500"));
     tellorUser = await ethers.getContractAt("contracts/interfaces/IController.sol:IController",tellorMaster, accounts[2]);
     let count = await master.getNewValueCountbyRequestId(1);
