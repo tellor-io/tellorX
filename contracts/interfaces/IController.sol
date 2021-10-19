@@ -15,7 +15,7 @@ interface IController{
     function changeUint(bytes32 _target, uint256 _amount) external;
     function migrate() external;
     function mint(address _reciever, uint256 _amount) external;
-    function init(address _governance, address _oracle, address _treasury) external;
+    function init() external;
     function getDisputeIdByDisputeHash(bytes32 _hash) external view returns (uint256);
     function getLastNewValueById(uint256 _requestId) external view returns (uint256, bool);
     function retrieveData(uint256 _requestId, uint256 _timestamp) external view returns (uint256);

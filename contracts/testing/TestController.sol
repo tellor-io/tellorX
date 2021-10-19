@@ -7,6 +7,12 @@ import "hardhat/console.sol";
 contract TestController is Controller {
     event Received(address, uint256);
 
+    constructor(
+      address _governance,
+      address _oracle,
+      address _treasury
+    ) Controller(_governance, _oracle, _treasury) {}
+
     receive() external payable {
         emit Received(msg.sender, msg.value);
     }
