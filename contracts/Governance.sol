@@ -712,6 +712,18 @@ contract Governance is TellorVars {
     }
 
     /**
+     * @dev Used for future governance contract upgrades. Hardcode old contract address in next upgrade
+     * @param _contract is the contract address to check
+     */
+    function isApprovedGovernanceContract(address _contract)
+        external
+        view
+        returns (bool)
+    {
+        return true;
+    }
+
+    /**
      * @dev Returns whether or not a function is approved
      * @param _func is the hash of the function to be checked
      * @return bool of whether or not the function is approved
