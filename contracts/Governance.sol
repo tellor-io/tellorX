@@ -719,10 +719,13 @@ contract Governance is TellorVars {
         external
         returns (bool)
     {
-        if (_contract == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT)) {
-          return true;
+        if (
+            _contract ==
+            IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT)
+        ) {
+            return true;
         } else {
-          return false;
+            return false;
         }
     }
 
