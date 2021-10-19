@@ -25,7 +25,6 @@ contract TellorStaking is Token {
      * @param _status is the new status of the reporter
      */
     function changeStakingStatus(address _reporter, uint256 _status) external {
-        // require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
         require(
             IGovernance(addresses[_GOVERNANCE_CONTRACT])
                 .isApprovedGovernanceContract(msg.sender),
@@ -85,7 +84,6 @@ contract TellorStaking is Token {
      * @param _disputer is the address of the disputer receiving the reporter's stake
      */
     function slashReporter(address _reporter, address _disputer) external {
-        // require(msg.sender == addresses[_GOVERNANCE_CONTRACT]);
         require(
             IGovernance(addresses[_GOVERNANCE_CONTRACT])
                 .isApprovedGovernanceContract(msg.sender),
