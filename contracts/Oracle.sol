@@ -39,7 +39,7 @@ contract Oracle is TellorVars {
         uint256 _totalTip,
         bytes _data
     );
-    event NewReport(bytes32 _id, uint256 _time, bytes _value, uint256 _reward);
+    event NewReport(bytes32 _id, uint256 _time, bytes _value, uint256 _reward, uint256 _nonce);
     event MiningLockChanged(uint256 _newMiningLock);
     event TimeBasedRewardsChanged(uint256 _newTimeBasedReward);
 
@@ -195,7 +195,7 @@ contract Oracle is TellorVars {
         // Update last oracle value and number of values submitted by a reporter
         timeOfLastNewValue = block.timestamp;
         reportsSubmittedByAddress[msg.sender]++;
-        emit NewReport(_id, block.timestamp, _value, _tip + _reward);
+        emit NewReport(_id, block.timestamp, _value, _tip + _reward, _nonce);
     }
 
     //Getters

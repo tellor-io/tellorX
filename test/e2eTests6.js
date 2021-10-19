@@ -18,6 +18,7 @@ describe("End-to-End Tests - Six", function() {
   let cfac,ofac,tfac,gfac,parachute,govBig,govTeam,oracle, oldTellorInstance
   let govSigner = null
   let disputeHash, badMiner, timestamp, d1
+  let disputeHash2, badMiner2, timestamp2
 
   beforeEach("deploy and setup TellorX", async function() {
     this.timeout(20000000)
@@ -82,6 +83,14 @@ describe("End-to-End Tests - Six", function() {
     let badMiners = await oldTellorInstance.getMinersByRequestIdAndTimestamp(1,timestamp)
     badMiner = badMiners[1]
     disputeHash = ethers.utils.solidityKeccak256(['address','uint256','uint256'], [badMiners[1],1,timestamp])
+
+    await oldTellorInstance.connect(devWallet).transfer(d1.address, BigInt(1000E18))
+    timestamp2 = await oldTellorInstance.getTimestampbyRequestIDandIndex(1, valueCount-1)
+    await oldTellorInstance.connect(d1).beginDispute(1, timestamp2, 1)
+    let badMiners2 = await oldTellorInstance.getMinersByRequestIdAndTimestamp(1,timestamp2)
+    badMiner2 = badMiners2[1]
+    disputeHash2 = ethers.utils.solidityKeccak256(['address','uint256','uint256'], [badMiners2[1],1,timestamp2])
+
 
     /**
      *
@@ -150,4 +159,34 @@ describe("End-to-End Tests - Six", function() {
         assert(voteInfo[3] == 1, "Vote result should be correct")
         assert(await tellor.balanceOf(accounts[1].address) == 0, "Disputed reporter balance should be correct")
     })
+    it("Switch happens when multiple disputes are open", async function() {
+        this.timeout(20000000)
+        let disputeId = await tellor.getDisputeIdByDisputeHash(disputeHash)
+        let disputeId2 = await tellor.getDisputeIdByDisputeHash(disputeHash2)
+        assert(disputeId > 0, "Should return non-zero dispute id")
+        assert(disputeId2 > 0, "Should return non-zero dispute id")
+        let tellorToOld = await ethers.getContractAt("contracts/tellor3/ITellor.sol:ITellor",tellorMaster, devWallet)
+        await tellorToOld.vote(disputeId,true)
+        await tellorToOld.vote(disputeId2,true)
+        await tellorToOld.connect(bigWallet).vote(disputeId,true)
+        await tellorToOld.connect(bigWallet).vote(disputeId2,true)
+        await h.advanceTime(86400 * 8)
+        await tellorToOld.tallyVotes(disputeId)
+        await tellorToOld.tallyVotes(disputeId2)
+        await h.advanceTime(86400 * 2.5)
+        let oldDisputeVars = await tellorToOld.connect(bigWallet).getAllDisputeVars(disputeId);
+        assert(oldDisputeVars[1], "Old tellor dispute should be executed")
+        assert(oldDisputeVars[2], "Old tellor dispute should have passed")
+        let disputerBal1 = await tellor.balanceOf(d1.address)
+        await tellorToOld.unlockDisputeFee(disputeId)
+        let disputerBal2 = await tellor.balanceOf(d1.address)
+        assert(disputerBal2-disputerBal1 > 0, "Disputer should be paid reward for successful dispute")
+        let oldDisputeVars2 = await tellorToOld.connect(bigWallet).getAllDisputeVars(disputeId2);
+        assert(oldDisputeVars2[1], "Old tellor dispute should be executed")
+        assert(oldDisputeVars2[2], "Old tellor dispute should have passed")
+        disputerBal1 = await tellor.balanceOf(d1.address)
+        await tellorToOld.unlockDisputeFee(disputeId2)
+        disputerBal2 = await tellor.balanceOf(d1.address)
+        assert(disputerBal2-disputerBal1 > 0, "Disputer should be paid reward for successful dispute")
+      });
 });
