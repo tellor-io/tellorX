@@ -393,6 +393,9 @@ describe("TellorX Function Tests - Governance", function() {
     let vars = await governance.getDelegateInfo(accounts[2].address)
     assert(vars[0] == accounts[1].address, "delegate should be correct")
     assert(vars[1] > 0, "block of delegation should be correct")
+    vars = await governance.getDelegateInfo(accounts[3].address)
+    assert(vars[0] == "0x0000000000000000000000000000000000000000", "delegate should be correct")
+    assert(vars[1] == 0, "block of delegation should be correct")
   });
   it("isFunctionApproved()", async function() {
       assert(await governance.isFunctionApproved(0xe8ce51d7) == true, "Function should be approved")
