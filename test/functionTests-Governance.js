@@ -104,7 +104,7 @@ describe("TellorX Function Tests - Governance", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue( h.uintTob32(1),300,0);
+    await oracle.submitValue( h.uintTob32(1),300,0,'0x');
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     h.expectThrow(governance.beginDispute(h.uintTob32(1),_t + 86400));//not a valid timestamp
@@ -141,7 +141,7 @@ describe("TellorX Function Tests - Governance", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[3]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[3]);
-    await oracle.submitValue(h.uintTob32(2),301,0);
+    await oracle.submitValue(h.uintTob32(2),301,0,'0x');
     let _t2 = oracle.getReportTimestampByIndex(h.uintTob32(2),0);
     await h.advanceTime(86400+1000)
     h.expectThrow(governance.beginDispute(h.uintTob32(1),_t))//cannot open a new round past a day
@@ -174,7 +174,7 @@ describe("TellorX Function Tests - Governance", function() {
     h.expectThrow(governance.executeVote(2));//ID not yet valid
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue(h.uintTob32(1),300,0);
+    await oracle.submitValue(h.uintTob32(1),300,0,'0x');
     let initBalReporter = await tellor.balanceOf(accounts[1].address)
     let initBalDisputer = await tellor.balanceOf(accounts[2].address)
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
@@ -200,7 +200,7 @@ describe("TellorX Function Tests - Governance", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[3]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[3]);
-    await oracle.submitValue(h.uintTob32(2),300,0);
+    await oracle.submitValue(h.uintTob32(2),300,0,'0x');
     _t = await oracle.getReportTimestampByIndex(h.uintTob32(2),0);
     stakeCount0 = await tellor.getUintVar(h.hash("_STAKE_COUNT"))
     await governance.beginDispute(h.uintTob32(2),_t);
@@ -253,7 +253,7 @@ describe("TellorX Function Tests - Governance", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue(h.uintTob32(1),300,0);
+    await oracle.submitValue(h.uintTob32(1),300,0,'0x');
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     teamGovernance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, devWallet);
@@ -341,9 +341,9 @@ describe("TellorX Function Tests - Governance", function() {
     for(i=0;i<5;i++){
       await h.advanceTime(86400 * .6)
       nonce = await oracle.getTimestampCountById(h.uintTob32(3));
-      await oracle6.submitValue( h.uintTob32(3),300,nonce);
+      await oracle6.submitValue( h.uintTob32(3),300,nonce,'0x');
     }
-    await oracle.submitValue( h.uintTob32(1),300,0);
+    await oracle.submitValue( h.uintTob32(1),300,0,'0x');
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     governance3 = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[3]);
@@ -370,7 +370,7 @@ describe("TellorX Function Tests - Governance", function() {
     assert(voteVars[1][5] - await tellor.balanceOf(accounts[2].address) == 0, "does Support should be account 2 balance")
     assert(voteVars[1][6] - h.to18(105) == 0, "against should be right")
     assert(voteVars[1][7] - 5 == 0, "invalidQuery should be right")
-    await oracle6.submitValue( h.uintTob32(44),30110,0);
+    await oracle6.submitValue( h.uintTob32(44),30110,0,'0x');
     _t = await oracle.getReportTimestampByIndex(h.uintTob32(44),0);
     treasury = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[7]);
     admintreasury = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, govSigner);
@@ -407,7 +407,7 @@ describe("TellorX Function Tests - Governance", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue(h.uintTob32(1),300,0);
+    await oracle.submitValue(h.uintTob32(1),300,0,'0x');
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     governance = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, accounts[2]);
     await governance.beginDispute(h.uintTob32(1),_t);
@@ -418,7 +418,7 @@ describe("TellorX Function Tests - Governance", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[3]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[3]);
-    await oracle.submitValue(h.uintTob32(2),300,0);
+    await oracle.submitValue(h.uintTob32(2),300,0,'0x');
     _t2 = await oracle.getReportTimestampByIndex(h.uintTob32(2),0);
     await governance.beginDispute(h.uintTob32(2),_t2);
     await governance.beginDispute(h.uintTob32(1),_t);
@@ -461,13 +461,13 @@ describe("TellorX Function Tests - Governance", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue( ethers.utils.formatBytes32String("disputedVar"),300000,0);
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("disputedVar"),0);
+    await oracle.submitValue( h.uintTob32(50),300000,0,'0x');
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(50),0);
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
-    await governance.beginDispute(h.tob32("disputedVar"),_t);
+    await governance.beginDispute(h.uintTob32(50),_t);
     let dispVars = await governance.getDisputeInfo(1);
-    assert(dispVars[0] - h.tob32("disputeVar") == 0, "requestId should be correct")
+    assert(dispVars[0] - h.uintTob32(50) == 0, "requestId should be correct")
     assert(dispVars[1] - _t == 0, "timestamp should be correct")
     assert(dispVars[2] - 300000 == 0, "value should be correct")
     assert(dispVars[3] == accounts[1].address, "reported Miner should be correct")
@@ -480,22 +480,22 @@ describe("TellorX Function Tests - Governance", function() {
       tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[i]);
       await tellorUser.depositStake();
       oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[i]);
-      await oracle.submitValue( ethers.utils.formatBytes32String("disputedVar"),300000 + i,0);
-      let _t = await oracle.getReportTimestampByIndex(h.tob32("disputedVar"),0);
-      await governance.beginDispute(h.tob32("disputedVar"),_t);
+      await oracle.submitValue( h.uintTob32(50),300000 + i,0,'0x');
+      let _t = await oracle.getReportTimestampByIndex(h.uintTob32(50),0);
+      await governance.beginDispute(h.uintTob32(50),_t);
     }
-    assert(await governance.getOpenDisputesOnId(h.tob32("disputedVar")) == 4, "number of open disputes should be right")
+    assert(await governance.getOpenDisputesOnId(h.uintTob32(50)) == 4, "number of open disputes should be right")
   });
   it("didVote()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue( ethers.utils.formatBytes32String("disputedVar"),300000,0);
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("disputedVar"),0);
+    await oracle.submitValue( h.uintTob32(50),300000,0,'0x');
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(50),0);
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
-    await governance.beginDispute(h.tob32("disputedVar"),_t);
+    await governance.beginDispute(h.uintTob32(50),_t);
     await governance.vote(1,true,false)
     assert(await governance.didVote(1,accounts[2].address), "addresss should have voted")
   });
