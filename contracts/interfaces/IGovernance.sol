@@ -16,6 +16,7 @@ interface IGovernance{
     function vote(uint256 _id, bool _supports, bool _invalidQuery) external;
     function voteFor(address[] calldata _addys,uint256 _id, bool _supports, bool _invalidQuery) external;
     function getDelegateInfo(address _holder) external view returns(address,uint);
+    function isApprovedGovernanceContract(address _contract) external view returns(bool);
     function isFunctionApproved(bytes4 _func) external view returns(bool);
     function getVoteCount() external view returns(uint256);
     function getVoteRounds(bytes32 _hash) external view returns(uint256[] memory);
