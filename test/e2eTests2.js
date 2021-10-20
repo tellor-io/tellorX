@@ -112,7 +112,7 @@ describe("End-to-End Tests - Two", function() {
 
 
     //miner submits bad value
-    await oracle.connect(reporter).submitValue(requestId, disputedValue, 0)
+    await oracle.connect(reporter).submitValue(requestId, disputedValue, 0, ("0x"+n.toString(16)))
     let currentBlock = await ethers.provider.getBlock()
     let timestamp = currentBlock.timestamp
 
@@ -253,7 +253,7 @@ describe("End-to-End Tests - Two", function() {
       await treasury.connect(buyer).buyTreasury(treasuryCount, treasuryBought)
 
       //reporter submits a value
-      await oracle.connect(reporter).submitValue(requestId, disputedValue, 0)
+      await oracle.connect(reporter).submitValue(requestId, disputedValue, 0, ("0x"+n.toString(16)))
       let currentBlock = await ethers.provider.getBlock()
       let timestamp = currentBlock.timestamp
 
@@ -322,7 +322,7 @@ describe("End-to-End Tests - Two", function() {
 
       //miner submits
 
-      await oracle.connect(reporter).submitValue(requestId, disputedValue, 0)
+      await oracle.connect(reporter).submitValue(requestId, disputedValue, 0, ("0x"+n.toString(16)))
 
 
       //decrease mining lock to 1 hour
@@ -331,7 +331,7 @@ describe("End-to-End Tests - Two", function() {
 
       //expect the mining lock still works
       await expect(
-        oracle.connect(reporter).submitValue(requestId, disputedValue, 1),
+        oracle.connect(reporter).submitValue(requestId, disputedValue, 1, ("0x"+n.toString(16))),
         "mining lock stopped working"
       ).to.be.reverted
 
@@ -340,7 +340,7 @@ describe("End-to-End Tests - Two", function() {
 
 
       //reporter submits value
-      await oracle.connect(reporter).submitValue(requestId, disputedValue, 1)
+      await oracle.connect(reporter).submitValue(requestId, disputedValue, 1, ("0x"+n.toString(16)))
 
 
     })
