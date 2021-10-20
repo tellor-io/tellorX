@@ -95,7 +95,7 @@ describe("End-to-End Tests - Three", function() {
     // ****************************************
     // * changeControllerContract(address)
     // ****************************************
-    let newController = await cfac.deploy();
+    let newController = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await newController.deployed();
     proposalData = ethers.utils.hexZeroPad(newController.address, 32);
     await governance.proposeVote(tellorMaster, 0x3c46a185, proposalData, 0);
