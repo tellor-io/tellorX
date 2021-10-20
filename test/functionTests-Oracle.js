@@ -111,21 +111,21 @@ describe("TellorX Function Tests - Oracle", function() {
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     let nonce = await oracle.getTimestampCountById(h.uintTob32(1));
-    await h.expectThrow(oracle.submitValue( h.uintTob32(1),150,nonce));//must be staked
+    await h.expectThrow(oracle.submitValue( h.uintTob32(1),150,nonce,'0x'));//must be staked
     await tellorUser.depositStake();
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue( h.uintTob32(2),150,nonce);//clear inflationary rewards
+    await oracle2.submitValue( h.uintTob32(2),150,nonce,'0x');//clear inflationary rewards
     await tellor.transfer(oracle.address,web3.utils.toWei("200"));//funding the oracle for inflationary rewards
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
     await oracle2.addTip(h.uintTob32(1),web3.utils.toWei("10"),'0x')
     let initBal = await tellor.balanceOf(accounts[1].address)
     nonce = await oracle.getTimestampCountById(h.uintTob32(1));
-    await oracle.submitValue( h.uintTob32(1),150,nonce);
+    await oracle.submitValue( h.uintTob32(1),150,nonce,'0x');
     let blocky = await ethers.provider.getBlock();
     nonce = await oracle.getTimestampCountById(h.uintTob32(1));
-    await h.expectThrow(oracle.submitValue( h.uintTob32(1),150,nonce));//cannot submit twice in 12 hours
+    await h.expectThrow(oracle.submitValue( h.uintTob32(1),150,nonce,'0x'));//cannot submit twice in 12 hours
     assert(await oracle.getValueByTimestamp(h.uintTob32(1),blocky.timestamp) - 150 == 0, "value should be correct")
     assert(await oracle.tipsInContract() == 0, "the tip should have been paid out")
     assert(await oracle.getTipsById(h.uintTob32(1)) == 0, "tips should be zeroed")
@@ -143,17 +143,17 @@ describe("TellorX Function Tests - Oracle", function() {
     //increase stake amount, ensure failed until they put in more
     await admin.changeUint(h.hash("_STAKE_AMOUNT"),web3.utils.toWei("150"))
     nonce = await oracle.getTimestampCountById(h.uintTob32(1));
-    await h.expectThrow(oracle.submitValue( h.uintTob32(1),150,nonce));//balance must be greater than stake amount
+    await h.expectThrow(oracle.submitValue( h.uintTob32(1),150,nonce,'0x'));//balance must be greater than stake amount
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
-    await h.expectThrow(oracle.submitValue( h.uintTob32(1),150,nonce-1));//nonce must be correct
-    oracle.submitValue(h.uintTob32(1),150,nonce)
+    await h.expectThrow(oracle.submitValue( h.uintTob32(1),150,nonce-1,'0x'));//nonce must be correct
+    oracle.submitValue(h.uintTob32(1),150,nonce,'0x')
 });
   it("removeValue()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.submitValue( h.uintTob32(1),150,0);
+    await oracle.submitValue( h.uintTob32(1),150,0,'0x');
     let blocky = await ethers.provider.getBlock();
     await h.expectThrow(oracle.removeValue( ethers.utils.formatBytes32String("1"),blocky.timestamp));//must be governance
     admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, govSigner);
@@ -167,7 +167,7 @@ describe("TellorX Function Tests - Oracle", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.submitValue(h.uintTob32(1),150,0);
+    await oracle.submitValue(h.uintTob32(1),150,0,'0x');
     let blocky1 = await ethers.provider.getBlock();
     await oracle.addTip(h.uintTob32(1),web3.utils.toWei("5"),'0x');
     await h.advanceTime(10000);
@@ -215,11 +215,11 @@ describe("TellorX Function Tests - Oracle", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue( h.uintTob32(2),150,0);//clear inflationary rewards
+    await oracle2.submitValue( h.uintTob32(2),150,0,'0x');//clear inflationary rewards
     await h.advanceTime(86400)
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.submitValue( h.uintTob32(1),150,0);
-    await oracle2.submitValue( h.uintTob32(1),150,1);
+    await oracle.submitValue( h.uintTob32(1),150,0,'0x');
+    await oracle2.submitValue( h.uintTob32(1),150,1,'0x');
     assert(await oracle.getTimestampCountById(h.uintTob32(1)) - 2== 0, "timestamp count should be correct")
   });
   it("getTimestampIndexByTimestamp()", async function() {
@@ -230,20 +230,17 @@ describe("TellorX Function Tests - Oracle", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue( h.uintTob32(2),150,0);//clear inflationary rewards
+    await oracle2.submitValue( h.uintTob32(2),150,0,'0x');//clear inflationary rewards
     await h.advanceTime(86400)
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.submitValue( h.uintTob32(1),150,0);
-    await oracle2.submitValue( h.uintTob32(1),150,1);
+    await oracle.submitValue( h.uintTob32(1),150,0,'0x');
+    await oracle2.submitValue( h.uintTob32(1),150,1,'0x');
     let blocky1 = await ethers.provider.getBlock();
     await h.advanceTime(86400)
     assert(await oracle.getTimestampIndexByTimestamp(h.uintTob32(1),blocky1.timestamp) == 1, "index should be correct")
-    await oracle.submitValue( h.uintTob32(1),150,2);
-    await oracle2.submitValue( h.uintTob32(1),150,3);
+    await oracle.submitValue( h.uintTob32(1),150,2,'0x');
+    await oracle2.submitValue( h.uintTob32(1),150,3,'0x');
     let blocky2 = await ethers.provider.getBlock();
-    // await h.advanceTime(86400)
-    // await oracle.submitValue( ethers.utils.formatBytes32String("1"),150,4);
-    // await oracle2.submitValue( ethers.utils.formatBytes32String("1"),150,5);
     assert(await oracle.getTimestampIndexByTimestamp(h.uintTob32(1),blocky2.timestamp) == 3, "index should be correct");
     admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, govSigner);
     await admin.removeValue( h.uintTob32(1),blocky1.timestamp);
@@ -257,11 +254,11 @@ describe("TellorX Function Tests - Oracle", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue( h.uintTob32(2),150,0);//clear inflationary rewards
+    await oracle2.submitValue( h.uintTob32(2),150,0,'0x');//clear inflationary rewards
     await h.advanceTime(86400)
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.submitValue( h.uintTob32(1),150,0);
-    await oracle2.submitValue( h.uintTob32(1),150,1);
+    await oracle.submitValue( h.uintTob32(1),150,0,'0x');
+    await oracle2.submitValue( h.uintTob32(1),150,1,'0x');
     let blocky = await ethers.provider.getBlock();
     assert(await oracle.getReportTimestampByIndex(h.uintTob32(1),1) == blocky.timestamp, "timestamp should be correct")
 
@@ -274,15 +271,15 @@ describe("TellorX Function Tests - Oracle", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue( h.uintTob32(2),150,0);//clear inflationary rewards
+    await oracle2.submitValue( h.uintTob32(2),150,0,'0x');//clear inflationary rewards
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.submitValue( h.uintTob32(1),150,0);
+    await oracle.submitValue( h.uintTob32(1),150,0,'0x');
     await h.advanceTime(86400)
-    await oracle.submitValue( h.uintTob32(1),150,1);
+    await oracle.submitValue( h.uintTob32(1),150,1,'0x');
     await h.advanceTime(86400)
-    await oracle.submitValue( h.uintTob32(1),150,2);
+    await oracle.submitValue( h.uintTob32(1),150,2,'0x');
     await h.advanceTime(86400)
-    await oracle.submitValue( h.uintTob32(1),150,3);
+    await oracle.submitValue( h.uintTob32(1),150,3,'0x');
     let blocky = await ethers.provider.getBlock();
     assert(await oracle.getReportsSubmittedByAddress(accounts[1].address) - 4 == 0, "reports by address should be correct")
   });
@@ -302,9 +299,9 @@ describe("TellorX Function Tests - Oracle", function() {
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.submitValue( h.uintTob32(1),5550,0);
+    await oracle.submitValue( h.uintTob32(1),5550,0,'0x');
     let blocky = await ethers.provider.getBlock();
-    await oracle2.submitValue( h.uintTob32(1),150,1);
+    await oracle2.submitValue( h.uintTob32(1),150,1,'0x');
     assert(await oracle.getValueByTimestamp(h.uintTob32(1),blocky.timestamp) - 5550 == 0, "value should be correct")
   });
   it("getCurrentValue()", async function() {
@@ -316,9 +313,9 @@ describe("TellorX Function Tests - Oracle", function() {
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.submitValue( h.uintTob32(1),5550,0);
+    await oracle.submitValue( h.uintTob32(1),5550,0,'0x');
     let blocky = await ethers.provider.getBlock();
-    await oracle2.submitValue( h.uintTob32(1),150,1);
+    await oracle2.submitValue( h.uintTob32(1),150,1,'0x');
     assert(await oracle.getCurrentValue(h.uintTob32(1)) - 150 == 0, "value should be correct")
   });
   it("getBlockNumberByTimestamp()", async function() {
@@ -329,13 +326,13 @@ describe("TellorX Function Tests - Oracle", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue( ethers.utils.formatBytes32String("2"),150,0);//clear inflationary rewards
+    await oracle2.submitValue( h.uintTob32(2),150,0,'0x');//clear inflationary rewards
     await h.advanceTime(86400)
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.submitValue( ethers.utils.formatBytes32String("1"),5550,0);
+    await oracle.submitValue( h.uintTob32(1),5550,0,'0x');
     let blocky = await ethers.provider.getBlock();
-    await oracle2.submitValue( ethers.utils.formatBytes32String("1"),150,1);
-    assert(await oracle.getBlockNumberByTimestamp(ethers.utils.formatBytes32String("1"),blocky.timestamp) - blocky.number == 0, "blockNumber should be correct")
+    await oracle2.submitValue( h.uintTob32(1),150,1,'0x');
+    assert(await oracle.getBlockNumberByTimestamp(h.uintTob32(1),blocky.timestamp) - blocky.number == 0, "blockNumber should be correct")
   });
   it("getReporterByTimestamp()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
@@ -346,19 +343,19 @@ describe("TellorX Function Tests - Oracle", function() {
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.submitValue( ethers.utils.formatBytes32String("1"),5550,0);
+    await oracle.submitValue( h.uintTob32(1),5550,0,'0x');
     let blocky = await ethers.provider.getBlock();
-    await oracle2.submitValue( ethers.utils.formatBytes32String("1"),150,1);
+    await oracle2.submitValue( h.uintTob32(1),150,1,'0x');
     let blocky2 = await ethers.provider.getBlock();
-    assert(await oracle.getReporterByTimestamp(ethers.utils.formatBytes32String("1"),blocky.timestamp) == accounts[1].address, "reporter should be correct")
-    assert(await oracle.getReporterByTimestamp(ethers.utils.formatBytes32String("1"),blocky2.timestamp) == accounts[2].address, "reporter2 should be correct")
+    assert(await oracle.getReporterByTimestamp(h.uintTob32(1),blocky.timestamp) == accounts[1].address, "reporter should be correct")
+    assert(await oracle.getReporterByTimestamp(h.uintTob32(1),blocky2.timestamp) == accounts[2].address, "reporter2 should be correct")
   });
   it("getTimeOfLastNewValue()", async function() {
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue( ethers.utils.formatBytes32String("2"),150,0);//clear inflationary rewards
+    await oracle2.submitValue( h.uintTob32(2),150,0,'0x');//clear inflationary rewards
     let blocky = await ethers.provider.getBlock();
     assert(await oracle.getTimeOfLastNewValue() - blocky.timestamp == 0, "blockNumber should be correct")
   });
