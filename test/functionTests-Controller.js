@@ -54,7 +54,7 @@ describe("TellorX Function Tests - Controller", function() {
     governance = await gfac.deploy();
     oracle = await ofac.deploy();
     treasury = await tfac.deploy();
-    controller = await cfac.deploy();
+    controller = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await governance.deployed();
     await oracle.deployed();
     await treasury.deployed();
@@ -74,7 +74,7 @@ describe("TellorX Function Tests - Controller", function() {
     await master.updateTellor(_id)
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, devWallet);
     await tellor.deployed();
-    await tellor.init(governance.address,oracle.address,treasury.address)
+    await tellor.init()
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
       params: [governance.address]}
@@ -84,7 +84,7 @@ describe("TellorX Function Tests - Controller", function() {
   });
   it("changeControllerContract()", async function() {
     this.timeout(20000000)
-    newController = await cfac.deploy();
+    newController = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await newController.deployed();
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[0]);
     h.expectThrow(tellor.changeControllerContract(newController.address));//should fail, onlygovernance
@@ -157,7 +157,7 @@ describe("TellorX Function Tests - Controller", function() {
     let tofac = await ethers.getContractFactory("contracts/testing/TestToken.sol:TestToken");
     let token = await tofac.deploy();
     await token.deployed()
-    newController = await cfac.deploy();
+    newController = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await newController.deployed();
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, govSigner);
     h.expectThrow(tellor.changeControllerContract(token.address));//require isValid

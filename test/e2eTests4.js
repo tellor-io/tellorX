@@ -51,7 +51,7 @@ describe("End-to-End Tests - Four", function() {
     governance = await gfac.deploy();
     oracle = await ofac.deploy();
     treasury = await tfac.deploy();
-    controller = await cfac.deploy();
+    controller = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await governance.deployed();
     await oracle.deployed();
     await treasury.deployed();
@@ -74,7 +74,7 @@ describe("End-to-End Tests - Four", function() {
     govTeam = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, devWallet);
     govBig = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, bigWallet);
     await tellor.deployed();
-    await tellor.init(governance.address,oracle.address,treasury.address)
+    await tellor.init()
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
       params: [governance.address]}
@@ -160,7 +160,7 @@ describe("End-to-End Tests - Four", function() {
   })
   it("Test delegate then delegates", async function() {
     this.timeout(20000000)
-    let newController = await cfac.deploy();
+    let newController = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await newController.deployed();
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     await governance.delegate(DEV_WALLET);

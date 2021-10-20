@@ -14,6 +14,12 @@ import "./Getters.sol";
 */
 contract Controller is TellorStaking, Transition, Getters {
     // Functions
+    constructor(
+        address _governance,
+        address _oracle,
+        address _treasury
+    ) Transition(_governance, _oracle, _treasury) {}
+
     /**
      * @dev Changes Controller contract to a new address
      * Note: this function is only callable by the Governance contract.

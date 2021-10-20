@@ -16,34 +16,42 @@ import "./interfaces/IOracle.sol";
 contract Transition is TellorStorage, TellorVars {
     // Functions
     /**
-     * @dev Runs once Tellor is migrated over. Changes the underlying storage.
+     * @dev Saves new Tellor contract addresses. Available to init function after fork vote
      * @param _governance is the address of the Governance contract
      * @param _oracle is the address of the Oracle contract
      * @param _treasury is the address of the Treasury contract
      */
-    function init(
+    constructor(
         address _governance,
         address _oracle,
         address _treasury
-    ) external {
-        // Ensure sender is owner and transaction only occurs once
-        require(
-            msg.sender == addresses[_OWNER],
-            "Only the owner address can initiate a transition"
-        );
+    ) {
+        addresses[_GOVERNANCE_CONTRACT] = _governance;
+        addresses[_ORACLE_CONTRACT] = _oracle;
+        addresses[_TREASURY_CONTRACT] = _treasury;
+    }
+
+    /**
+     * @dev Runs once Tellor is migrated over. Changes the underlying storage.
+     */
+    function init() external {
         require(
             addresses[_GOVERNANCE_CONTRACT] == address(0),
             "Only good once"
         );
-        require(_governance != address(0), "New contract is invalid");
         // Set state amount, switch time, and minimum dispute fee
         uints[_STAKE_AMOUNT] = 100e18;
         uints[_SWITCH_TIME] = block.timestamp;
         uints[_MINIMUM_DISPUTE_FEE] = 10e18;
         // Define contract addresses
-        addresses[_GOVERNANCE_CONTRACT] = _governance;
-        addresses[_ORACLE_CONTRACT] = _oracle;
-        addresses[_TREASURY_CONTRACT] = _treasury;
+        Transition _controller = Transition(addresses[_TELLOR_CONTRACT]);
+        addresses[_GOVERNANCE_CONTRACT] = _controller.addresses(
+            _GOVERNANCE_CONTRACT
+        );
+        addresses[_ORACLE_CONTRACT] = _controller.addresses(_ORACLE_CONTRACT);
+        addresses[_TREASURY_CONTRACT] = _controller.addresses(
+            _TREASURY_CONTRACT
+        );
     }
 
     //Getters

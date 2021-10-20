@@ -54,7 +54,7 @@ describe("End-to-End Tests - Three", function() {
     governance = await gfac.deploy();
     oracle = await ofac.deploy();
     treasury = await tfac.deploy();
-    controller = await cfac.deploy();
+    controller = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await governance.deployed();
     await oracle.deployed();
     await treasury.deployed();
@@ -77,7 +77,7 @@ describe("End-to-End Tests - Three", function() {
     govTeam = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, devWallet);
     govBig = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, bigWallet);
     await tellor.deployed();
-    await tellor.init(governance.address,oracle.address,treasury.address)
+    await tellor.init()
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
       params: [governance.address]}
@@ -95,7 +95,7 @@ describe("End-to-End Tests - Three", function() {
     // ****************************************
     // * changeControllerContract(address)
     // ****************************************
-    let newController = await cfac.deploy();
+    let newController = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await newController.deployed();
     proposalData = ethers.utils.hexZeroPad(newController.address, 32);
     await governance.proposeVote(tellorMaster, 0x3c46a185, proposalData, 0);

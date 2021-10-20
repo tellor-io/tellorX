@@ -54,7 +54,7 @@ describe("TellorX Function Tests - Governance", function() {
     governance = await gfac.deploy();
     oracle = await ofac.deploy();
     treasury = await tfac.deploy();
-    controller = await cfac.deploy();
+    controller = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await governance.deployed();
     await oracle.deployed();
     await treasury.deployed();
@@ -74,7 +74,7 @@ describe("TellorX Function Tests - Governance", function() {
     await master.updateTellor(_id)
     tellor = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, devWallet);
     await tellor.deployed();
-    await tellor.init(governance.address,oracle.address,treasury.address)
+    await tellor.init()
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
       params: [governance.address]}
@@ -222,7 +222,7 @@ describe("TellorX Function Tests - Governance", function() {
     assert(stakeCount1 - stakeCount0 == 1, "_STAKE_COUNT should be correct")
   });
   it("proposeVote()", async function() {
-    let newController = await cfac.deploy();
+    let newController = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await newController.deployed();
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
     await h.expectThrow(governance.proposeVote(tellorMaster,0x3c46a185,newController.address,0));//doesn't have money
@@ -288,7 +288,7 @@ describe("TellorX Function Tests - Governance", function() {
     assert(await governance.verify() > 9000, "Contract should properly verify")
   });
   it("vote()", async function() {
-    let newController = await cfac.deploy();
+    let newController = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await newController.deployed();
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     await governance.delegate(DEV_WALLET);
@@ -301,7 +301,7 @@ describe("TellorX Function Tests - Governance", function() {
     await h.expectThrow(governance.vote(1,true,false));//cannot vote if delegated
   });
   it("voteFor()", async function() {
-    let newController = await cfac.deploy();
+    let newController = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await newController.deployed();
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     await governance.delegate(DEV_WALLET);
@@ -429,7 +429,7 @@ describe("TellorX Function Tests - Governance", function() {
   it("getVoteInfo()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
-    let newController = await cfac.deploy();
+    let newController = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await newController.deployed();
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
     governance2 = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
