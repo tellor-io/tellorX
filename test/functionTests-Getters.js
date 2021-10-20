@@ -86,11 +86,11 @@ describe("TellorX Function Tests - Controller", function() {
     this.timeout(20000000)
     await tellor.transfer(accounts[10].address,web3.utils.toWei("100"))
     await tellor.connect(accounts[10]).depositStake()
-    await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(940000),0)
+    await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(940000),0,'0x')
     val = await tellor["getNewValueCountbyRequestId(bytes32)"](h.uintTob32(1));
     assert(val == 1, "Value should be retrieved correctly")
     await h.advanceTime(60*60*12)
-    await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),1)
+    await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),1,'0x')
     val = await tellor["getNewValueCountbyRequestId(bytes32)"](h.uintTob32(1));
     assert(val == 2, "Value should be retrieved correctly")
   });
@@ -98,12 +98,12 @@ describe("TellorX Function Tests - Controller", function() {
     this.timeout(20000000)
     await tellor.transfer(accounts[10].address,web3.utils.toWei("100"))
     await tellor.connect(accounts[10]).depositStake()
-    await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(940000),0)
+    await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(940000),0,'0x')
     let blocky = await ethers.provider.getBlock()
     val = await tellor["retrieveData(bytes32,uint256)"](h.uintTob32(1), blocky.timestamp);
     assert(val == h.uintTob32(940000), "Data should be retrieved correctly")
     await h.advanceTime(60*60*12)
-    await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),1)
+    await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),1,'0x')
     blocky = await ethers.provider.getBlock()
     val = await tellor["retrieveData(bytes32,uint256)"](h.uintTob32(1), blocky.timestamp);
     assert(val == h.uintTob32(950000), "Data should be retrieved correctly")
@@ -112,15 +112,14 @@ describe("TellorX Function Tests - Controller", function() {
     this.timeout(20000000)
     await tellor.transfer(accounts[10].address,web3.utils.toWei("100"))
     await tellor.connect(accounts[10]).depositStake()
-    await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(940000),0)
+    await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(940000),0,'0x')
     let blocky = await ethers.provider.getBlock()
     val = await tellor["getTimestampbyRequestIDandIndex(bytes32,uint256)"](h.uintTob32(1), 0);
     assert(val == blocky.timestamp, "Timestamp should be retrieved correctly")
     await h.advanceTime(60*60*12)
-    await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),1)
+    await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),1,'0x')
     blocky = await ethers.provider.getBlock()
     val = await tellor["getTimestampbyRequestIDandIndex(bytes32,uint256)"](h.uintTob32(1), 1)
     assert(val == blocky.timestamp, "Timestamp should be retrieved correctly")
   });
-  // it("isInDispute()", async function() {})
 });
