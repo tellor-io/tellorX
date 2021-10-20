@@ -341,9 +341,9 @@ describe("End-to-End Tests - Three", function() {
     await tellor.connect(bigWallet).transfer(accounts[2].address, web3.utils.toWei("100"));
     await tellor.connect(bigWallet).transfer(accounts[1].address,await tellor.balanceOf(BIGWALLET));
     await tellorUser.depositStake();
-    await oracle.submitValue(h.tob32("1"),300,0);
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
-    await governance.beginDispute(h.tob32("1"),_t);
+    await oracle.submitValue(h.uintTob32(1),300,0,'0x');
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
+    await governance.beginDispute(h.uintTob32(1),_t);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, false, true);
     await h.advanceTime(604800);
@@ -372,22 +372,22 @@ describe("End-to-End Tests - Three", function() {
     await admin.mint(accounts[1].address, web3.utils.toWei("200000"));
     await admin.mint(accounts[2].address, web3.utils.toWei("100"));
     await tellorUser.depositStake();
-    await oracle.submitValue(h.tob32("1"),300,0);
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    await oracle.submitValue(h.uintTob32(1),300,0,'0x');
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     // Round 1
-    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.beginDispute(h.uintTob32(1),_t);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, false, true);
     await h.advanceTime(604800);
     await governance.tallyVotes(voteCount);
     // Round 2
-    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.beginDispute(h.uintTob32(1),_t);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, false, true);
     await h.advanceTime(604800);
     await governance.tallyVotes(voteCount);
     // Round 3
-    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.beginDispute(h.uintTob32(1),_t);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, false, true);
     await h.advanceTime(604800);
@@ -418,22 +418,22 @@ describe("End-to-End Tests - Three", function() {
     await admin.mint(accounts[1].address, web3.utils.toWei("200000"));
     await admin.mint(accounts[2].address, web3.utils.toWei("100"));
     await tellorUser.depositStake();
-    await oracle.submitValue(h.tob32("1"),300,0);
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    await oracle.submitValue(h.uintTob32(1),300,0,'0x');
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     // Round 1
-    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.beginDispute(h.uintTob32(1),_t);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, false, false);
     await h.advanceTime(604800);
     await governance.tallyVotes(voteCount);
     // Round 2
-    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.beginDispute(h.uintTob32(1),_t);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, true, false);
     await h.advanceTime(604800);
     await governance.tallyVotes(voteCount);
     // Round 3
-    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.beginDispute(h.uintTob32(1),_t);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, true, false);
     await h.advanceTime(604800);
@@ -465,9 +465,9 @@ describe("End-to-End Tests - Three", function() {
     await admin.mint(accounts[2].address, web3.utils.toWei("100"));
     // No votes on dispute
     await tellorUser.depositStake();
-    await oracle.submitValue(h.tob32("1"),300,0);
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
-    await governance.beginDispute(h.tob32("1"),_t);
+    await oracle.submitValue(h.uintTob32(1),300,0,'0x');
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
+    await governance.beginDispute(h.uintTob32(1),_t);
     voteCount = await governance.voteCount();
     await h.advanceTime(604800);
     await governance.tallyVotes(voteCount);
