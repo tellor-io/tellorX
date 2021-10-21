@@ -79,7 +79,7 @@ describe("End-to-End Tests - Eight", function() {
      * BEGIN SETUP MODIFICATION
      */
 
-    master.tipQuery(1,web3.utils.toWei("200"))
+    master.addTip(1,web3.utils.toWei("200"))
 
     //create 6 miners
     let miners, m1, m2, m3, m4, m5, m6
