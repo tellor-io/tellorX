@@ -17,33 +17,33 @@ contract Getters is TellorStorage, TellorVars {
     // Functions
     /**
      * @dev Counts the number of values that have been submitted for the request.
-     * @param _id the id to look up
+     * @param _tipId the id to look up
      * @return uint256 count of the number of values received for the id
      */
-    function getNewValueCountbyRequestId(bytes32 _id)
+    function getNewValueCountbyRequestId(bytes32 _tipId)
         public
         view
         returns (uint256)
     {
         return (
-            IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountById(_id)
+            IOracle(addresses[_ORACLE_CONTRACT]).getTimestampCountById(_tipId)
         );
     }
 
     /**
      * @dev Gets the timestamp for the value based on their index
-     * @param _id is the id to look up
+     * @param _tipId is the id to look up
      * @param _index is the value index to look up
      * @return uint256 timestamp
      */
-    function getTimestampbyRequestIDandIndex(bytes32 _id, uint256 _index)
+    function getTimestampbyRequestIDandIndex(bytes32 _tipId, uint256 _index)
         public
         view
         returns (uint256)
     {
         return (
             IOracle(addresses[_ORACLE_CONTRACT]).getReportTimestampByIndex(
-                _id,
+                _tipId,
                 _index
             )
         );
@@ -51,18 +51,18 @@ contract Getters is TellorStorage, TellorVars {
 
     /**
      * @dev Retrieve value from oracle based on timestamp
-     * @param _id being requested
+     * @param _tipId being requested
      * @param _timestamp to retrieve data/value from
      * @return bytes value for timestamp submitted
      */
-    function retrieveData(bytes32 _id, uint256 _timestamp)
+    function retrieveData(bytes32 _tipId, uint256 _timestamp)
         public
         view
         returns (bytes memory)
     {
         return (
             IOracle(addresses[_ORACLE_CONTRACT]).getValueByTimestamp(
-                _id,
+                _tipId,
                 _timestamp
             )
         );
