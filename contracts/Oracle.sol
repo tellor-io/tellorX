@@ -49,7 +49,7 @@ contract Oracle is TellorVars {
      * @param _tip is the amount to tip the given data ID
      * @param _data is required for IDs greater than 100, informs reporters how to fulfill request. See github.com/tellor-io/dataSpecs
      */
-    function addTip(
+    function tipQuery(
         bytes32 _id,
         uint256 _tip,
         bytes memory _data

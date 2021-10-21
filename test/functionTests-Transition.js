@@ -187,7 +187,7 @@ describe("TellorX Function Tests - Transition", function() {
     await tellorUser.tallyVotes(newId);
     await h.advanceTime(86400 * 2.5)
     await tellorUser.unlockDisputeFee(newId);
-    await h.expectThrow(tellorUser.addTip(1,5,'0x'))
+    await h.expectThrow(tellorUser.tipQuery(1,5,'0x'))
     await h.expectThrow(tellorUser.getNewVariablesOnDeck())
   }).timeout(40000);
   it("name()", async function() {

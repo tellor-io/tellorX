@@ -79,7 +79,7 @@ describe("End-to-End Tests - Eight", function() {
      * BEGIN SETUP MODIFICATION
      */
 
-    master.addTip(1,web3.utils.toWei("200"))
+    master.tipQuery(1,web3.utils.toWei("200"))
 
     //create 6 miners
     let miners, m1, m2, m3, m4, m5, m6
@@ -253,7 +253,7 @@ describe("End-to-End Tests - Eight", function() {
       value = await tellor["retrieveData(uint256,uint256)"](requestId, blocky.timestamp);
       assert(value == 950000, "Value should be retrieved correctly 1")
       await h.advanceTime(60*60*12)
-      await oracle.connect(accounts[1]).addTip(requestId, web3.utils.toWei("200"), bytesData)
+      await oracle.connect(accounts[1]).tipQuery(requestId, web3.utils.toWei("200"), bytesData)
       let bal1 = await tellor.balanceOf(accounts[10].address)
       await oracle.connect(accounts[10]).submitValue(requestId,h.uintTob32(960000),2,bytesData);
       let bal2 = await tellor.balanceOf(accounts[10].address)
