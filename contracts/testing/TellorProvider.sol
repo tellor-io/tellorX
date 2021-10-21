@@ -28,13 +28,13 @@ contract TellorProvider{
     uint256 constant TellorID = 10;
 
 
-    constructor(address _tellor, address _medianOracle) public {
+    constructor(address _tellor, address _medianOracle) {
         tellor = ITellorGetters(_tellor);
         medianOracle = IMedianOracle(_medianOracle);
     }
 
     function pushTellor() external {
-        (bool retrieved, uint256 value, uint256 _time) = getTellorData();
+        (, uint256 value, uint256 _time) = getTellorData();
         //Saving _time in a storage value to quickly verify disputes later
         if(tellorReport.time0 >= tellorReport.time1) {
             tellorReport.time1 = uint128(_time);
