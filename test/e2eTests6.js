@@ -141,10 +141,10 @@ describe("End-to-End Tests - Six", function() {
         // Dispute on new contract
         await tellor.connect(bigWallet).transfer(accounts[1].address, web3.utils.toWei("100"))
         await tellor.connect(accounts[1]).depositStake()
-        await oracle.connect(accounts[1]).submitValue(h.tob32("1"),300,0)
+        await oracle.connect(accounts[1]).submitValue(h.uintTob32(1),300,0,'0x')
         let blocky2 = await ethers.provider.getBlock();
         let timestamp2 = blocky2.timestamp;
-        await govBig.beginDispute(h.tob32("1"),timestamp2)
+        await govBig.beginDispute(h.uintTob32(1),timestamp2)
         voteCount = await governance.voteCount()
         await govTeam.vote(voteCount,true,false)
         await govBig.vote(voteCount,true,false)

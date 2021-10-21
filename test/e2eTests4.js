@@ -104,14 +104,14 @@ describe("End-to-End Tests - Four", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue(h.tob32("1"),300,0);
+    await oracle.submitValue(h.uintTob32(1),300,0,'0x');
     let dispFee = await governance.disputeFee()
     let initBalReporter = await tellor.balanceOf(accounts[1].address)
     let initBalDisputer = await tellor.balanceOf(accounts[2].address)
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     governance = await ethers.getContractAt("contracts/testing/TestGovernance.sol:TestGovernance",governance.address, accounts[2]);
-    await governance.beginDispute(h.tob32("1"),_t);
-    let _hash = ethers.utils.solidityKeccak256(['bytes32','uint256'], [h.tob32("1"),_t])
+    await governance.beginDispute(h.uintTob32(1),_t);
+    let _hash = ethers.utils.solidityKeccak256(['bytes32','uint256'], [h.uintTob32(1),_t])
     await h.advanceTime(86400 * 2.5)
     h.expectThrow(governance.executeVote(1));//must be tallied
     await governance.tallyVotes(1)
@@ -132,20 +132,20 @@ describe("End-to-End Tests - Four", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-    await oracle.submitValue(h.tob32("1"),300,0);
+    await oracle.submitValue(h.uintTob32(1),300,0,'0x');
     let dispFee = await governance.disputeFee()
     let initBalReporter = await tellor.balanceOf(accounts[1].address)
     let initBalDisputer = await tellor.balanceOf(accounts[2].address)
-    let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+    let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     governance = await ethers.getContractAt("contracts/testing/TestGovernance.sol:TestGovernance",governance.address, accounts[2]);
-    await governance.beginDispute(h.tob32("1"),_t);
-    let _hash = ethers.utils.solidityKeccak256(['bytes32','uint256'], [h.tob32("1"),_t])
+    await governance.beginDispute(h.uintTob32(1),_t);
+    let _hash = ethers.utils.solidityKeccak256(['bytes32','uint256'], [h.uintTob32(1),_t])
     await h.advanceTime(86400 * 2.5)
     h.expectThrow(governance.executeVote(1));//must be tallied
     await governance.tallyVotes(1)
     let voteVars = await governance.getVoteInfo(1)
     await h.expectThrow(governance.executeVote(1)); //must wait a day
-    await governance.beginDispute(h.tob32("1"),_t);
+    await governance.beginDispute(h.uintTob32(1),_t);
     await h.expectThrow(governance.executeVote(1));
     await h.advanceTime(86400 * 1.5)
     await h.expectThrow(governance.executeVote(1));
@@ -210,26 +210,26 @@ describe("End-to-End Tests - Four", function() {
         tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
         await tellorUser.depositStake();
         oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
-        await oracle.submitValue(h.tob32("1"),300,0);
+        await oracle.submitValue(h.uintTob32(1),300,0,'0x');
         let disputerBal1 = await tellor.balanceOf(accounts[2].address)
-        let _t = await oracle.getReportTimestampByIndex(h.tob32("1"),0);
+        let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
         governance = await ethers.getContractAt("contracts/testing/TestGovernance.sol:TestGovernance",governance.address, accounts[2]);
-        await governance.beginDispute(h.tob32("1"),_t);
+        await governance.beginDispute(h.uintTob32(1),_t);
         let disputerBal2 = await tellor.balanceOf(accounts[2].address)
         assert(1*(disputerBal1 - disputerBal2 ) - web3.utils.toWei("15") < web3.utils.toWei(".0005"), "dispute fee should be correct 1")
         await h.advanceTime(86400 * 2.5)
         await governance.tallyVotes(1)
-        await governance.beginDispute(h.tob32("1"),_t);
+        await governance.beginDispute(h.uintTob32(1),_t);
         let disputerBal3 = await tellor.balanceOf(accounts[2].address)
         assert(disputerBal2 - disputerBal3 - web3.utils.toWei("15") * 2 < web3.utils.toWei(".005"), "dispute fee should be correct2")
         await h.advanceTime(86400 * 2.5)
         await governance.tallyVotes(2)
-        await governance.beginDispute(h.tob32("1"),_t);
+        await governance.beginDispute(h.uintTob32(1),_t);
         let disputerBal4 = await tellor.balanceOf(accounts[2].address)
         assert(disputerBal3 - disputerBal4 - web3.utils.toWei("15") * 4 < web3.utils.toWei(".005"), "dispute fee should be correct3")
         await h.advanceTime(86400 * 2.5)
         await governance.tallyVotes(3)
-        await governance.beginDispute(h.tob32("1"),_t);
+        await governance.beginDispute(h.uintTob32(1),_t);
         let disputerBal5 = await tellor.balanceOf(accounts[2].address)
         assert(disputerBal4 - disputerBal5 - web3.utils.toWei("15") * 8 < web3.utils.toWei(".005"), "dispute fee should be correct4")
         let c1 = (disputerBal1 - disputerBal2)/web3.utils.toWei("15")
@@ -248,25 +248,25 @@ describe("End-to-End Tests - Four", function() {
             tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[i]);
             await tellorUser.depositStake();
             oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[i]);
-            nonce = await oracle.getTimestampCountById(h.tob32("1"));
-            await oracle.submitValue(h.tob32("1"),300,nonce);
+            nonce = await oracle.getTimestampCountById(h.uintTob32(1));
+            await oracle.submitValue(h.uintTob32(1),300,nonce,'0x');
         }
         disputerBal1 = await tellor.balanceOf(accounts[2].address)
-        let _maxIn = await oracle.getTimestampCountById(h.tob32("1"))  - 1
-        _t = await oracle.getReportTimestampByIndex(h.tob32("1"),_maxIn);
-        await governance.beginDispute(h.tob32("1"),_t);
+        let _maxIn = await oracle.getTimestampCountById(h.uintTob32(1))  - 1
+        _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),_maxIn);
+        await governance.beginDispute(h.uintTob32(1),_t);
         disputerBal2 = await tellor.balanceOf(accounts[2].address)
-        _maxIn = await oracle.getTimestampCountById(h.tob32("1"))  - 1
-        _t = await oracle.getReportTimestampByIndex(h.tob32("1"),_maxIn);
-        await governance.beginDispute(h.tob32("1"),_t);
+        _maxIn = await oracle.getTimestampCountById(h.uintTob32(1))  - 1
+        _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),_maxIn);
+        await governance.beginDispute(h.uintTob32(1),_t);
         disputerBal3 = await tellor.balanceOf(accounts[2].address)
-        _maxIn = await oracle.getTimestampCountById(h.tob32("1"))  - 1
-        _t = await oracle.getReportTimestampByIndex(h.tob32("1"),_maxIn);
-        await governance.beginDispute(h.tob32("1"),_t);
+        _maxIn = await oracle.getTimestampCountById(h.uintTob32(1))  - 1
+        _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),_maxIn);
+        await governance.beginDispute(h.uintTob32(1),_t);
         disputerBal4 = await tellor.balanceOf(accounts[2].address)
-        _maxIn = await oracle.getTimestampCountById(h.tob32("1"))  - 1
-        _t = await oracle.getReportTimestampByIndex(h.tob32("1"),_maxIn);
-        await governance.beginDispute(h.tob32("1"),_t);
+        _maxIn = await oracle.getTimestampCountById(h.uintTob32(1))  - 1
+        _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),_maxIn);
+        await governance.beginDispute(h.uintTob32(1),_t);
         disputerBal5 = await tellor.balanceOf(accounts[2].address)
         c1 = (disputerBal1 - disputerBal2)/web3.utils.toWei("15")
         c2 = (disputerBal2 - disputerBal3)/web3.utils.toWei("15")

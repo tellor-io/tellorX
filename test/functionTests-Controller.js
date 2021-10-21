@@ -168,12 +168,12 @@ describe("TellorX Function Tests - Controller", function() {
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
     await tellorUser.depositStake();
     oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
-    await oracle2.submitValue( ethers.utils.formatBytes32String("2"),150,0);//clear inflationary rewards
+    await oracle2.submitValue( h.uintTob32(2),150,0,'0x');//clear inflationary rewards
     let blocky = await ethers.provider.getBlock();
     let vars = await tellor.getNewCurrentVariables();
     assert(vars[0] == ethers.utils.solidityKeccak256(['uint256'], [blocky.timestamp]), "challenge should be correct")
     await h.advanceTime(86400)
-    await oracle2.submitValue( ethers.utils.formatBytes32String("2"),150,1);//clear inflationary rewards
+    await oracle2.submitValue( h.uintTob32(2),150,1,'0x');//clear inflationary rewards
     blocky = await ethers.provider.getBlock();
     vars = await tellor.getNewCurrentVariables();
     assert(vars[0] == ethers.utils.solidityKeccak256(['uint256'], [blocky.timestamp]), "challenge should be correct")

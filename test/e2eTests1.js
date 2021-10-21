@@ -92,7 +92,7 @@ describe("End-to-End Tests - One", function() {
         tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[i]);
         oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[i]);
         nonce = await oracle.getTimestampCountById(h.uintTob32(1));
-        await h.expectThrow(oracle.submitValue(h.uintTob32(1),150,nonce));//must be staked
+        await h.expectThrow(oracle.submitValue(h.uintTob32(1),150,nonce,'0x'));//must be staked
         await tellorUser.depositStake();
     }
     let blockTimes = [0]
@@ -108,11 +108,11 @@ describe("End-to-End Tests - One", function() {
         oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[_i]);
         await oracle.addTip(h.uintTob32(_id),_count*100,'0x')
         nonce = await oracle.getTimestampCountById(h.uintTob32(_id));
-        await oracle.submitValue(h.uintTob32(_id), (_count * 1000), nonce)
+        await oracle.submitValue(h.uintTob32(_id), (_count * 1000), nonce,'0x')
         blocky = await ethers.provider.getBlock();
         blockTimes.push(blocky.timestamp)
         nonce = await oracle.getTimestampCountById(h.uintTob32(1));
-        await h.expectThrow(oracle.submitValue( h.uintTob32(_id),150,nonce));//cannot submit twice in 12 hours
+        await h.expectThrow(oracle.submitValue( h.uintTob32(_id),150,nonce,'0x'));//cannot submit twice in 12 hours
         await h.advanceTime(86400)
     }
     assert(await oracle.tipsInContract() == 0, "the tip should have been paid out")
@@ -239,7 +239,7 @@ describe("End-to-End Tests - One", function() {
     await govBig.vote(1,true,false);
     await governance.tallyVotes(1)
     await h.advanceTime(86400 * 3)
-    await oracle1.submitValue(h.uintTob32(1),150,0)
+    await oracle1.submitValue(h.uintTob32(1),150,0,'0x')
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     let dispFee = await governance.disputeFee()
     let initBalDisputer = await tellor.balanceOf(accounts[2].address)
@@ -265,7 +265,7 @@ describe("End-to-End Tests - One", function() {
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     await tellorUser.depositStake();
-    await oracle1.submitValue(h.uintTob32(1),150,0)
+    await oracle1.submitValue(h.uintTob32(1),150,0,'0x')
     await tellorUser.requestStakingWithdraw();
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     let initBalDisputer = await tellor.balanceOf(accounts[2].address)
@@ -315,11 +315,11 @@ describe("End-to-End Tests - One", function() {
     await h.expectThrow(tellorUser.transfer(accounts[2].address,web3.utils.toWei("52")));//must have funds
     await tellor.transfer(accounts[1].address,web3.utils.toWei("50"));
     await h.expectThrow(tellorUser.transfer(accounts[4].address,web3.utils.toWei("50")));
-    await h.expectThrow(oracle1.submitValue(h.uintTob32(1),150,0))
+    await h.expectThrow(oracle1.submitValue(h.uintTob32(1),150,0,'0x'))
     let vars = await tellor.getStakerInfo(accounts[1].address)
     assert(vars[0] - 1 == 0, "status should be correct")
     await tellor.transfer(accounts[1].address,web3.utils.toWei("50"));
-    await oracle1.submitValue(h.uintTob32(1),150,0)
+    await oracle1.submitValue(h.uintTob32(1),150,0,'0x')
     vars = await tellor.getStakerInfo(accounts[1].address)
     assert(vars[0] - 1 == 0, "status should be correct")
   })
@@ -337,7 +337,7 @@ describe("End-to-End Tests - One", function() {
     await govBig.vote(1,true,false);
     await governance.tallyVotes(1)
     await h.advanceTime(86400 * 3)
-    await oracle1.submitValue(h.uintTob32(1),150,0)
+    await oracle1.submitValue(h.uintTob32(1),150,0,'0x')
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     let dispFee = await governance.disputeFee()
     let initBalDisputer = await tellor.balanceOf(accounts[2].address)
@@ -370,14 +370,14 @@ describe("End-to-End Tests - One", function() {
     await governance.tallyVotes(1)
     await h.advanceTime(86400 * 3)
     await governance.executeVote(1)
-    await oracle1.submitValue(h.uintTob32(1),150,0)
+    await oracle1.submitValue(h.uintTob32(1),150,0,'0x')
     await h.advanceTime(86400/2  + 3600)//13 hours
     assert(await oracle.miningLock() == 86400, "mining lock should be correct")
-    await h.expectThrow(oracle1.submitValue(h.uintTob32(1),150,1));//must wait
+    await h.expectThrow(oracle1.submitValue(h.uintTob32(1),150,1,'0x'));//must wait
     await h.advanceTime(60*60*11)//11 hours
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     await h.expectThrow(governance.beginDispute(h.uintTob32(1),_t))
-    await oracle1.submitValue(h.uintTob32(1),1750,1)
+    await oracle1.submitValue(h.uintTob32(1),1750,1,'0x')
     await h.advanceTime(60*60*13)//13 hours
     _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),1);
     await governance.beginDispute(h.uintTob32(1),_t)

@@ -135,17 +135,17 @@ describe("End-to-End Tests - Eight", function() {
       assert(lastGoodPrice == "3395140000000000000000", "Liquity ether price should be correct")
       await tellor.connect(bigWallet).transfer(accounts[10].address, web3.utils.toWei("100"))
       await tellor.connect(accounts[10]).depositStake()
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32("1"),h.uintTob32("3395150000"),0)
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32("1"),h.uintTob32("3395150000"),0,'0x')
       await liquityPriceFeed.fetchPrice()
       lastGoodPrice = await liquityPriceFeed.lastGoodPrice()
       assert(lastGoodPrice == "3395150000000000000000", "Liquity ether price should be correct")
       await h.advanceTime(60*60*12)
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32("1"),h.uintTob32("3395160000"),1)
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32("1"),h.uintTob32("3395160000"),1,'0x')
       await liquityPriceFeed.fetchPrice()
       lastGoodPrice = await liquityPriceFeed.lastGoodPrice()
       assert(lastGoodPrice == "3395160000000000000000", "Liquity ether price should be correct")
       await h.advanceTime(60*60*12)
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32("1"),h.uintTob32("3395170000"),2)
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32("1"),h.uintTob32("3395170000"),2,'0x')
       await liquityPriceFeed.fetchPrice()
       lastGoodPrice = await liquityPriceFeed.lastGoodPrice()
       assert(lastGoodPrice == "3395170000000000000000", "Liquity ether price should be correct")
@@ -164,7 +164,7 @@ describe("End-to-End Tests - Eight", function() {
       assert(currentValue[0] - payload == 0, "Ample price should be retrieved correctly")
       await tellor.transfer(accounts[10].address,web3.utils.toWei("100"));
       await tellor.connect(accounts[10]).depositStake();
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32(10),h.uintTob32(950000),0);
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32(10),h.uintTob32(950000),0,'0x');
       await tellorProvider.pushTellor()
       payload = await medianOracle.payload_();
       assert(payload == 950000, "Ample price should be retrieved correctly")
@@ -177,28 +177,28 @@ describe("End-to-End Tests - Eight", function() {
 
       value1 = await tellor.getLastNewValueById(1)
       assert(value1[0] > 0, "Value should be set")
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),0);
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),0,'0x');
       value1 = await tellor.getLastNewValueById(1)
       assert(value1[0] == 950000, "Value should be set")
       await h.advanceTime(60*60*12)
 
       value10 = await tellor.getLastNewValueById(10)
       assert(value10[0] > 0, "Value should be set")
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32(10),h.uintTob32(960000),0);
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32(10),h.uintTob32(960000),0,'0x');
       value10 = await tellor.getLastNewValueById(10)
       assert(value10[0] == 960000, "Value should be set")
       await h.advanceTime(60*60*12)
 
       value22 = await tellor.getLastNewValueById(22)
       assert(value22[0] > 0, "Value should be set")
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32(22),h.uintTob32(970000),0);
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32(22),h.uintTob32(970000),0,'0x');
       value22 = await tellor.getLastNewValueById(22)
       assert(value22[0] == 970000, "Value should be set")
       await h.advanceTime(60*60*12)
 
       value54 = await tellor.getLastNewValueById(54)
       assert(value54[0] > 0, "Value should be set")
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32(54),h.uintTob32(980000),0);
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32(54),h.uintTob32(980000),0,'0x');
       value54 = await tellor.getLastNewValueById(54)
       assert(value54[0] == 980000, "Value should be set")
       await h.advanceTime(60*60*12)
@@ -210,9 +210,9 @@ describe("End-to-End Tests - Eight", function() {
       await tellor.transfer(accounts[10].address,web3.utils.toWei("100"));
       await tellor.connect(accounts[10]).depositStake();
 
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(940000),0);
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(940000),0,'0x');
       await h.advanceTime(60*60*12)
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),1);
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(950000),1,'0x');
       let blocky = await ethers.provider.getBlock()
       // retrieveData()
       value = await usingTellor.retrieveData(1, blocky.timestamp)
@@ -229,7 +229,7 @@ describe("End-to-End Tests - Eight", function() {
       assert(value[1] == 950000, "Value should be retrieved correctly 2")
       // getIndexForDataBefore()
       await h.advanceTime(60*60*12)
-      await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(960000),2);
+      await oracle.connect(accounts[10]).submitValue(h.uintTob32(1),h.uintTob32(960000),2,'0x');
       blocky = await ethers.provider.getBlock()
       index = await usingTellor.getIndexForDataBefore(1, blocky.timestamp-1)
       assert(index[1] == 1, "Index should be retrieved correctly")
@@ -237,4 +237,27 @@ describe("End-to-End Tests - Eight", function() {
       value = await usingTellor.getDataBefore(1, blocky.timestamp)
       assert(value[1] == 950000, "Value should be retrieved correctly 3")
     });
+
+    it("Test submit value with bytes data argument", async function() {
+      await tellor.transfer(accounts[10].address,web3.utils.toWei("100"));
+      await tellor.transfer(accounts[1].address, web3.utils.toWei("200"))
+      await tellor.connect(accounts[10]).depositStake();
+      let n = 42
+      let bytesData = "0x"+n.toString(16)
+      let requestId = keccak256(bytesData)
+      await h.expectThrow(oracle.connect(accounts[10]).submitValue(requestId, h.uintTob32(930000), 0, ("0x"+n.toString(15)))) // requestId should equal hash(_data)
+      await oracle.connect(accounts[10]).submitValue(requestId,h.uintTob32(940000),0,bytesData);
+      await h.advanceTime(60*60*12)
+      await oracle.connect(accounts[10]).submitValue(requestId,h.uintTob32(950000),1,bytesData);
+      let blocky = await ethers.provider.getBlock()
+      value = await tellor["retrieveData(uint256,uint256)"](requestId, blocky.timestamp);
+      assert(value == 950000, "Value should be retrieved correctly 1")
+      await h.advanceTime(60*60*12)
+      await oracle.connect(accounts[1]).addTip(requestId, web3.utils.toWei("200"), bytesData)
+      let bal1 = await tellor.balanceOf(accounts[10].address)
+      await oracle.connect(accounts[10]).submitValue(requestId,h.uintTob32(960000),2,bytesData);
+      let bal2 = await tellor.balanceOf(accounts[10].address)
+      diff = bal2-bal1
+      assert(diff >= web3.utils.toWei("100"), "Reporter balance should update correctly")
+    })
 })

@@ -39,7 +39,7 @@ contract Oracle is TellorVars {
         uint256 _totalTip,
         bytes _data
     );
-    event NewReport(bytes32 _id, uint256 _time, bytes _value, uint256 _reward, uint256 _nonce);
+    event NewReport(bytes32 _id, uint256 _time, bytes _value, uint256 _reward, uint256 _nonce, bytes _data);
     event MiningLockChanged(uint256 _newMiningLock);
     event TimeBasedRewardsChanged(uint256 _newTimeBasedReward);
 
@@ -148,7 +148,8 @@ contract Oracle is TellorVars {
     function submitValue(
         bytes32 _id,
         bytes calldata _value,
-        uint256 _nonce
+        uint256 _nonce,
+        bytes memory _data
     ) external {
         Report storage rep = reports[_id];
         require(
@@ -163,6 +164,11 @@ contract Oracle is TellorVars {
         require(
             address(this) ==
                 IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT)
+        );
+        require(
+            _id == keccak256(_data) ||
+                uint256(_id) <= 100,
+            "id must be hash of bytes data"
         );
         reporterLastTimestamp[msg.sender] = block.timestamp;
         IController _tellor = IController(TELLOR_ADDRESS);
@@ -195,7 +201,7 @@ contract Oracle is TellorVars {
         // Update last oracle value and number of values submitted by a reporter
         timeOfLastNewValue = block.timestamp;
         reportsSubmittedByAddress[msg.sender]++;
-        emit NewReport(_id, block.timestamp, _value, _tip + _reward, _nonce);
+        emit NewReport(_id, block.timestamp, _value, _tip + _reward, _nonce, _data);
     }
 
     //Getters
