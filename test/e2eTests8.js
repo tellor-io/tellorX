@@ -240,6 +240,7 @@ describe("End-to-End Tests - Eight", function() {
 
     it("Test submit value with bytes data argument", async function() {
       await tellor.transfer(accounts[10].address,web3.utils.toWei("100"));
+      await tellor.transfer(accounts[1].address, web3.utils.toWei("200"))
       await tellor.connect(accounts[10]).depositStake();
       let n = 42
       let bytesData = "0x"+n.toString(16)
@@ -251,5 +252,12 @@ describe("End-to-End Tests - Eight", function() {
       let blocky = await ethers.provider.getBlock()
       value = await tellor["retrieveData(uint256,uint256)"](requestId, blocky.timestamp);
       assert(value == 950000, "Value should be retrieved correctly 1")
+      await h.advanceTime(60*60*12)
+      await oracle.connect(accounts[1]).addTip(requestId, web3.utils.toWei("200"), bytesData)
+      let bal1 = await tellor.balanceOf(accounts[10].address)
+      await oracle.connect(accounts[10]).submitValue(requestId,h.uintTob32(960000),2,bytesData);
+      let bal2 = await tellor.balanceOf(accounts[10].address)
+      diff = bal2-bal1
+      assert(diff >= web3.utils.toWei("100"), "Reporter balance should update correctly")
     })
 })
