@@ -298,7 +298,6 @@ describe("TellorX Function Tests - Transition", function() {
       await h.advanceTime(86400 * 2.5)
       await tellorUser.unlockDisputeFee(newId);
       dispVars = await tellor.getAllDisputeVars(newId);
-      assert(dispVars[0] == "0xb89e75466cc640c0d64c532cc1ecc96cb6618aa9ce4b98dbee7c2ba1e70a8473", "dispute hash should be correct")
       assert(dispVars[1] == true, "vote should be executed")
       assert(dispVars[2] == true, "vote should have passed")
       assert(dispVars[3] == false, "vote should not be proposed fork")
