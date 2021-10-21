@@ -160,6 +160,7 @@ describe("End-to-End Tests - Five", function() {
       let dispBal2 = await master.balanceOf(accounts[2].address)
       assert(dispVars[1], "vote should be executed")
       assert(dispBal2 - dispBal1 == web3.utils.toWei("100"), "disputer should win the stake")
-      assert(minerBal1 - minerBal2 == web3.utils.toWei("100"), "miner should lose the stake")
+      minerBalDiff = minerBal1-minerBal2
+      assert(minerBalDiff == web3.utils.toWei("100"), "miner should lose the stake")
   })
   })
