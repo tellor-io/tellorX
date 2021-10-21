@@ -82,6 +82,7 @@ describe("TellorX Function Tests - Transition", function() {
     await accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("1.0")});
     govSigner = await ethers.provider.getSigner(governance.address);
   });
+
   it("init()", async function() {
     this.timeout(20000000)
     assert(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == governance.address, "Governance Address should be correct");
@@ -179,6 +180,8 @@ describe("TellorX Function Tests - Transition", function() {
     let timestamp = await master.getTimestampbyRequestIDandIndex(1,count.toNumber() - 1);
     await tellorUser.beginDispute(1,timestamp,4);
     let newId = await master.getUintVar(web3.utils.keccak256("_DISPUTE_COUNT"));
+    newId = newId
+    console.log("id: " + newId);
     await tellorUser.vote(newId,true);
     await h.advanceTime(86400 * 2.5)
     await tellorUser.tallyVotes(newId);
@@ -222,4 +225,99 @@ describe("TellorX Function Tests - Transition", function() {
     _index = await tellor["getNewValueCountbyRequestId(uint256)"](1);
     assert(_index == 2, "new index should be correct again")
   });
+
+  it("getAllDisputeVars()", async function() {
+    this.timeout(20000000)
+        const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
+        mainnetBlock = directors.height - 15;
+        console.log("     Forking from block: ",mainnetBlock)
+      accounts = await ethers.getSigners();
+      await hre.network.provider.request({
+        method: "hardhat_reset",
+        params: [{forking: {
+              jsonRpcUrl: hre.config.networks.hardhat.forking.url,
+              blockNumber: mainnetBlock
+            },},],
+        });
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [DEV_WALLET]}
+          )
+          await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [BIGWALLET]}
+          )
+      oldTellorInstance = await ethers.getContractAt("contracts/tellor3/ITellor.sol:ITellor", tellorMaster)
+      gfac = await ethers.getContractFactory("contracts/testing/TestGovernance.sol:TestGovernance");
+      ofac = await ethers.getContractFactory("contracts/Oracle.sol:Oracle");
+      tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury");
+      cfac = await ethers.getContractFactory("contracts/testing/TestController.sol:TestController");
+      governance = await gfac.deploy();
+      oracle = await ofac.deploy();
+      treasury = await tfac.deploy();
+      controller = await cfac.deploy(governance.address, oracle.address, treasury.address);
+      await governance.deployed();
+      await oracle.deployed();
+      await treasury.deployed();
+      await controller.deployed();
+      await accounts[0].sendTransaction({to:DEV_WALLET,value:ethers.utils.parseEther("1.0")});
+      const devWallet = await ethers.provider.getSigner(DEV_WALLET);
+      const bigWallet = await ethers.provider.getSigner(BIGWALLET);
+      master = await oldTellorInstance.connect(devWallet)
+      await master.transfer(accounts[2].address,web3.utils.toWei("500"));
+      let count = await master.getNewValueCountbyRequestId(1);
+      let timestamp = await master.getTimestampbyRequestIDandIndex(1,count.toNumber() - 1);
+      tellorUser = await ethers.getContractAt("contracts/interfaces/IController.sol:IController",tellorMaster, accounts[2]);
+      let dispBal1 = await master.balanceOf(accounts[2].address)
+      await tellorUser.beginDispute(1,timestamp,4);
+      let blocky = await ethers.provider.getBlock();
+      let newId = await master.getUintVar(web3.utils.keccak256("_DISPUTE_COUNT"));
+      await master.proposeFork(controller.address);
+      let _id = await master.getUintVar(h.hash("_DISPUTE_COUNT"))
+      await master.vote(_id,true)
+      master = await oldTellorInstance.connect(bigWallet)
+      await master.vote(_id,true);
+      await h.advanceTime(86400 * 8)
+      await master.tallyVotes(_id)
+      await h.advanceTime(86400 * 2.5)
+      await master.updateTellor(_id)
+      tellor = await ethers.getContractAt("contracts/testing/TestController.sol:TestController",tellorMaster, devWallet);
+      await tellor.deployed();
+      await tellor.init()
+      let dispVars = await tellor.getAllDisputeVars(newId)
+      let minerBal1 = await tellor.balanceOf(dispVars[4])
+      assert(dispVars[1] == false, "dispute should not be executed")
+      assert(dispVars[7][0] == 1, "requestID should be correct")
+      await tellorUser.vote(newId,true);
+      dispVars = await tellor.getAllDisputeVars(newId)
+      assert(dispVars[8] - await tellor.balanceOf(accounts[2].address) == 0, "tally should be correct")
+      await h.advanceTime(86400 * 2.5)
+      await tellorUser.tallyVotes(newId);
+      dispVars = await tellor.getAllDisputeVars(newId)
+      assert(dispVars[2], "vote should have passed")
+      await h.advanceTime(86400 * 2.5)
+      await tellorUser.unlockDisputeFee(newId);
+      dispVars = await tellor.getAllDisputeVars(newId);
+      assert(dispVars[0] == "0xb89e75466cc640c0d64c532cc1ecc96cb6618aa9ce4b98dbee7c2ba1e70a8473", "dispute hash should be correct")
+      assert(dispVars[1] == true, "vote should be executed")
+      assert(dispVars[2] == true, "vote should have passed")
+      assert(dispVars[3] == false, "vote should not be proposed fork")
+      assert(dispVars[5] == accounts[2].address, "reporting party should be correct")
+      assert(dispVars[6] == "0x0000000000000000000000000000000000000000", "proposed fork address should be zero")
+      assert(dispVars[7][0] == 1, "disputed request id should be correct")
+      tsdiff = dispVars[7][1] - timestamp
+      assert(tsdiff == 0, "disputed timestamp should be correct")
+      assert(dispVars[7][2] > 0, "disputed value should be correct")
+      assert(dispVars[7][4] == 1, "Vote count should be correct")
+      blockdiff = dispVars[7][5] - blocky.number
+      assert(blockdiff == 0, "block number should be correct")
+      assert(dispVars[7][6] == 4, "miner slot should be correct")
+      assert(dispVars[7][7] == 0, "quorum should be correct")
+      assert(await tellor.getDisputeUintVars(newId, "0x9f47a2659c3d32b749ae717d975e7962959890862423c4318cf86e4ec220291f") == 1, "request ID should be retrieved correctly")
+      idDiff = await tellor.getDisputeIdByDisputeHash(dispVars[0]) - newId
+      assert(idDiff == 0, "dispute id should be retrieved correctly")
+  })
+
+
+
 });
