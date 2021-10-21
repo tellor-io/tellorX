@@ -237,4 +237,19 @@ describe("End-to-End Tests - Eight", function() {
       value = await usingTellor.getDataBefore(1, blocky.timestamp)
       assert(value[1] == 950000, "Value should be retrieved correctly 3")
     });
+
+    it("Test submit value with bytes data argument", async function() {
+      await tellor.transfer(accounts[10].address,web3.utils.toWei("100"));
+      await tellor.connect(accounts[10]).depositStake();
+      let n = 42
+      let bytesData = "0x"+n.toString(16)
+      let requestId = keccak256(bytesData)
+      await h.expectThrow(oracle.connect(accounts[10]).submitValue(requestId, h.uintTob32(930000), 0, ("0x"+n.toString(15)))) // requestId should equal hash(_data)
+      await oracle.connect(accounts[10]).submitValue(requestId,h.uintTob32(940000),0,bytesData);
+      await h.advanceTime(60*60*12)
+      await oracle.connect(accounts[10]).submitValue(requestId,h.uintTob32(950000),1,bytesData);
+      let blocky = await ethers.provider.getBlock()
+      value = await tellor["retrieveData(uint256,uint256)"](requestId, blocky.timestamp);
+      assert(value == 950000, "Value should be retrieved correctly 1")
+    })
 })
