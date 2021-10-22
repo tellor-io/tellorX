@@ -26,6 +26,10 @@ contract Transition is TellorStorage, TellorVars {
         address _oracle,
         address _treasury
     ) {
+        require(
+            _governance != address(0),
+            "must set governance address"
+        );
         addresses[_GOVERNANCE_CONTRACT] = _governance;
         addresses[_ORACLE_CONTRACT] = _oracle;
         addresses[_TREASURY_CONTRACT] = _treasury;
