@@ -66,7 +66,7 @@ contract Governance is TellorVars {
     // Events
     event NewDispute(
         uint256 _disputeId,
-        bytes32 _tipId,
+        bytes32 _queryId,
         uint256 _timestamp,
         address _reporter
     ); // Emitted when a new dispute is opened
@@ -109,26 +109,26 @@ contract Governance is TellorVars {
 
     /**
      * @dev Helps initialize a dispute by assigning it a disputeId
-     * @param _tipId being disputed
+     * @param _queryId being disputed
      * @param _timestamp being disputed
      */
-    function beginDispute(bytes32 _tipId, uint256 _timestamp) external {
+    function beginDispute(bytes32 _queryId, uint256 _timestamp) external {
         // Ensure mined block is not 0
         address _oracle = IController(TELLOR_ADDRESS).addresses(
             _ORACLE_CONTRACT
         );
         require(
             IOracle(_oracle).getBlockNumberByTimestamp(
-                _tipId,
+                _queryId,
                 _timestamp
             ) != 0,
             "Mined block is 0"
         );
         address _reporter = IOracle(_oracle).getReporterByTimestamp(
-            _tipId,
+            _queryId,
             _timestamp
         );
-        bytes32 _hash = keccak256(abi.encodePacked(_tipId, _timestamp));
+        bytes32 _hash = keccak256(abi.encodePacked(_queryId, _timestamp));
         // Increment vote count and push new vote round
         voteCount++;
         uint256 _disputeId = voteCount;
@@ -145,16 +145,16 @@ contract Governance is TellorVars {
                 block.timestamp - _timestamp < IOracle(_oracle).miningLock(),
                 "Dispute must be started within 12 hours...same variable as mining lock"
             ); // New dispute within mining lock
-            openDisputesOnId[_tipId]++;
+            openDisputesOnId[_queryId]++;
         }
         // Create new vote and dispute
         Vote storage _thisVote = voteInfo[_disputeId];
         Dispute storage _thisDispute = disputeInfo[_disputeId];
         // Initialize dispute information - request ID, timestamp, value, etc.
-        _thisDispute.requestId = _tipId;
+        _thisDispute.requestId = _queryId;
         _thisDispute.timestamp = _timestamp;
         _thisDispute.value = IOracle(_oracle).getValueByTimestamp(
-            _tipId,
+            _queryId,
             _timestamp
         );
         _thisDispute.reportedMiner = _reporter;
@@ -168,8 +168,8 @@ contract Governance is TellorVars {
         // Calculate dispute fee based on number of current vote rounds
         uint256 _fee;
         if (voteRounds[_hash].length == 1) {
-            _fee = disputeFee * 2**(openDisputesOnId[_tipId] - 1);
-            IOracle(_oracle).removeValue(_tipId, _timestamp);
+            _fee = disputeFee * 2**(openDisputesOnId[_queryId] - 1);
+            IOracle(_oracle).removeValue(_queryId, _timestamp);
         } else {
             _fee = disputeFee * 2**(voteRounds[_hash].length - 1);
         }
@@ -183,7 +183,7 @@ contract Governance is TellorVars {
             "Fee must be paid"
         ); // This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
         // Add an initial tip and change the current staking status of reporter
-        IOracle(_oracle).tipQuery(_tipId, _fee - _thisVote.fee, bytes(""));
+        IOracle(_oracle).tipQuery(_queryId, _fee - _thisVote.fee, bytes(""));
         (uint256 _status, ) = IController(TELLOR_ADDRESS).getStakerInfo(
             _thisDispute.reportedMiner
         );
@@ -198,7 +198,7 @@ contract Governance is TellorVars {
             updateMinDisputeFee();
         }
         IController(TELLOR_ADDRESS).changeStakingStatus(_reporter, 3);
-        emit NewDispute(_disputeId, _tipId, _timestamp, _reporter);
+        emit NewDispute(_disputeId, _queryId, _timestamp, _reporter);
     }
 
     /**

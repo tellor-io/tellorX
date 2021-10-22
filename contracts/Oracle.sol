@@ -34,25 +34,25 @@ contract Oracle is TellorVars {
     // Events
     event TipAdded(
         address indexed _user,
-        bytes32 indexed _tipId,
+        bytes32 indexed _queryId,
         uint256 _tip,
         uint256 _totalTip,
-        bytes _data
+        bytes _queryData
     );
-    event NewReport(bytes32 _tipId, uint256 _time, bytes _value, uint256 _reward, uint256 _nonce, bytes _data);
+    event NewReport(bytes32 _queryId, uint256 _time, bytes _value, uint256 _reward, uint256 _nonce, bytes _queryData);
     event MiningLockChanged(uint256 _newMiningLock);
     event TimeBasedRewardsChanged(uint256 _newTimeBasedReward);
 
     /**
      * @dev Adds tips to incentivize reporters to submit values for specific data IDs.
-     * @param _tipId is ID of the specific data feed
+     * @param _queryId is ID of the specific data feed
      * @param _tip is the amount to tip the given data ID
-     * @param _data is required for IDs greater than 100, informs reporters how to fulfill request. See github.com/tellor-io/dataSpecs
+     * @param _queryData is required for IDs greater than 100, informs reporters how to fulfill request. See github.com/tellor-io/dataSpecs
      */
     function tipQuery(
-        bytes32 _tipId,
+        bytes32 _queryId,
         uint256 _tip,
-        bytes memory _data
+        bytes memory _queryData
     ) external {
         // Require tip to be greater than 1 and be paid
         require(_tip > 1, "Tip should be greater than 1");
@@ -65,8 +65,8 @@ contract Oracle is TellorVars {
             "tip must be paid"
         );
         require(
-            _tipId == keccak256(_data) ||
-                uint256(_tipId) <= 100 ||
+            _queryId == keccak256(_queryData) ||
+                uint256(_queryId) <= 100 ||
                 msg.sender ==
                 IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT),
             "id must be hash of bytes data"
@@ -75,10 +75,10 @@ contract Oracle is TellorVars {
         _tip = _tip / 2;
         IController(TELLOR_ADDRESS).burn(_tip);
         // Update total tip amount for user, data ID, and in total contract
-        tips[_tipId] += _tip;
+        tips[_queryId] += _tip;
         tipsByUser[msg.sender] += _tip;
         tipsInContract += _tip;
-        emit TipAdded(msg.sender, _tipId, _tip, tips[_tipId], _data);
+        emit TipAdded(msg.sender, _queryId, _tip, tips[_queryId], _queryData);
     }
 
     /**
@@ -115,10 +115,10 @@ contract Oracle is TellorVars {
     /**
      * @dev Removes a value from the oracle.
      * Note: this function is only callable by the Governance contract.
-     * @param _tipId is ID of the specific data feed
+     * @param _queryId is ID of the specific data feed
      * @param _timestamp is the timestamp of the data value to remove
      */
-    function removeValue(bytes32 _tipId, uint256 _timestamp) external {
+    function removeValue(bytes32 _queryId, uint256 _timestamp) external {
         require(
             msg.sender ==
                 IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT) ||
@@ -126,7 +126,7 @@ contract Oracle is TellorVars {
                 IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT),
             "caller must be the governance contract or the oracle contract"
         );
-        Report storage rep = reports[_tipId];
+        Report storage rep = reports[_queryId];
         uint256 _index = rep.timestampIndex[_timestamp];
         // Shift all timestamps back to reflect deletion of value
         for (uint256 i = _index; i < rep.timestamps.length - 1; i++) {
@@ -142,16 +142,16 @@ contract Oracle is TellorVars {
 
     /**
      * @dev Allows a reporter to submit a value to the oracle
-     * @param _tipId is ID of the specific data feed
+     * @param _queryId is ID of the specific data feed
      * @param _value is the value the user submits to the oracle
      */
     function submitValue(
-        bytes32 _tipId,
+        bytes32 _queryId,
         bytes calldata _value,
         uint256 _nonce,
-        bytes memory _data
+        bytes memory _queryData
     ) external {
-        Report storage rep = reports[_tipId];
+        Report storage rep = reports[_queryId];
         require(
             _nonce == rep.timestamps.length,
             "nonce must match timestamp index"
@@ -166,8 +166,8 @@ contract Oracle is TellorVars {
                 IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT)
         );
         require(
-            _tipId == keccak256(_data) ||
-                uint256(_tipId) <= 100,
+            _queryId == keccak256(_queryData) ||
+                uint256(_queryId) <= 100,
             "id must be hash of bytes data"
         );
         reporterLastTimestamp[msg.sender] = block.timestamp;
@@ -192,39 +192,39 @@ contract Oracle is TellorVars {
         rep.valueByTimestamp[block.timestamp] = _value;
         rep.reporterByTimestamp[block.timestamp] = msg.sender;
         // Send tips + timeBasedReward to reporter of value, and reset tips for ID
-        (uint256 _tip, uint256 _reward) = getCurrentReward(_tipId);
+        (uint256 _tip, uint256 _reward) = getCurrentReward(_queryId);
         tipsInContract -= _tip;
         if (_reward + _tip > 0) {
             _tellor.transfer(msg.sender, _reward + _tip);
         }
-        tips[_tipId] = 0;
+        tips[_queryId] = 0;
         // Update last oracle value and number of values submitted by a reporter
         timeOfLastNewValue = block.timestamp;
         reportsSubmittedByAddress[msg.sender]++;
-        emit NewReport(_tipId, block.timestamp, _value, _tip + _reward, _nonce, _data);
+        emit NewReport(_queryId, block.timestamp, _value, _tip + _reward, _nonce, _queryData);
     }
 
     //Getters
     /**
      * @dev Returns the block number at a given timestamp
-     * @param _tipId is ID of the specific data feed
+     * @param _queryId is ID of the specific data feed
      * @param _timestamp is the timestamp to find the corresponding block number for
      * @return uint256 of the block number of the timestamp for the given data ID
      */
-    function getBlockNumberByTimestamp(bytes32 _tipId, uint256 _timestamp)
+    function getBlockNumberByTimestamp(bytes32 _queryId, uint256 _timestamp)
         external
         view
         returns (uint256)
     {
-        return reports[_tipId].timestampToBlockNum[_timestamp];
+        return reports[_queryId].timestampToBlockNum[_timestamp];
     }
 
     /**
      * @dev Calculates the current reward for a reporter given tips
      * and time based reward
-     * @param _tipId is ID of the specific data feed
+     * @param _queryId is ID of the specific data feed
      */
-    function getCurrentReward(bytes32 _tipId)
+    function getCurrentReward(bytes32 _queryId)
         public
         view
         returns (uint256, uint256)
@@ -235,18 +235,18 @@ contract Oracle is TellorVars {
         if (_tellor.balanceOf(address(this)) < _reward + tipsInContract) {
             _reward = _tellor.balanceOf(address(this)) - tipsInContract;
         }
-        return (tips[_tipId], _reward);
+        return (tips[_queryId], _reward);
     }
 
     /**
      * @dev Returns the current value of a data feed given a specific ID
-     * @param _tipId is the ID of the specific data feed
+     * @param _queryId is the ID of the specific data feed
      * @return bytes memory of the current value of data
      */
-    function getCurrentValue(bytes32 _tipId) external view returns (bytes memory) {
+    function getCurrentValue(bytes32 _queryId) external view returns (bytes memory) {
         return
-            reports[_tipId].valueByTimestamp[
-                reports[_tipId].timestamps[reports[_tipId].timestamps.length - 1]
+            reports[_queryId].valueByTimestamp[
+                reports[_queryId].timestamps[reports[_queryId].timestamps.length - 1]
             ];
     }
 
@@ -256,16 +256,16 @@ contract Oracle is TellorVars {
 
     /**
      * @dev Returns the address of the reporter who submitted a value for a data ID at a specific time
-     * @param _tipId is ID of the specific data feed
+     * @param _queryId is ID of the specific data feed
      * @param _timestamp is the timestamp to find a corresponding reporter for
      * @return address of the reporter who reported the value for the data ID at the given timestamp
      */
-    function getReporterByTimestamp(bytes32 _tipId, uint256 _timestamp)
+    function getReporterByTimestamp(bytes32 _queryId, uint256 _timestamp)
         external
         view
         returns (address)
     {
-        return reports[_tipId].reporterByTimestamp[_timestamp];
+        return reports[_queryId].reporterByTimestamp[_timestamp];
     }
 
     /**
@@ -291,29 +291,29 @@ contract Oracle is TellorVars {
 
     /**
      * @dev Returns the number of timestamps/reports for a specific data ID
-     * @param _tipId is ID of the specific data feed
+     * @param _queryId is ID of the specific data feed
      * @return uint256 of the number of the timestamps/reports for the inputted data ID
      */
-    function getTimestampCountById(bytes32 _tipId)
+    function getTimestampCountById(bytes32 _queryId)
         external
         view
         returns (uint256)
     {
-        return reports[_tipId].timestamps.length;
+        return reports[_queryId].timestamps.length;
     }
 
     /**
      * @dev Returns the timestamp of a reported value given a data ID and timestamp index
-     * @param _tipId is ID of the specific data feed
+     * @param _queryId is ID of the specific data feed
      * @param _index is the index of the timestamp
      * @return uint256 of timestamp of the last oracle value
      */
-    function getReportTimestampByIndex(bytes32 _tipId, uint256 _index)
+    function getReportTimestampByIndex(bytes32 _queryId, uint256 _index)
         external
         view
         returns (uint256)
     {
-        return reports[_tipId].timestamps[_index];
+        return reports[_queryId].timestamps[_index];
     }
 
     /**
@@ -326,25 +326,25 @@ contract Oracle is TellorVars {
 
     /**
      * @dev Returns the index of a reporter timestamp in the timestamp array for a specific data ID
-     * @param _tipId is ID of the specific data feed
+     * @param _queryId is ID of the specific data feed
      * @param _timestamp is the timestamp to find in the timestamps array
      * @return uint256 of the index of the reporter timestamp in the array for specific ID
      */
-    function getTimestampIndexByTimestamp(bytes32 _tipId, uint256 _timestamp)
+    function getTimestampIndexByTimestamp(bytes32 _queryId, uint256 _timestamp)
         external
         view
         returns (uint256)
     {
-        return reports[_tipId].timestampIndex[_timestamp];
+        return reports[_queryId].timestampIndex[_timestamp];
     }
 
     /**
      * @dev Returns the number of tips made for a specific data feed ID
-     * @param _tipId is ID of the specific data feed
+     * @param _queryId is ID of the specific data feed
      * @return uint256 of the number of tips made for the specific ID
      */
-    function getTipsById(bytes32 _tipId) external view returns (uint256) {
-        return tips[_tipId];
+    function getTipsById(bytes32 _queryId) external view returns (uint256) {
+        return tips[_queryId];
     }
 
     /**
@@ -358,16 +358,16 @@ contract Oracle is TellorVars {
 
     /**
      * @dev Returns the value of a data feed given a specific ID and timestamp
-     * @param _tipId is the ID of the specific data feed
+     * @param _queryId is the ID of the specific data feed
      * @param _timestamp is the timestamp to look for data
      * @return bytes memory of the value of data at the associated timestamp
      */
-    function getValueByTimestamp(bytes32 _tipId, uint256 _timestamp)
+    function getValueByTimestamp(bytes32 _queryId, uint256 _timestamp)
         external
         view
         returns (bytes memory)
     {
-        return reports[_tipId].valueByTimestamp[_timestamp];
+        return reports[_queryId].valueByTimestamp[_timestamp];
     }
 
     /**
