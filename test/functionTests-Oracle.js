@@ -85,21 +85,21 @@ describe("TellorX Function Tests - Oracle", function() {
     await accounts[1].sendTransaction({to:governance.address,value:ethers.utils.parseEther("1.0")});
     govSigner = await ethers.provider.getSigner(governance.address);
     });
-  it("addTip()", async function() {
+  it("tipQuery()", async function() {
     this.timeout(20000000)
     var ts = await tellor.totalSupply()
     oracle1 = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    h.expectThrow(oracle1.addTip(h.uintTob32(1),2,'0x'));//must have funds
+    h.expectThrow(oracle1.tipQuery(h.uintTob32(1),2,'0x'));//must have funds
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"))
-    h.expectThrow(oracle1.addTip(h.uintTob32(1),0,'0x'));//tip must be greater than 0
-    await oracle1.addTip(h.uintTob32(1),web3.utils.toWei("100"),'0x')
+    h.expectThrow(oracle1.tipQuery(h.uintTob32(1),0,'0x'));//tip must be greater than 0
+    await oracle1.tipQuery(h.uintTob32(1),web3.utils.toWei("100"),'0x')
     assert(await oracle.getTipsByUser(accounts[1].address) == web3.utils.toWei("50"), "tips by user should be correct")
     assert(await oracle.getTipsById(h.uintTob32(1)) == web3.utils.toWei("50"), "tips by ID should be correct")
     assert(await oracle.tipsInContract() == web3.utils.toWei("50"), "tips in contract should be correct")
     var ts2 = await tellor.totalSupply()
     assert(ts - ts2  - web3.utils.toWei("50") < 100000000, "half of tip should be burned")//should be close enough (rounding errors)
-    h.expectThrow(oracle1.addTip(h.hash("This is a test"),web3.utils.toWei("100"),'0x'))//ids greater than 100 should equal hash(bytes _data)
-    await oracle1.addTip(h.hash("This is a test"),web3.utils.toWei("100"), web3.utils.toHex("This is a test"))
+    h.expectThrow(oracle1.tipQuery(h.hash("This is a test"),web3.utils.toWei("100"),'0x'))//ids greater than 100 should equal hash(bytes _data)
+    await oracle1.tipQuery(h.hash("This is a test"),web3.utils.toWei("100"), web3.utils.toHex("This is a test"))
     assert(await oracle.getTipsByUser(accounts[1].address) == web3.utils.toWei("100"), "tips by user should be correct")
     assert(await oracle.getTipsById(h.hash("This is a test")) == web3.utils.toWei("50"), "tips by ID should be correct")
     assert(await oracle.tipsInContract() == web3.utils.toWei("100"), "tips in contract should be correct")
@@ -119,7 +119,7 @@ describe("TellorX Function Tests - Oracle", function() {
     await oracle2.submitValue( h.uintTob32(2),150,nonce,'0x');//clear inflationary rewards
     await tellor.transfer(oracle.address,web3.utils.toWei("200"));//funding the oracle for inflationary rewards
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle2.addTip(h.uintTob32(1),web3.utils.toWei("10"),'0x')
+    await oracle2.tipQuery(h.uintTob32(1),web3.utils.toWei("10"),'0x')
     let initBal = await tellor.balanceOf(accounts[1].address)
     nonce = await oracle.getTimestampCountById(h.uintTob32(1));
     await oracle.submitValue( h.uintTob32(1),150,nonce,'0x');
@@ -169,7 +169,7 @@ describe("TellorX Function Tests - Oracle", function() {
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
     await oracle.submitValue(h.uintTob32(1),150,0,'0x');
     let blocky1 = await ethers.provider.getBlock();
-    await oracle.addTip(h.uintTob32(1),web3.utils.toWei("5"),'0x');
+    await oracle.tipQuery(h.uintTob32(1),web3.utils.toWei("5"),'0x');
     await h.advanceTime(10000);
     let currentReward = await oracle.getCurrentReward(h.uintTob32(1));
     assert(currentReward[0] == web3.utils.toWei("2.5"), "Tip should be correct");
@@ -203,8 +203,8 @@ describe("TellorX Function Tests - Oracle", function() {
   it("getTipsById()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.addTip(h.uintTob32(1),500,'0x')
-    await oracle.addTip(h.uintTob32(1),500,'0x')
+    await oracle.tipQuery(h.uintTob32(1),500,'0x')
+    await oracle.tipQuery(h.uintTob32(1),500,'0x')
     assert(await oracle.getTipsById(h.uintTob32(1)) - 500 == 0, "tips should be correct")
   });
   it("getTimestampCountById()", async function() {
@@ -286,8 +286,8 @@ describe("TellorX Function Tests - Oracle", function() {
   it("getTipsByUser()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
-    await oracle.addTip(h.uintTob32(1),500,'0x')
-    await oracle.addTip(h.uintTob32(1),500,'0x')
+    await oracle.tipQuery(h.uintTob32(1),500,'0x')
+    await oracle.tipQuery(h.uintTob32(1),500,'0x')
     assert(await oracle.getTipsByUser(accounts[1].address) - 500 == 0, "tips should be correct")
   });
   it("getValueByTimestamp()", async function() {

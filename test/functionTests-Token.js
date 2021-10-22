@@ -83,7 +83,7 @@ describe("TellorX Function Tests - Token", function() {
     govSigner = await ethers.provider.getSigner(governance.address);
   });
 
-	  it("approve and allowance", async function() {
+	  it("approve() and allowance()", async function() {
       this.timeout(20000000)
 		  //create user account, mint it tokens
 		  let acc = await ethers.getSigner()
@@ -95,9 +95,19 @@ describe("TellorX Function Tests - Token", function() {
 		  //check allowances
 		  let allowance = BigInt(await tellor.allowance(acc.address, DEV_WALLET))
 		  expect(allowance).to.equal(BigInt(2E20))
-	  })
+	  });
 
-	  it("allowed to trade", async function() {
+    if("approveAndTransferFrom()", async function() {
+      await tellor.connect(devWallet).transfer(accounts[1].address, web3.utils.toWei("50"))
+      await h.expectThrow(tellor.connect(accounts[2]).approveAndTransferFrom(accounts[1].address, accounts[2].address, web3.utils.toWei("20")))
+      await tellor.connect(govSigner).approveAndTransferFrom(accounts[1].address, accounts[2].address, web3.utils.toWei("20"))
+      blocky = await ethers.provider.getBlock();
+      assert(await tellor.balanceOf(accounts[1].address) == web3.utils.toWei("30"))
+      assert(await tellor.balanceOf(accounts[2].address) == web3.utils.toWei("20"))
+      assert(await tellor.balanceOfAt(accounts[2],blocky.number) == "20")
+    })
+
+	  it("allowedToTrade()", async function() {
 		  let mintedTokens = BigInt(101E18)
 		  let stake = BigInt(100E18)
 		  //create user account, mint it tokens
@@ -120,7 +130,7 @@ describe("TellorX Function Tests - Token", function() {
 		  expect(allowedToTrade).to.be.true
 	  })
 
-	  it("balance of", async function() {
+	  it("balanceOf()", async function() {
 		  let mintedTokens = BigInt(2E18)
 
 		  //create user, mint it tokens
@@ -132,7 +142,7 @@ describe("TellorX Function Tests - Token", function() {
 		  expect(balance).to.equal(mintedTokens)
 	  })
 
-	  it("balance of at", async function() {
+	  it("balanceOfAt()", async function() {
 		  //an account with a balance
 		  let userAddress = "0xA97cd82A05386eAdaFCE2bbD2e6a0CbBa7A53a6c"
 		  let blockNumber = 12500000 // may 24 2021
