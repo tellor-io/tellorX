@@ -95,36 +95,36 @@ async function deployTellorx( _network, _pk, _nodeURL) {
 
 
     //////////////// Master
-    console.log("Starting deployment for tellor contract...")
-    const telfac = await ethers.getContractFactory("contracts/tellor3/Tellor.sol:Tellor", wallet)
-    const telfacwithsigner = await telfac.connect(wallet)
-    const tellor = await telfac.deploy(extension.address)
-    console.log("Tellor contract deployed to: ", tellor.address)
+    console.log("Starting deployment for master contract...")
+    const masfac = await ethers.getContractFactory("contracts/tellor3/TellorMaster.sol:TellorMaster", wallet)
+    const masfacwithsigner = await masfac.connect(wallet)
+    const master = await masfac.deploy(tellor.address, tellor.address) // use same addr for _OLD_TELLOR and _newTellor?
+    console.log("Master contract deployed to: ", master.address)
 
-    await tellor.deployed()
+    await master.deployed()
 
     if (net == "mainnet"){
-        console.log("Tellor contract deployed to:", "https://etherscan.io/address/" + tellor.address);
-        console.log("   Tellor transaction hash:", "https://etherscan.io/tx/" + tellor.deployTransaction.hash);
+        console.log("Master contract deployed to:", "https://etherscan.io/address/" + master.address);
+        console.log("   Master transaction hash:", "https://etherscan.io/tx/" + master.deployTransaction.hash);
     } else if (net == "rinkeby") {
-        console.log("Tellor contract deployed to:", "https://rinkeby.etherscan.io/address/" + tellor.address);
-        console.log("    Tellor transaction hash:", "https://rinkeby.etherscan.io/tx/" + tellor.deployTransaction.hash);
+        console.log("Master contract deployed to:", "https://rinkeby.etherscan.io/address/" + master.address);
+        console.log("    Master transaction hash:", "https://rinkeby.etherscan.io/tx/" + master.deployTransaction.hash);
     } else {
         console.log("Please add network explorer details")
     }
 
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
-    console.log('waiting for tellor tx confirmation...');
-    await tellor.deployTransaction.wait(3)
+    console.log('waiting for master tx confirmation...');
+    await master.deployTransaction.wait(3)
 
-    console.log('submitting tellor contract for verification...');
+    console.log('submitting master contract for verification...');
     await run("verify:verify",
       {
-      address: tellor.address,
+      address: master.address,
       },
     )
-    console.log("tellor contract verified")
+    console.log("master contract verified")
 
 
 
@@ -231,7 +231,7 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     console.log("Starting deployment for Controller contract...")
     const cfac = await ethers.getContractFactory("contracts/Controller.sol:Controller", wallet)
     const cfacwithsigners = await cfac.connect(wallet)
-    const controller = await cfacwithsigners.deploy()
+    const controller = await cfacwithsigners.deploy(governance.address, oracle.address, treasury.address)
     await controller.deployed()
 
     if (net == "mainnet"){
