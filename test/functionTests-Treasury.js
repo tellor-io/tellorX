@@ -154,6 +154,14 @@ describe("TellorX Function Tests - Treasury", function() {
     assert(details[2] == 200, "Rate should be correct");
     assert(details[3] == web3.utils.toWei("200"), "Purchased should be correct");
   });
+  it("getTreasuryCount()", async function() {
+    admin = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, govSigner);
+    await admin.issueTreasury(web3.utils.toWei("400"), 200, 100);
+    await admin.issueTreasury(web3.utils.toWei("400"), 200, 100);
+    await admin.issueTreasury(web3.utils.toWei("400"), 200, 100);
+    let details = await treasury.getTreasuryCount();
+    assert(details==3, "3 treasuries were issued")
+  });
   it("getTreasuryFundsByUser()", async function() {
     tellorUser = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[1]);
     await tellor.transfer(accounts[1].address,web3.utils.toWei("400"));
