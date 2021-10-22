@@ -3,6 +3,7 @@ pragma solidity 0.8.3;
 
 import "./tellor3/TellorStorage.sol";
 import "./TellorVars.sol";
+import "./interfaces/IGovernance.sol";
 
 /**
  @author Tellor Inc.
@@ -85,7 +86,8 @@ contract Token is TellorStorage, TellorVars {
         uint256 _amount
     ) external returns (bool) {
         require(
-            (msg.sender == addresses[_GOVERNANCE_CONTRACT] ||
+            (IGovernance(addresses[_GOVERNANCE_CONTRACT])
+                .isApprovedGovernanceContract(msg.sender) ||
                 msg.sender == addresses[_TREASURY_CONTRACT] ||
                 msg.sender == addresses[_ORACLE_CONTRACT]),
             "Only the Governance, Treasury, or Oracle Contract can approve and transfer tokens"
