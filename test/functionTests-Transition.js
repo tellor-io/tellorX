@@ -181,7 +181,6 @@ describe("TellorX Function Tests - Transition", function() {
     await tellorUser.beginDispute(1,timestamp,4);
     let newId = await master.getUintVar(web3.utils.keccak256("_DISPUTE_COUNT"));
     newId = newId
-    console.log("id: " + newId);
     await tellorUser.vote(newId,true);
     await h.advanceTime(86400 * 2.5)
     await tellorUser.tallyVotes(newId);
@@ -192,6 +191,9 @@ describe("TellorX Function Tests - Transition", function() {
   }).timeout(40000);
   it("name()", async function() {
     assert(await tellor.name() == "Tellor Tributes", "name should be correct")
+  });
+  it("decimals)", async function() {
+    assert(await tellor.decimals() == 18, "decimals should be correct")
   });
   it("getAddressVars()", async function() {
     assert(await tellor.getAddressVars(h.hash("_GOVERNANCE_CONTRACT")) == governance.address, "Get addressVar governance should be correct")
@@ -205,6 +207,25 @@ describe("TellorX Function Tests - Transition", function() {
     assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) - web3.utils.toWei("100") ==0, "Get uintVar stake amount should be correct")
     assert(await tellor.getUintVar(h.hash("_SWITCH_TIME")) > 0, "Get uintVar switch time should be correct")
     assert(await tellor.getUintVar(h.hash("xxx"))*1 == 0, "Get uintVar nil should be correct")
+  });
+  it("isMigrated()", async function() {
+    assert(await tellor.isMigrated(DEV_WALLET) == true, "dev wallet is migrated")
+    assert(await tellor.isMigrated(accounts[1].address) == false, "this account is not migrated")
+  });
+  it("getNewCurrentVariables()", async function() {
+    await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
+    tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[2]);
+    await tellorUser.depositStake();
+    oracle2 = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[2]);
+    await oracle2.submitValue( h.uintTob32(2),150,0,'0x');//clear inflationary rewards
+    let blocky = await ethers.provider.getBlock();
+    let vars = await tellor.getNewCurrentVariables();
+    assert(vars[0] == ethers.utils.solidityKeccak256(['uint256'], [blocky.timestamp]), "challenge should be correct")
+    await h.advanceTime(86400)
+    await oracle2.submitValue( h.uintTob32(2),150,1,'0x');//clear inflationary rewards
+    blocky = await ethers.provider.getBlock();
+    vars = await tellor.getNewCurrentVariables();
+    assert(vars[0] == ethers.utils.solidityKeccak256(['uint256'], [blocky.timestamp]), "challenge should be correct")
   });
   it("totalSupply()", async function() {
     assert(await tellor.totalSupply() > web3.utils.toWei("1700000"), "total supply should be correct")

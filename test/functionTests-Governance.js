@@ -401,6 +401,36 @@ describe("TellorX Function Tests - Governance", function() {
       assert(await governance.isFunctionApproved(0xe8ce51d7) == true, "Function should be approved")
       assert(await governance.isFunctionApproved(0xe8ce5222) == false, "Function should not be approved")
   });
+  it("isApprovedGovernanceContract", async function() {
+    governance = await ethers.getContractAt("contracts/interfaces/IGovernance.sol:IGovernance",governance.address, accounts[2]);
+    let vars = await governance.isApprovedGovernanceContract(governance.address);
+    assert(vars == true, "Address is an approved governance contract")
+    vars = await governance.isApprovedGovernanceContract(accounts[1].address) 
+    assert(vars == false, "Address is not an approved governance contract")
+});
+it("getVoteCount()", async function() {
+  await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
+  await tellor.transfer(accounts[2].address,web3.utils.toWei("2000"));
+  tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
+  await tellorUser.depositStake();
+  oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
+  await oracle.submitValue(h.uintTob32(1),300,0,'0x');
+  let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
+  governance = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",governance.address, accounts[2]);
+  await governance.beginDispute(h.uintTob32(1),_t);
+  let _hash = ethers.utils.solidityKeccak256(['bytes32','uint256'], [h.uintTob32(1),_t])
+  await h.advanceTime(86400 * 2.5)
+  await governance.tallyVotes(1)
+  await tellor.transfer(accounts[3].address,web3.utils.toWei("100"));
+  tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[3]);
+  await tellorUser.depositStake();
+  oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[3]);
+  await oracle.submitValue(h.uintTob32(2),300,0,'0x');
+  _t2 = await oracle.getReportTimestampByIndex(h.uintTob32(2),0);
+  await governance.beginDispute(h.uintTob32(2),_t2);
+  await governance.beginDispute(h.uintTob32(1),_t);
+  assert(await governance.getVoteCount()== 3,"vote count should be correct")
+});
   it("getVoteRounds()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
     await tellor.transfer(accounts[2].address,web3.utils.toWei("2000"));

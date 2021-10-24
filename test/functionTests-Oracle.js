@@ -363,5 +363,9 @@ describe("TellorX Function Tests - Oracle", function() {
     let miningLock = await oracle.getTimeBasedReward()
     expect(miningLock).to.equal(BigInt(5E17))
   });
+  it("getMiningLock()", async function() {
+    let miningLock = await oracle.getMiningLock()
+    expect(miningLock).to.equal(BigInt(86400/2))
+  });
 
 });
