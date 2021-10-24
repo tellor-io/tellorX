@@ -44,10 +44,10 @@ interface ITellor{
     function changeStakingStatus(address _reporter, uint _status) external;
     function slashReporter(address _reporter, address _disputer) external;
     function getStakerInfo(address _staker) external view returns (uint256, uint256);
-    function getTimestampbyRequestIDandIndex(uint256 _requestID, uint256 _index) external view returns (uint256);
+    function getTimestampbyQueryIdandIndex(uint256 _queryId, uint256 _index) external view returns (uint256);
     function getNewCurrentVariables()external view returns (bytes32 _c,uint256[5] memory _r,uint256 _d,uint256 _t);
-    function getNewValueCountbyRequestId(bytes32 _queryId) external view returns(uint256);
-    function getTimestampbyRequestIDandIndex(bytes32 _queryId, uint256 _index) external view returns(uint256);
+    function getNewValueCountbyQueryId(bytes32 _queryId) external view returns(uint256);
+    function getTimestampbyQueryIdandIndex(bytes32 _queryId, uint256 _index) external view returns(uint256);
     function retrieveData(bytes32 _queryId, uint256 _timestamp) external view returns(bytes memory);
     //Governance
     enum VoteResult {FAILED,PASSED,INVALID}
@@ -65,9 +65,10 @@ interface ITellor{
     function getDelegateInfo(address _holder) external view returns(address,uint);
     function isFunctionApproved(bytes4 _func) external view returns(bool);
     function getVoteRounds(bytes32 _hash) external view returns(uint256[] memory);
-    function getVoteInfo(uint256 _disputeId) external view returns(bytes32,uint256[9] memory,bool[2] memory,VoteResult,bytes memory,bytes4,address[2] memory);
-    function getDisputeInfo(uint256 _disputeId) external view returns(uint256,uint256,bytes memory, address);
-    function getOpenDisputesOnId(uint256 _disputeId) external view returns(uint256);
+    function getVoteCount() external view returns(uint256);
+    function getVoteInfo(uint256 _id) external view returns(bytes32,uint256[9] memory,bool[2] memory,VoteResult,bytes memory,bytes4,address[2] memory);
+    function getDisputeInfo(uint256 _id) external view returns(uint256,uint256,bytes memory, address);
+    function getOpenDisputesOnId(uint256 _id) external view returns(uint256);
     function getTypeDetails(uint256 _type) external view returns(uint256, uint256);
     function didVote(uint256 _disputeId, address _voter) external view returns(bool);
     //Oracle

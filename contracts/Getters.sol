@@ -20,7 +20,7 @@ contract Getters is TellorStorage, TellorVars {
      * @param _queryId the id to look up
      * @return uint256 count of the number of values received for the id
      */
-    function getNewValueCountbyRequestId(bytes32 _queryId)
+    function getNewValueCountbyQueryId(bytes32 _queryId)
         public
         view
         returns (uint256)
@@ -36,7 +36,7 @@ contract Getters is TellorStorage, TellorVars {
      * @param _index is the value index to look up
      * @return uint256 timestamp
      */
-    function getTimestampbyRequestIDandIndex(bytes32 _queryId, uint256 _index)
+    function getTimestampbyQueryIdandIndex(bytes32 _queryId, uint256 _index)
         public
         view
         returns (uint256)

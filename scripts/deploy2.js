@@ -23,7 +23,7 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     ///////////////Connect to the network
     let privateKey = _pk;
     var provider = new ethers.providers.JsonRpcProvider(_nodeURL)
-    let wallet = new ethers.Wallet(privateKey, provider);
+    let wallet = new ethers.Wallet(privateKey, provider)
 
 
     ////////////// Deploy Tellor 3
@@ -50,7 +50,7 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
     console.log('waiting for extension tx confirmation...');
-    await extension.deployTransaction.wait(3)
+    await extension.deployTransaction.wait(10)
 
     console.log('submitting extension contract for verification...');
     await run("verify:verify",
@@ -83,12 +83,13 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
     console.log('waiting for tellor tx confirmation...');
-    await tellor.deployTransaction.wait(3)
+    await tellor.deployTransaction.wait(10)
 
     console.log('submitting tellor contract for verification...');
     await run("verify:verify",
       {
       address: tellor.address,
+      constructorArguments: [extension.address]
       },
     )
     console.log("tellor contract verified")
@@ -116,12 +117,13 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
     console.log('waiting for master tx confirmation...');
-    await master.deployTransaction.wait(3)
+    await master.deployTransaction.wait(10)
 
     console.log('submitting master contract for verification...');
     await run("verify:verify",
       {
       address: master.address,
+      constructorArguments: [tellor.address, tellor.address]
       },
     )
     console.log("master contract verified")
@@ -153,7 +155,7 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
     console.log('waiting for governance tx confirmation...');
-    await governance.deployTransaction.wait(3)
+    await governance.deployTransaction.wait(10)
 
     console.log('submitting governance contract for verification...');
     await run("verify:verify",
@@ -184,7 +186,7 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
     console.log('waiting for Oracle tx confirmation...');
-    await oracle.deployTransaction.wait(3)
+    await oracle.deployTransaction.wait(10)
 
     console.log('submitting Oracle contract for verification...');
 
@@ -216,7 +218,7 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
     console.log('waiting for treasury tx confirmation...');
-    await treasury.deployTransaction.wait(3)
+    await treasury.deployTransaction.wait(10)
 
     console.log('submitting Treasury contract for verification...');
 
@@ -247,13 +249,14 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
     console.log('waiting for tx confirmation...');
-    await controller.deployTransaction.wait(3)
+    await controller.deployTransaction.wait(10)
 
     console.log('submitting contract for verification...');
 
     await run("verify:verify",
       {
       address: controller.address,
+      constructorArguments: [governance.address, oracle.address, treasury.address]
       },
     )
 
