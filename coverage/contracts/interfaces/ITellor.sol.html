@@ -147,7 +147,21 @@
 102
 103
 104
-105</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+105
+106
+107
+108
+109
+110
+111
+112</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -269,7 +283,10 @@ interface ITellor{
     function changeUint(bytes32 _target, uint256 _amount) external;
     function migrate() external;
     function mint(address _reciever, uint256 _amount) external;
-    function init(address _governance, address _oracle, address _treasury) external;
+    function init() external;
+    function getAllDisputeVars(uint256 _disputeId) external view returns (bytes32,bool,bool,bool,address,address,address,uint256[9] memory,int256);
+    function getDisputeIdByDisputeHash(bytes32 _hash) external view returns (uint256);
+    function getDisputeUintVars(uint256 _disputeId, bytes32 _data) external view returns(uint256);
     function getLastNewValueById(uint256 _requestId) external view returns (uint256, bool);
     function retrieveData(uint256 _requestId, uint256 _timestamp) external view returns (uint256);
     function getNewValueCountbyRequestId(uint256 _requestId) external view returns (uint256);
@@ -292,50 +309,53 @@ interface ITellor{
     function requestStakingWithdraw() external;
     function withdrawStake() external;
     function changeStakingStatus(address _reporter, uint _status) external;
-    function slashMiner(address _reporter, address _disputer) external;
+    function slashReporter(address _reporter, address _disputer) external;
     function getStakerInfo(address _staker) external view returns (uint256, uint256);
-    function getTimestampbyRequestIDandIndex(uint256 _requestID, uint256 _index) external view returns (uint256);
+    function getTimestampbyQueryIdandIndex(uint256 _queryId, uint256 _index) external view returns (uint256);
     function getNewCurrentVariables()external view returns (bytes32 _c,uint256[5] memory _r,uint256 _d,uint256 _t);
+    function getNewValueCountbyQueryId(bytes32 _queryId) external view returns(uint256);
+    function getTimestampbyQueryIdandIndex(bytes32 _queryId, uint256 _index) external view returns(uint256);
+    function retrieveData(bytes32 _queryId, uint256 _timestamp) external view returns(bytes memory);
     //Governance
     enum VoteResult {FAILED,PASSED,INVALID}
     function setApprovedFunction(bytes4 _func, bool _val) external;
-    function changeTypeInformation(uint256 _id,uint256 _quorum, uint256 _duration) external;
-    function beginDispute(bytes32 _id,uint256 _timestamp) external;
+    function beginDispute(bytes32 _queryId,uint256 _timestamp) external;
     function delegate(address _delegate) external;
     function delegateOfAt(address _user, uint256 _blockNumber) external view returns (address);
-    function executeVote(uint256 _id) external;
+    function executeVote(uint256 _disputeId) external;
     function proposeVote(address _contract,bytes4 _function, bytes calldata _data, uint256 _timestamp) external;
-    function tallyVotes(uint256 _id) external;
+    function tallyVotes(uint256 _disputeId) external;
     function updateMinDisputeFee() external;
     function verify() external pure returns(uint);
-    function vote(uint256 _id, bool _supports, bool _invalidQuery) external;
-    function voteFor(address[] calldata _addys,uint256 _id, bool _supports, bool _invalidQuery) external;
+    function vote(uint256 _disputeId, bool _supports, bool _invalidQuery) external;
+    function voteFor(address[] calldata _addys,uint256 _disputeId, bool _supports, bool _invalidQuery) external;
     function getDelegateInfo(address _holder) external view returns(address,uint);
     function isFunctionApproved(bytes4 _func) external view returns(bool);
     function getVoteRounds(bytes32 _hash) external view returns(uint256[] memory);
+    function getVoteCount() external view returns(uint256);
     function getVoteInfo(uint256 _id) external view returns(bytes32,uint256[9] memory,bool[2] memory,VoteResult,bytes memory,bytes4,address[2] memory);
     function getDisputeInfo(uint256 _id) external view returns(uint256,uint256,bytes memory, address);
     function getOpenDisputesOnId(uint256 _id) external view returns(uint256);
     function getTypeDetails(uint256 _type) external view returns(uint256, uint256);
-    function didVote(uint256 _id, address _voter) external view returns(bool);
+    function didVote(uint256 _disputeId, address _voter) external view returns(bool);
     //Oracle
-        function getReportTimestampByIndex(bytes32 _id, uint256 _index) external view returns(uint256);
-    function getValueByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(bytes memory);
-    function getBlockNumberByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(uint256);
-    function getReporterByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(address);
+        function getReportTimestampByIndex(bytes32 _queryId, uint256 _index) external view returns(uint256);
+    function getValueByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(bytes memory);
+    function getBlockNumberByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(uint256);
+    function getReporterByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(address);
     function miningLock() external view returns(uint256);
-    function removeValue(bytes32 _id, uint256 _timestamp) external;
+    function removeValue(bytes32 _queryId, uint256 _timestamp) external;
     function getReportsSubmittedByAddress(address _reporter) external view returns(uint256);
     function getTipsByUser(address _user) external view returns(uint256);
-    function addTip(bytes32 _id, uint256 _tip) external;
-    function submitValue(bytes32 _id, bytes calldata _value) external;
+    function tipQuery(bytes32 _queryId, uint256 _tip, bytes memory _queryData) external;
+    function submitValue(bytes32 _queryId, bytes calldata _value, uint256 _nonce, bytes memory _queryData) external;
     function burnTips() external;
     function changeMiningLock(uint256 _newMiningLock) external;
     function changeTimeBasedReward(uint256 _newTimeBasedReward) external;
-    function getTipsById(bytes32 _id) external view returns(uint256);
-    function getTimestampCountById(bytes32 _id) external view returns(uint256);
-    function getTimestampIndexByTimestamp(bytes32 _id, uint256 _timestamp) external view returns(uint256);
-    function getCurrentValue(bytes32 _id) external view returns(bytes memory);
+    function getTipsById(bytes32 _queryId) external view returns(uint256);
+    function getTimestampCountById(bytes32 _queryId) external view returns(uint256);
+    function getTimestampIndexByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(uint256);
+    function getCurrentValue(bytes32 _queryId) external view returns(bytes memory);
     function getTimeOfLastNewValue() external view returns(uint256);
     //Treasury
     function issueTreasury(uint256 _amount, uint256 _rate, uint256 _duration) external;
@@ -355,13 +375,14 @@ interface ITellor{
     function rescue51PercentAttack(address _tokenHolder) external;
     function rescueBrokenDataReporting() external;
     function rescueFailedUpdate() external;
-}</pre></td></tr>
+}
+&nbsp;</pre></td></tr>
 </table></pre>
 <div class='push'></div><!-- for sticky footer -->
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Aug 23 2021 13:30:01 GMT-0400 (Eastern Daylight Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Oct 25 2021 13:43:38 GMT-0400 (Eastern Daylight Time)
 </div>
 </div>
 <script src="../../prettify.js"></script>
