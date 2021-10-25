@@ -363,7 +363,7 @@ describe("End-to-End Tests - One", function() {
     //vote to reduce the stakeAmount
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
-    await governance.proposeVote(oracle.address,0xe280e8e8,ethers.utils.defaultAbiCoder.encode(["uint256" ],[86400]),0)
+    await governance.proposeVote(oracle.address,0x5d183cfa,ethers.utils.defaultAbiCoder.encode(["uint256" ],[86400]),0)
     await h.advanceTime(86400 * 8)
     await govTeam.vote(1,true,false);
     await govBig.vote(1,true,false);
