@@ -222,7 +222,7 @@ contract Token is TellorStorage, TellorVars {
 
     /**
      * @dev Completes transfers by updating the balances on the current block number
-     * and ensuring the amount does not contain tokens staked for mining
+     * and ensuring the amount does not contain tokens staked for reporting
      * @param _from address to transfer from
      * @param _to address to transfer to
      * @param _amount to transfer

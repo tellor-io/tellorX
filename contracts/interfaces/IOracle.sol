@@ -6,7 +6,7 @@ interface IOracle{
     function getValueByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(bytes memory);
     function getBlockNumberByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(uint256);
     function getReporterByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(address);
-    function miningLock() external view returns(uint256);
+    function reportingLock() external view returns(uint256);
     function removeValue(bytes32 _queryId, uint256 _timestamp) external;
     function getReportsSubmittedByAddress(address _reporter) external view returns(uint256);
     function getTipsByUser(address _user) external view returns(uint256);
@@ -14,7 +14,7 @@ interface IOracle{
     function submitValue(bytes32 _queryId, bytes calldata _value, uint256 _nonce, bytes memory _queryData) external;
     function burnTips() external;
     function verify() external pure returns(uint);
-    function changeMiningLock(uint256 _newMiningLock) external;
+    function changeReportingLock(uint256 _newReportingLock) external;
     function changeTimeBasedReward(uint256 _newTimeBasedReward) external;
     function getTipsById(bytes32 _queryId) external view returns(uint256);
     function getTimestampCountById(bytes32 _queryId) external view returns(uint256);

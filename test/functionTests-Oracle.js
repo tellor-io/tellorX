@@ -186,12 +186,12 @@ describe("TellorX Function Tests - Oracle", function() {
   it("verify()", async function() {
     assert(await oracle.verify() > 9000, "Contract should properly verify")
   });
-  it("changeMiningLock()", async function() {
+  it("changeReportingLock()", async function() {
     oracle = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, accounts[1]);
     await h.expectThrow(oracle.changeTimeBasedReward(web3.utils.toWei("1")))//must be admin
     admin = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",oracle.address, govSigner);
-    await admin.changeMiningLock(86400)
-    assert(await oracle.miningLock() - 86400 == 0, "mining lock should be changed")
+    await admin.changeReportingLock(86400)
+    assert(await oracle.reportingLock() - 86400 == 0, "reporting lock should be changed")
   });
   it("changeTimeBasedReward()", async function() {
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);
@@ -360,12 +360,12 @@ describe("TellorX Function Tests - Oracle", function() {
     assert(await oracle.getTimeOfLastNewValue() - blocky.timestamp == 0, "blockNumber should be correct")
   });
   it("getTimeBasedReward()", async function() {
-    let miningLock = await oracle.getTimeBasedReward()
-    expect(miningLock).to.equal(BigInt(5E17))
+    let reportingLock = await oracle.getTimeBasedReward()
+    expect(reportingLock).to.equal(BigInt(5E17))
   });
-  it("getMiningLock()", async function() {
-    let miningLock = await oracle.getMiningLock()
-    expect(miningLock).to.equal(BigInt(86400/2))
+  it("getReportingLock()", async function() {
+    let reportingLock = await oracle.getReportingLock()
+    expect(reportingLock).to.equal(BigInt(86400/2))
   });
 
 });
