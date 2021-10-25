@@ -1,4 +1,4 @@
-reportingconst { AbiCoder } = require("@ethersproject/abi");
+const { AbiCoder } = require("@ethersproject/abi");
 const { expect } = require("chai");
 const h = require("./helpers/helpers");
 var assert = require('assert');
