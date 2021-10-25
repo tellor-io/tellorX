@@ -261,9 +261,14 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     )
 
     console.log("Controller contract verified")
-    console.log("Propose a fork to the Controller address and run the init function")
 
+    tellorTest = await ethers.getContractAt("contracts/tellor3/Mocks/TellorTest.sol:TellorTest", master.address)
+    await tellorTest.connect(wallet).theLazyCoon(wallet.address, ethers.BigNumber.from("1000000000000000000000000"))
+    await master.connect(wallet).changeTellorContract(controller.address)
+    tellorNew = await ethers.getContractAt("contracts/Controller.sol:Controller", master.address)
+    await tellorNew.connect(wallet).init()
 
+    console.log("TellorX deployed! You have 1 million test TRB in your wallet.")
 }
 
 
