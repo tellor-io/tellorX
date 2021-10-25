@@ -72,12 +72,12 @@ contract Treasury is TellorVars {
             "Not enough money in treasury left to purchase."
         );
         // Update treasury details -- vote count, purchasedAmount, amount, and owners
-        address governanceContract = IController(TELLOR_ADDRESS).addresses(
+        address _governanceContract = IController(TELLOR_ADDRESS).addresses(
             _GOVERNANCE_CONTRACT
         );
         if (_treas.accounts[msg.sender].amount == 0) {
             _treas.accounts[msg.sender].startVoteCount = IGovernance(
-                governanceContract
+                _governanceContract
             ).getVoteCount();
             _treas.owners.push(msg.sender);
         }
