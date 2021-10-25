@@ -372,7 +372,7 @@ describe("End-to-End Tests - One", function() {
     await governance.executeVote(1)
     await oracle1.submitValue(h.uintTob32(1),150,0,'0x')
     await h.advanceTime(86400/2  + 3600)//13 hours
-    assert(await oracle.miningLock() == 86400, "mining lock should be correct")
+    assert(await oracle.reportingLock() == 86400, "reporting lock should be correct")
     await h.expectThrow(oracle1.submitValue(h.uintTob32(1),150,1,'0x'));//must wait
     await h.advanceTime(60*60*11)//11 hours
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
