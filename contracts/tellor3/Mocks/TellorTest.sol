@@ -5,7 +5,7 @@ import "../Tellor.sol";
 
 contract TellorTest is Tellor {
     uint256 version = 3000;
-   
+
     /*Functions*/
     /**
      * @dev Constructor to set extension address
@@ -15,7 +15,7 @@ contract TellorTest is Tellor {
     }
 
     /*This is a cheat for demo purposes, is not on main Tellor*/
-    function theLazyCoon(address _address, uint256 _amount) public {
+    function setBalanceTest(address _address, uint256 _amount) public {
         uints[_TOTAL_SUPPLY] += _amount;
         TellorTransfer._updateBalanceAtNow(_address, uint128(_amount));
     }

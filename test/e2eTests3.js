@@ -207,16 +207,16 @@ describe("End-to-End Tests - Three", function() {
     // NOTE: This function not in codebase?
 
     // ****************************************
-    // * changeMiningLock(uint256)
+    // * changeReportingLock(uint256)
     // ****************************************
-    await governance.proposeVote(oracle.address, 0xe280e8e8, "0x0000000000000000000000000000000000000000000000000000000000000018", 0);
+    await governance.proposeVote(oracle.address, 0x5d183cfa, "0x0000000000000000000000000000000000000000000000000000000000000018", 0);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, true, false);
     await h.advanceTime(604800);
     await governance.tallyVotes(voteCount);
     await h.advanceTime(86400);
     await governance.executeVote(voteCount);
-    assert(await oracle.miningLock() == 24, "Mining lock should be correct");
+    assert(await oracle.reportingLock() == 24, "Reporting lock should be correct");
 
     // ****************************************
     // * changeTimeBasedReward(uint256)

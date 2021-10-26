@@ -12,7 +12,7 @@ import "./TellorVars.sol";
 */
 contract Oracle is TellorVars {
     // Storage
-    uint256 public miningLock = 12 hours; // amount of time before a reporter is able to submit a value again
+    uint256 public reportingLock = 12 hours; // amount of time before a reporter is able to submit a value again
     uint256 public timeBasedReward = 5e17; // time based reward for a reporter for successfully submitting a value
     uint256 public timeOfLastNewValue = block.timestamp; // time of the last new value, originally set to the block timestamp
     uint256 public tipsInContract; // number of tips within the contract
@@ -26,13 +26,13 @@ contract Oracle is TellorVars {
     struct Report {
         uint256[] timestamps; // array of all newValueTimestamps requested
         mapping(uint256 => uint256) timestampIndex; // mapping of indices to respective timestamps
-        mapping(uint256 => uint256) timestampToBlockNum; // mapping described by [apiId][minedTimestamp]=>block.number
+        mapping(uint256 => uint256) timestampToBlockNum; // mapping described by [queryId][minedTimestamp]=>block.number
         mapping(uint256 => bytes) valueByTimestamp; // mapping of timestamps to values
         mapping(uint256 => address) reporterByTimestamp; // mapping of timestamps to reporters
     }
 
     // Events
-    event MiningLockChanged(uint256 _newMiningLock);
+    event ReportingLockChanged(uint256 _newReportingLock);
     event NewReport(bytes32 _queryId, uint256 _time, bytes _value, uint256 _reward, uint256 _nonce, bytes _queryData);
     event TimeBasedRewardsChanged(uint256 _newTimeBasedReward);
     event TipAdded(
@@ -44,19 +44,19 @@ contract Oracle is TellorVars {
     );
 
     /**
-     * @dev Changes mining lock for reporters.
+     * @dev Changes reporting lock for reporters.
      * Note: this function is only callable by the Governance contract.
-     * @param _newMiningLock is the new mining lock.
+     * @param _newReportingLock is the new reporting lock.
      */
-    function changeMiningLock(uint256 _newMiningLock) external {
+    function changeReportingLock(uint256 _newReportingLock) external {
         require(
             msg.sender ==
                 IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT),
-            "Only governance contract can change mining lock."
+            "Only governance contract can change reporting lock."
         );
-        require(_newMiningLock < 8640000, "Invalid _newMiningLock value");
-        miningLock = _newMiningLock;
-        emit MiningLockChanged(_newMiningLock);
+        require(_newReportingLock < 8640000, "Invalid _newReportingLock value");
+        reportingLock = _newReportingLock;
+        emit ReportingLockChanged(_newReportingLock);
     }
 
     /**
@@ -118,9 +118,9 @@ contract Oracle is TellorVars {
             _nonce == rep.timestamps.length,
             "nonce must match timestamp index"
         );
-        // Require reporter to abide by given mining lock
+        // Require reporter to abide by given reporting lock
         require(
-            block.timestamp - reporterLastTimestamp[msg.sender] > miningLock,
+            block.timestamp - reporterLastTimestamp[msg.sender] > reportingLock,
             "still in reporter time lock, please wait!"
         );
         require(
@@ -250,8 +250,8 @@ contract Oracle is TellorVars {
             ];
     }
 
-    function getMiningLock() external view returns (uint256) {
-        return miningLock;
+    function getReportingLock() external view returns (uint256) {
+        return reportingLock;
     }
 
     /**

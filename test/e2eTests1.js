@@ -363,7 +363,7 @@ describe("End-to-End Tests - One", function() {
     //vote to reduce the stakeAmount
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     await tellor.transfer(accounts[2].address,web3.utils.toWei("200"));
-    await governance.proposeVote(oracle.address,0xe280e8e8,ethers.utils.defaultAbiCoder.encode(["uint256" ],[86400]),0)
+    await governance.proposeVote(oracle.address,0x5d183cfa,ethers.utils.defaultAbiCoder.encode(["uint256" ],[86400]),0)
     await h.advanceTime(86400 * 8)
     await govTeam.vote(1,true,false);
     await govBig.vote(1,true,false);
@@ -372,7 +372,7 @@ describe("End-to-End Tests - One", function() {
     await governance.executeVote(1)
     await oracle1.submitValue(h.uintTob32(1),150,0,'0x')
     await h.advanceTime(86400/2  + 3600)//13 hours
-    assert(await oracle.miningLock() == 86400, "mining lock should be correct")
+    assert(await oracle.reportingLock() == 86400, "reporting lock should be correct")
     await h.expectThrow(oracle1.submitValue(h.uintTob32(1),150,1,'0x'));//must wait
     await h.advanceTime(60*60*11)//11 hours
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);

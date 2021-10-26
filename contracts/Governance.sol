@@ -95,7 +95,7 @@ contract Governance is TellorVars {
             0x740358e6, // changeUint(bytes32,uint256)
             0x40c10f19, // mint(address,uint256)
             0xe48d4b3b, // setApprovedFunction(bytes4,bool)
-            0xe280e8e8, // changeMiningLock(uint256)
+            0x5d183cfa, // changeReportingLock(uint256)
             0x6d53585f, // changeTimeBasedReward(uint256)
             0x6274885f, // issueTreasury(uint256,uint256,uint256)
             0xf3ff955a // delegateVotingPower(address)
@@ -142,9 +142,9 @@ contract Governance is TellorVars {
             ); // Within a day for new round
         } else {
             require(
-                block.timestamp - _timestamp < IOracle(_oracle).miningLock(),
-                "Dispute must be started within 12 hours...same variable as mining lock"
-            ); // New dispute within mining lock
+                block.timestamp - _timestamp < IOracle(_oracle).reportingLock(),
+                "Dispute must be started within 12 hours...same variable as reporting lock"
+            ); // New dispute within reporting lock
             openDisputesOnId[_queryId]++;
         }
         // Create new vote and dispute

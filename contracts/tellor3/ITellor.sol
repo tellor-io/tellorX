@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.4;
 
-/** 
+/**
  @author Tellor Inc.
  @title ITellor
  @dev  This contract holds the interface for all Tellor functions
@@ -248,7 +248,7 @@ interface ITellor {
         uint256 _amount
     ) external returns (bool);
     //Test Functions
-    function theLazyCoon(address _address, uint256 _amount) external;
+    function setBalanceTest(address _address, uint256 _amount) external;
     function testSubmitMiningSolution(
         string calldata _nonce,
         uint256[5] calldata _requestId,

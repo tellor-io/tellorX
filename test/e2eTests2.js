@@ -298,8 +298,8 @@ describe("End-to-End Tests - Two", function() {
 
     it("Decrease reporter lock time", async function() {
 
-      let oldMiningLock
-      let newMiningLock = 60*60
+      let oldReportingLock
+      let newReportingLock = 60*60
       let reportingStake = BigInt(100E18)
 
       let n = 42
@@ -315,24 +315,24 @@ describe("End-to-End Tests - Two", function() {
       //stake reporter
       await tellor.connect(reporter).depositStake()
 
-      // read current mining lock
-      oldMiningLock = await oracle.getMiningLock()
+      // read current reporting lock
+      oldReportingLock = await oracle.getReportingLock()
 
-      expect(oldMiningLock).to.equal(60*60*12)
+      expect(oldReportingLock).to.equal(60*60*12)
 
       //miner submits
 
       await oracle.connect(reporter).submitValue(requestId, disputedValue, 0, ("0x"+n.toString(16)))
 
 
-      //decrease mining lock to 1 hour
-      await oracle.connect(govSigner).changeMiningLock(newMiningLock)
-      expect(await oracle.miningLock()).to.equal(newMiningLock)
+      //decrease reporting lock to 1 hour
+      await oracle.connect(govSigner).changeReportingLock(newReportingLock)
+      expect(await oracle.reportingLock()).to.equal(newReportingLock)
 
-      //expect the mining lock still works
+      //expect the reporting lock still works
       await expect(
         oracle.connect(reporter).submitValue(requestId, disputedValue, 1, ("0x"+n.toString(16))),
-        "mining lock stopped working"
+        "reporting lock stopped working"
       ).to.be.reverted
 
       //expect they can submit after 1 hour now, not 12
