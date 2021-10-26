@@ -21,7 +21,7 @@ describe("TellorX Function Tests - Treasury", function() {
     this.timeout(20000000)
     if(run == 0){
       const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
-      mainnetBlock = directors.height - 20;
+      mainnetBlock = directors.height - 40;
       console.log("     Forking from block: ",mainnetBlock)
       run = 1;
     }
