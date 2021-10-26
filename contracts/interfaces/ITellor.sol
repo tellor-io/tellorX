@@ -72,7 +72,7 @@ interface ITellor{
     function getTypeDetails(uint256 _type) external view returns(uint256, uint256);
     function didVote(uint256 _disputeId, address _voter) external view returns(bool);
     //Oracle
-        function getReportTimestampByIndex(bytes32 _queryId, uint256 _index) external view returns(uint256);
+    function getReportTimestampByIndex(bytes32 _queryId, uint256 _index) external view returns(uint256);
     function getValueByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(bytes memory);
     function getBlockNumberByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(uint256);
     function getReporterByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(address);
@@ -88,6 +88,7 @@ interface ITellor{
     function getTipsById(bytes32 _queryId) external view returns(uint256);
     function getTimestampCountById(bytes32 _queryId) external view returns(uint256);
     function getTimestampIndexByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(uint256);
+    function getCurrentReward(bytes32 _queryId) external view returns(uint256, uint256);
     function getCurrentValue(bytes32 _queryId) external view returns(bytes memory);
     function getTimeOfLastNewValue() external view returns(uint256);
     //Treasury
