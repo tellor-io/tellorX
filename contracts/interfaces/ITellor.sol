@@ -85,6 +85,7 @@ interface ITellor{
     function burnTips() external;
     function changeReportingLock(uint256 _newReportingLock) external;
     function changeTimeBasedReward(uint256 _newTimeBasedReward) external;
+    function getReporterLastTimestamp(address _reporter) external view returns(uint256);
     function getTipsById(bytes32 _queryId) external view returns(uint256);
     function getTimestampCountById(bytes32 _queryId) external view returns(uint256);
     function getTimestampIndexByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(uint256);

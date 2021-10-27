@@ -200,6 +200,13 @@ describe("TellorX Function Tests - Oracle", function() {
     await admin.changeTimeBasedReward(web3.utils.toWei("1"))
     assert(await oracle.timeBasedReward() - web3.utils.toWei("1") == 0, "tbr should be changed")
   });
+  it("getReporterLastTimestamp()", async function() {
+    await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
+    await tellor.connect(accounts[1]).depositStake()
+    await oracle.connect(accounts[1]).submitValue( h.uintTob32(2),150,0,'0x')
+    blocky = await ethers.provider.getBlock();
+    assert(await oracle.getReporterLastTimestamp(accounts[1].address) == blocky.timestamp, "Reporter last timestamp should be correct")
+  })
   it("getTipsById()", async function() {
     await tellor.transfer(accounts[1].address,web3.utils.toWei("100"));
     oracle = await ethers.getContractAt("contracts/Oracle.sol:Oracle",oracle.address, accounts[1]);

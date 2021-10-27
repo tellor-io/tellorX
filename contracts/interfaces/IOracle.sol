@@ -6,6 +6,7 @@ interface IOracle{
     function getValueByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(bytes memory);
     function getBlockNumberByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(uint256);
     function getReporterByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(address);
+    function getReporterLastTimestamp(address _reporter) external view returns(uint256);
     function reportingLock() external view returns(uint256);
     function removeValue(bytes32 _queryId, uint256 _timestamp) external;
     function getReportsSubmittedByAddress(address _reporter) external view returns(uint256);

@@ -269,6 +269,15 @@ contract Oracle is TellorVars {
     }
 
     /**
+     * @dev Returns the timestamp of the reporter's last submission
+     * @param _reporter is address of the reporter
+     * @return uint256 timestamp of the reporter's last submission
+     */
+    function getReporterLastTimestamp(address _reporter) external view returns (uint256) {
+      return reporterLastTimestamp[_reporter];
+    }
+
+    /**
      * @dev Returns the number of values submitted by a specific reporter address
      * @param _reporter is the address of a reporter
      * @return uint256 of the number of values submitted by the given reporter
