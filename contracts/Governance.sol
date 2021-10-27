@@ -86,7 +86,7 @@ contract Governance is TellorVars {
     /**
      * @dev Initializes approved function hashes and updates the minimum dispute fees
      */
-    constructor() {
+    constructor(address _master) {
         bytes4[10] memory _funcs = [
             bytes4(0x3c46a185), // changeControllerContract(address)
             0xe8ce51d7, // changeGovernanceContract(address)
@@ -103,6 +103,7 @@ contract Governance is TellorVars {
         for (uint256 _i = 0; _i < _funcs.length; _i++) {
             functionApproved[_funcs[_i]] = true;
         }
+        TELLOR_ADDRESS = _master;
         updateMinDisputeFee();
     }
 

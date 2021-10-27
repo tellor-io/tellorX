@@ -44,6 +44,9 @@ contract Treasury is TellorVars {
     event TreasuryPurchased(address _investor, uint256 _amount);
 
     // Functions
+    constructor(address _master) {
+      TELLOR_ADDRESS = _master;
+    }
     /**
      * @dev This is an external function that is used to deposit money into a treasury.
      * @param _id is the ID for a specific treasury instance

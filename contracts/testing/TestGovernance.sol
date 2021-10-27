@@ -6,6 +6,8 @@ import "../Governance.sol";
 contract TestGovernance is Governance {
     event Received(address, uint256);
 
+    constructor(address _master) Governance(_master) {}
+
     receive() external payable {
         emit Received(msg.sender, msg.value);
     }
