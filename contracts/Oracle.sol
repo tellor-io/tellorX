@@ -43,6 +43,11 @@ contract Oracle is TellorVars {
         bytes _queryData
     );
 
+    // Functions
+    constructor(address _master) {
+      TELLOR_ADDRESS = _master;
+    }
+
     /**
      * @dev Changes reporting lock for reporters.
      * Note: this function is only callable by the Governance contract.
