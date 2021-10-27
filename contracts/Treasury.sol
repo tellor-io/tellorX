@@ -88,20 +88,6 @@ contract Treasury is TellorVars {
     }
 
     /**
-     * @dev This is an external function that is used to delegate voting rights from one TRB holder to another.
-     * Note that only the governance contract can call this function.
-     * @param _delegate is the address that the sender gives voting rights to
-     */
-    function delegateVotingPower(address _delegate) external {
-        require(
-            msg.sender ==
-                IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT),
-            "Only governance contract is allowed to delegate voting power."
-        );
-        IGovernance(msg.sender).delegate(_delegate);
-    }
-
-    /**
      * @dev This is an external function that is used to issue a new treasury.
      * Note that only the governance contract can call this function.
      * @param _maxAmount is the amount of total TRB that treasury stores
