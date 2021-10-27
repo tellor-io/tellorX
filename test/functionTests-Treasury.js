@@ -99,12 +99,6 @@ describe("TellorX Function Tests - Treasury", function() {
     assert(await treasury.getTreasuryOwners(1) == accounts[1].address, "Get treasury owners should be correct");
     assert(await treasury.totalLocked() == web3.utils.toWei("200"), "Total locked should be correct");
   });
-  it("delegateVotingPower()", async function() {
-    tellorUser = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[1]);
-    admin = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, govSigner);
-    await admin.delegateVotingPower(accounts[1].address);
-    assert(await governance.delegateOfAt(treasury.address, await ethers.provider.getBlockNumber()) == accounts[1].address, "Delegate should be correct");
-  });
   it("issueTreasury()", async function() {
     tellorUser = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[1]);
     await h.expectThrow(tellorUser.issueTreasury(web3.utils.toWei("400"), 200, 100));//only governance can issue
