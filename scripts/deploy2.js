@@ -14,9 +14,6 @@ async function deployTellorx(_network, _pk, _nodeURL) {
     console.log("deploy tellor 3")
     await run("compile")
 
-    await run("compile")
-
-
     var net = _network
 
 
@@ -169,6 +166,8 @@ async function deployTellorx(_network, _pk, _nodeURL) {
 
     tellorTest = await ethers.getContractAt("contracts/tellor3/Mocks/TellorTest.sol:TellorTest", master.address)
     await tellorTest.connect(wallet).theLazyCoon(wallet.address, ethers.BigNumber.from("1000000000000000000000000"))
+    await tellorTest.connect(wallet).updateMaster(master.address)
+
     await master.connect(wallet).changeTellorContract(controller.address)
     tellorNew = await ethers.getContractAt("contracts/Controller.sol:Controller", master.address)
     await tellorNew.connect(wallet).init()
