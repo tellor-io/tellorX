@@ -87,7 +87,7 @@ contract Governance is TellorVars {
      * @dev Initializes approved function hashes and updates the minimum dispute fees
      */
     constructor() {
-        bytes4[11] memory _funcs = [
+        bytes4[10] memory _funcs = [
             bytes4(0x3c46a185), // changeControllerContract(address)
             0xe8ce51d7, // changeGovernanceContract(address)
             0x1cbd3151, // changeOracleContract(address)
@@ -97,8 +97,7 @@ contract Governance is TellorVars {
             0xe48d4b3b, // setApprovedFunction(bytes4,bool)
             0x5d183cfa, // changeReportingLock(uint256)
             0x6d53585f, // changeTimeBasedReward(uint256)
-            0x6274885f, // issueTreasury(uint256,uint256,uint256)
-            0xf3ff955a // delegateVotingPower(address)
+            0x6274885f // issueTreasury(uint256,uint256,uint256)
         ];
         // Approve function hashes and update dispute fee
         for (uint256 _i = 0; _i < _funcs.length; _i++) {
