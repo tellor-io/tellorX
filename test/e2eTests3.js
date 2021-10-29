@@ -207,16 +207,16 @@ describe("End-to-End Tests - Three", function() {
     // NOTE: This function not in codebase?
 
     // ****************************************
-    // * changeMiningLock(uint256)
+    // * changeReportingLock(uint256)
     // ****************************************
-    await governance.proposeVote(oracle.address, 0xe280e8e8, "0x0000000000000000000000000000000000000000000000000000000000000018", 0);
+    await governance.proposeVote(oracle.address, 0x5d183cfa, "0x0000000000000000000000000000000000000000000000000000000000000018", 0);
     voteCount = await governance.voteCount();
     await governance.vote(voteCount, true, false);
     await h.advanceTime(604800);
     await governance.tallyVotes(voteCount);
     await h.advanceTime(86400);
     await governance.executeVote(voteCount);
-    assert(await oracle.miningLock() == 24, "Mining lock should be correct");
+    assert(await oracle.reportingLock() == 24, "Reporting lock should be correct");
 
     // ****************************************
     // * changeTimeBasedReward(uint256)
@@ -243,21 +243,8 @@ describe("End-to-End Tests - Three", function() {
     let treasuryDetails = await treasury.getTreasuryDetails(1);
     assert(treasuryDetails[1] == web3.utils.toWei("1000"), "Treasury amount should be correct");
     assert(treasuryDetails[2] == 500, "Treasury rate should be correct");
-
-    // ****************************************
-    // * delegateVotingPower(address)
-    // ****************************************
-    await governance.proposeVote(treasury.address, 0xf3ff955a, "0x000000000000000000000000b9dD5AfD86547Df817DA2d0Fb89334A6F8eDd891", 0);
-    voteCount = await governance.voteCount();
-    await governance.vote(voteCount, true, false);
-    await h.advanceTime(604800);
-    await governance.tallyVotes(voteCount);
-    await h.advanceTime(86400);
-    await governance.executeVote(voteCount);
-    let blockNumber = await ethers.provider.getBlockNumber();
-    assert(await governance.delegateOfAt(treasury.address, blockNumber) == accounts[2].address, "Delegate should be correct")
   });
-
+  
   it("Upgrade Governance Contract", async function() {
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
     await tellor.connect(bigWallet).transfer(accounts[1].address,await tellor.balanceOf(BIGWALLET));

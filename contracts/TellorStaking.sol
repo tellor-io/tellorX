@@ -112,6 +112,7 @@ contract TellorStaking is Token {
         emit StakeWithdrawn(msg.sender);
     }
 
+    /**GETTERS**/
     /**
      * @dev Allows users to retrieve all information about a staker
      * @param _staker address of staker inquiring about

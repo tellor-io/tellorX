@@ -125,19 +125,19 @@ contract Token is TellorStorage, TellorVars {
             if (_blockNumber >= checkpoints[checkpoints.length - 1].fromBlock)
                 return checkpoints[checkpoints.length - 1].value;
             // Binary search of the value in the array
-            uint256 min = 0;
-            uint256 max = checkpoints.length - 2;
-            while (max > min) {
-                uint256 mid = (max + min + 1) / 2;
-                if (checkpoints[mid].fromBlock == _blockNumber) {
-                    return checkpoints[mid].value;
-                } else if (checkpoints[mid].fromBlock < _blockNumber) {
-                    min = mid;
+            uint256 _min = 0;
+            uint256 _max = checkpoints.length - 2;
+            while (_max > _min) {
+                uint256 _mid = (_max + _min + 1) / 2;
+                if (checkpoints[_mid].fromBlock == _blockNumber) {
+                    return checkpoints[_mid].value;
+                } else if (checkpoints[_mid].fromBlock < _blockNumber) {
+                    _min = _mid;
                 } else {
-                    max = mid - 1;
+                    _max = _mid - 1;
                 }
             }
-            return checkpoints[min].value;
+            return checkpoints[_min].value;
         }
     }
 
@@ -196,10 +196,10 @@ contract Token is TellorStorage, TellorVars {
             allowedToTrade(_from, _amount),
             "Should have sufficient balance to trade"
         );
-        uint128 previousBalance = uint128(balanceOf(_from));
+        uint128 _previousBalance = uint128(balanceOf(_from));
         uint128 _sizedAmount = uint128(_amount);
         // Update total supply and balance of _from
-        _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
+        _updateBalanceAtNow(_from, _previousBalance - _sizedAmount);
         uints[_TOTAL_SUPPLY] -= _amount;
     }
 
@@ -212,17 +212,17 @@ contract Token is TellorStorage, TellorVars {
         // Ensure to address and mint amount are valid
         require(_amount != 0, "Tried to mint non-positive amount");
         require(_to != address(0), "Receiver is 0 address");
-        uint128 previousBalance = uint128(balanceOf(_to));
+        uint128 _previousBalance = uint128(balanceOf(_to));
         uint128 _sizedAmount = uint128(_amount);
         // Update total supply and balance of _to address
         uints[_TOTAL_SUPPLY] += _amount;
-        _updateBalanceAtNow(_to, previousBalance + _sizedAmount);
+        _updateBalanceAtNow(_to, _previousBalance + _sizedAmount);
         emit Transfer(address(0), _to, _amount);
     }
 
     /**
      * @dev Completes transfers by updating the balances on the current block number
-     * and ensuring the amount does not contain tokens staked for mining
+     * and ensuring the amount does not contain tokens staked for reporting
      * @param _from address to transfer from
      * @param _to address to transfer to
      * @param _amount to transfer
@@ -240,12 +240,12 @@ contract Token is TellorStorage, TellorVars {
             "Should have sufficient balance to trade"
         );
         // Update balance of _from address
-        uint128 previousBalance = uint128(balanceOf(_from));
+        uint128 _previousBalance = uint128(balanceOf(_from));
         uint128 _sizedAmount = uint128(_amount);
-        _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
+        _updateBalanceAtNow(_from, _previousBalance - _sizedAmount);
         // Update balance of _to address
-        previousBalance = uint128(balanceOf(_to));
-        _updateBalanceAtNow(_to, previousBalance + _sizedAmount);
+        _previousBalance = uint128(balanceOf(_to));
+        _updateBalanceAtNow(_to, _previousBalance + _sizedAmount);
         emit Transfer(_from, _to, _amount);
     }
 

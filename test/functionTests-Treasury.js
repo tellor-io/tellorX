@@ -21,7 +21,7 @@ describe("TellorX Function Tests - Treasury", function() {
     this.timeout(20000000)
     if(run == 0){
       const directors = await fetch('https://api.blockcypher.com/v1/eth/main').then(response => response.json());
-      mainnetBlock = directors.height - 20;
+      mainnetBlock = directors.height - 40;
       console.log("     Forking from block: ",mainnetBlock)
       run = 1;
     }
@@ -99,12 +99,6 @@ describe("TellorX Function Tests - Treasury", function() {
     assert(await treasury.getTreasuryOwners(1) == accounts[1].address, "Get treasury owners should be correct");
     assert(await treasury.totalLocked() == web3.utils.toWei("200"), "Total locked should be correct");
   });
-  it("delegateVotingPower()", async function() {
-    tellorUser = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[1]);
-    admin = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, govSigner);
-    await admin.delegateVotingPower(accounts[1].address);
-    assert(await governance.delegateOfAt(treasury.address, await ethers.provider.getBlockNumber()) == accounts[1].address, "Delegate should be correct");
-  });
   it("issueTreasury()", async function() {
     tellorUser = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[1]);
     await h.expectThrow(tellorUser.issueTreasury(web3.utils.toWei("400"), 200, 100));//only governance can issue
@@ -119,6 +113,7 @@ describe("TellorX Function Tests - Treasury", function() {
   it("payTreasury()", async function() {
     tellorUser = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, accounts[1]);
     admin = await ethers.getContractAt("contracts/Treasury.sol:Treasury",treasury.address, govSigner);
+    await h.expectThrow(tellorUser.payTreasury(accounts[1].address, 0));//not a treasury investor
     await h.expectThrow(tellorUser.payTreasury(accounts[1].address, 1));//no treasury issued
     await admin.issueTreasury(web3.utils.toWei("400"), 200, 100);
     await h.expectThrow(tellorUser.payTreasury(accounts[1].address, 1));//not an investor and duration not passed

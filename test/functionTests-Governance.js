@@ -85,7 +85,7 @@ describe("TellorX Function Tests - Governance", function() {
   it("constructor()", async function() {
     this.timeout(20000000)
     let initFuncs = [0x3c46a185,0xe8ce51d7,0x1cbd3151,0xbd87e0c9, 0x740358e6,
-      0x40c10f19,0xe48d4b3b,0xe280e8e8,0x6274885f,0xf3ff955a];
+      0x40c10f19,0xe48d4b3b,0x5d183cfa,0x6274885f];
     for(let _i =0;_i< initFuncs.length;_i++){
       res = await governance.isFunctionApproved(initFuncs[_i])
       assert(res == true, "Function should be approved")
@@ -405,7 +405,7 @@ describe("TellorX Function Tests - Governance", function() {
     governance = await ethers.getContractAt("contracts/interfaces/IGovernance.sol:IGovernance",governance.address, accounts[2]);
     let vars = await governance.isApprovedGovernanceContract(governance.address);
     assert(vars == true, "Address is an approved governance contract")
-    vars = await governance.isApprovedGovernanceContract(accounts[1].address) 
+    vars = await governance.isApprovedGovernanceContract(accounts[1].address)
     assert(vars == false, "Address is not an approved governance contract")
 });
 it("getVoteCount()", async function() {

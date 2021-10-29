@@ -350,7 +350,7 @@ contract Transition is TellorStorage, TellorVars {
      * (or disputes on old Tellor values)
      */
     fallback() external {
-        address addr = 0x2754da26f634E04b26c4deCD27b3eb144Cf40582; // Main Tellor address (Harcode this in?)
+        address _addr = 0x2754da26f634E04b26c4deCD27b3eb144Cf40582; // Main Tellor address (Harcode this in?)
         // Obtain function header from msg.data
         bytes4 _function;
         for (uint256 i = 0; i < 4; i++) {
@@ -370,10 +370,10 @@ contract Transition is TellorStorage, TellorVars {
             "function should be allowed"
         ); //should autolock out after a week (no disputes can begin past a week)
         // Calls the function in msg.data from main Tellor address
-        (bool result, ) = addr.delegatecall(msg.data);
+        (bool _result, ) = _addr.delegatecall(msg.data);
         assembly {
             returndatacopy(0, 0, returndatasize())
-            switch result
+            switch _result
             // delegatecall returns 0 on error.
             case 0 {
                 revert(0, returndatasize())
@@ -387,15 +387,15 @@ contract Transition is TellorStorage, TellorVars {
     // Internal
     /**
      * @dev Utilized to help slice a bytes variable into a uint
-     * @param b is the bytes variable to be sliced
+     * @param _b is the bytes variable to be sliced
      * @return _x of the sliced uint256
      */
-    function _sliceUint(bytes memory b) public pure returns (uint256 _x) {
-        uint256 number = 0;
-        for (uint256 i = 0; i < b.length; i++) {
-            number = number * 2**8;
-            number = number + uint8(b[i]);
+    function _sliceUint(bytes memory _b) public pure returns (uint256 _x) {
+        uint256 _number = 0;
+        for (uint256 _i = 0; _i < _b.length; _i++) {
+            _number = _number * 2**8;
+            _number = _number + uint8(_b[_i]);
         }
-        return number;
+        return _number;
     }
 }

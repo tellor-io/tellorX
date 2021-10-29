@@ -10,6 +10,9 @@
   </a> 
 </p>
 
+[![Coverage Status](https://coveralls.io/repos/github/tellor-io/tellorX/badge.svg?branch=main)](https://coveralls.io/github/tellor-io/tellorX?branch=main)
+[![Linting](https://github.com/tellor-io/tellorX/actions/workflows/linting.yml/badge.svg)](https://github.com/tellor-io/tellorX/actions/workflows/linting.yml)
+[![Tests](https://github.com/tellor-io/tellorX/actions/workflows/tests.yml/badge.svg)](https://github.com/tellor-io/tellorX/actions/workflows/tests.ymli)
 
 ## Overview <a name="overview"> </a>  
 

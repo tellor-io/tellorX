@@ -69,32 +69,32 @@ interface ITellor{
     function getVoteInfo(uint256 _id) external view returns(bytes32,uint256[9] memory,bool[2] memory,VoteResult,bytes memory,bytes4,address[2] memory);
     function getDisputeInfo(uint256 _id) external view returns(uint256,uint256,bytes memory, address);
     function getOpenDisputesOnId(uint256 _id) external view returns(uint256);
-    function getTypeDetails(uint256 _type) external view returns(uint256, uint256);
     function didVote(uint256 _disputeId, address _voter) external view returns(bool);
     //Oracle
-        function getReportTimestampByIndex(bytes32 _queryId, uint256 _index) external view returns(uint256);
+    function getReportTimestampByIndex(bytes32 _queryId, uint256 _index) external view returns(uint256);
     function getValueByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(bytes memory);
     function getBlockNumberByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(uint256);
     function getReporterByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(address);
-    function miningLock() external view returns(uint256);
+    function reportingLock() external view returns(uint256);
     function removeValue(bytes32 _queryId, uint256 _timestamp) external;
     function getReportsSubmittedByAddress(address _reporter) external view returns(uint256);
     function getTipsByUser(address _user) external view returns(uint256);
     function tipQuery(bytes32 _queryId, uint256 _tip, bytes memory _queryData) external;
     function submitValue(bytes32 _queryId, bytes calldata _value, uint256 _nonce, bytes memory _queryData) external;
     function burnTips() external;
-    function changeMiningLock(uint256 _newMiningLock) external;
+    function changeReportingLock(uint256 _newReportingLock) external;
     function changeTimeBasedReward(uint256 _newTimeBasedReward) external;
+    function getReporterLastTimestamp(address _reporter) external view returns(uint256);
     function getTipsById(bytes32 _queryId) external view returns(uint256);
     function getTimestampCountById(bytes32 _queryId) external view returns(uint256);
     function getTimestampIndexByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(uint256);
+    function getCurrentReward(bytes32 _queryId) external view returns(uint256, uint256);
     function getCurrentValue(bytes32 _queryId) external view returns(bytes memory);
     function getTimeOfLastNewValue() external view returns(uint256);
     //Treasury
     function issueTreasury(uint256 _amount, uint256 _rate, uint256 _duration) external;
     function payTreasury(address _investor,uint256 _id) external;
     function buyTreasury(uint256 _id,uint256 _amount) external;
-    function delegateVotingPower(address _delegate) external;
     function getTreasuryDetails(uint256 _id) external view returns(uint256,uint256,uint256,uint256);
     function getTreasuryAccount(uint256 _id, address _investor) external view returns(uint256);
     function getTreasuryOwners(uint256 _id) external view returns(address[] memory);

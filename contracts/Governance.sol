@@ -87,7 +87,7 @@ contract Governance is TellorVars {
      * @dev Initializes approved function hashes and updates the minimum dispute fees
      */
     constructor() {
-        bytes4[11] memory _funcs = [
+        bytes4[10] memory _funcs = [
             bytes4(0x3c46a185), // changeControllerContract(address)
             0xe8ce51d7, // changeGovernanceContract(address)
             0x1cbd3151, // changeOracleContract(address)
@@ -95,10 +95,9 @@ contract Governance is TellorVars {
             0x740358e6, // changeUint(bytes32,uint256)
             0x40c10f19, // mint(address,uint256)
             0xe48d4b3b, // setApprovedFunction(bytes4,bool)
-            0xe280e8e8, // changeMiningLock(uint256)
+            0x5d183cfa, // changeReportingLock(uint256)
             0x6d53585f, // changeTimeBasedReward(uint256)
-            0x6274885f, // issueTreasury(uint256,uint256,uint256)
-            0xf3ff955a // delegateVotingPower(address)
+            0x6274885f // issueTreasury(uint256,uint256,uint256)
         ];
         // Approve function hashes and update dispute fee
         for (uint256 _i = 0; _i < _funcs.length; _i++) {
@@ -142,9 +141,9 @@ contract Governance is TellorVars {
             ); // Within a day for new round
         } else {
             require(
-                block.timestamp - _timestamp < IOracle(_oracle).miningLock(),
-                "Dispute must be started within 12 hours...same variable as mining lock"
-            ); // New dispute within mining lock
+                block.timestamp - _timestamp < IOracle(_oracle).reportingLock(),
+                "Dispute must be started within 12 hours...same variable as reporting lock"
+            ); // New dispute within reporting lock
             openDisputesOnId[_queryId]++;
         }
         // Create new vote and dispute
@@ -188,12 +187,12 @@ contract Governance is TellorVars {
             _thisDispute.reportedMiner
         );
         if (_status == 1) {
-            uint256 stakeCount = IController(TELLOR_ADDRESS).getUintVar(
+            uint256 _stakeCount = IController(TELLOR_ADDRESS).getUintVar(
                 _STAKE_COUNT
             );
             IController(TELLOR_ADDRESS).changeUint(
                 _STAKE_COUNT,
-                stakeCount - 1
+                _stakeCount - 1
             );
             updateMinDisputeFee();
         }
@@ -250,19 +249,19 @@ contract Governance is TellorVars {
             if (_blockNumber >= checkpoints[checkpoints.length - 1].fromBlock)
                 return checkpoints[checkpoints.length - 1].delegate;
             // Binary search of correct delegate address
-            uint256 min = 0;
-            uint256 max = checkpoints.length - 2;
-            while (max > min) {
-                uint256 mid = (max + min + 1) / 2;
-                if (checkpoints[mid].fromBlock == _blockNumber) {
-                    return checkpoints[mid].delegate;
-                } else if (checkpoints[mid].fromBlock < _blockNumber) {
-                    min = mid;
+            uint256 _min = 0;
+            uint256 _max = checkpoints.length - 2;
+            while (_max > _min) {
+                uint256 _mid = (_max + _min + 1) / 2;
+                if (checkpoints[_mid].fromBlock == _blockNumber) {
+                    return checkpoints[_mid].delegate;
+                } else if (checkpoints[_mid].fromBlock < _blockNumber) {
+                    _min = _mid;
                 } else {
-                    max = mid - 1;
+                    _max = _mid - 1;
                 }
             }
-            return checkpoints[min].delegate;
+            return checkpoints[_min].delegate;
         }
     }
 
@@ -339,17 +338,17 @@ contract Governance is TellorVars {
                     _thisVote = voteInfo[_voteID];
                     _controller.transfer(_thisVote.initiator, _thisVote.fee);
                 }
-                uint256 stakeCount = IController(TELLOR_ADDRESS).getUintVar(
+                uint256 _stakeCount = IController(TELLOR_ADDRESS).getUintVar(
                     _STAKE_COUNT
                 );
                 IController(TELLOR_ADDRESS).changeUint(
                     _STAKE_COUNT,
-                    stakeCount + 1
+                    _stakeCount + 1
                 );
                 _controller.changeStakingStatus(_thisDispute.reportedMiner, 1); // Change staking status of disputed reporter, but don't slash
             } else if (_thisVote.result == VoteResult.FAILED) {
                 // If vote is in dispute and fails, iterate through each vote round and transfer the dispute to disputed reporter
-                uint256 reporterReward = 0;
+                uint256 _reporterReward = 0;
                 for (
                     _i = voteRounds[_thisVote.identifierHash].length;
                     _i > 0;
@@ -357,18 +356,18 @@ contract Governance is TellorVars {
                 ) {
                     _voteID = voteRounds[_thisVote.identifierHash][_i - 1];
                     _thisVote = voteInfo[_voteID];
-                    reporterReward += _thisVote.fee;
+                    _reporterReward += _thisVote.fee;
                 }
                 _controller.transfer(
                     _thisDispute.reportedMiner,
-                    reporterReward
+                    _reporterReward
                 );
-                uint256 stakeCount = IController(TELLOR_ADDRESS).getUintVar(
+                uint256 _stakeCount = IController(TELLOR_ADDRESS).getUintVar(
                     _STAKE_COUNT
                 );
                 IController(TELLOR_ADDRESS).changeUint(
                     _STAKE_COUNT,
-                    stakeCount - 1
+                    _stakeCount - 1
                 );
                 _controller.changeStakingStatus(_thisDispute.reportedMiner, 1);
             }

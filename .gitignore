@@ -3,3 +3,5 @@ cache
 artifacts/
 .env
 slither
+coverage/
+coverage.json
