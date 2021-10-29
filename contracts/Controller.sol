@@ -114,7 +114,8 @@ contract Controller is TellorStaking, Transition, Getters {
     function mint(address _receiver, uint256 _amount) external {
         require(
             msg.sender == addresses[_GOVERNANCE_CONTRACT] ||
-                msg.sender == addresses[_TREASURY_CONTRACT],
+                msg.sender == addresses[_TREASURY_CONTRACT] ||
+                msg.sender == TELLOR_ADDRESS,
             "Only an admin can mint tokens"
         );
         _doMint(_receiver, _amount);

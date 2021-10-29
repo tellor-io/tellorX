@@ -4,6 +4,7 @@ pragma solidity 0.8.3;
 import "./tellor3/TellorStorage.sol";
 import "./TellorVars.sol";
 import "./interfaces/IOracle.sol";
+import "./interfaces/IController.sol";
 
 /**
  @author Tellor Inc.
@@ -56,6 +57,8 @@ contract Transition is TellorStorage, TellorVars {
         addresses[_TREASURY_CONTRACT] = _controller.addresses(
             _TREASURY_CONTRACT
         );
+        IController(TELLOR_ADDRESS).mint(addresses[_ORACLE_CONTRACT], 105120e18);
+        // IController(TELLOR_ADDRESS).mint(TEAM_VESTING_CONTRACT, 105120e18);
     }
 
     //Getters
