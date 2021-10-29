@@ -2,18 +2,18 @@
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
- require("@nomiclabs/hardhat-waffle");
- require("hardhat-gas-reporter");
- require("solidity-coverage");
- require("hardhat-gas-reporter");
- require('hardhat-contract-sizer');
- require("@nomiclabs/hardhat-ethers");
- require("@nomiclabs/hardhat-etherscan");
- require("dotenv").config();
+require("@nomiclabs/hardhat-waffle");
+require("hardhat-gas-reporter");
+require("solidity-coverage");
+require("hardhat-gas-reporter");
+require('hardhat-contract-sizer');
+require("@nomiclabs/hardhat-ethers");
+require("@nomiclabs/hardhat-etherscan");
+require("dotenv").config();
 
- //Run this commands to deploy tellor playground:
- //npx hardhat deploy --net rinkeby --network rinkeby
- //npx hardhat deploy --net mainnet --network mainnet
+//Run this commands to deploy tellor playground:
+//npx hardhat deploy --net rinkeby --network rinkeby
+//npx hardhat deploy --net mainnet --network mainnet
 
 //  task("deploy", "Deploy and verify the contracts")
 //  .addParam("net", "network to deploy in")
@@ -191,17 +191,23 @@ module.exports = {
       allowUnlimitedContractSize: true
     },
     rinkeby: {
-         url: `${process.env.NODE_URL_RINKEBY}`,
-         seeds: [process.env.PRIVATE_KEY],
-         gas: 10000000 ,
-         gasPrice: 40000000000
-    } //,
-      // mainnet: {
-      //   url: `${process.env.NODE_URL_MAINNET}`,
-      //   accounts: [process.env.PRIVATE_KEY],
-      //   gas: 10000000 ,
-      //   gasPrice: 50000000000
-      // }
+      url: `${process.env.NODE_URL_RINKEBY}`,
+      seeds: [process.env.PRIVATE_KEY],
+      gas: 10000000,
+      gasPrice: 1000000000
+    },
+    goerli: {
+      url: `${process.env.NODE_URL_GOERLI}`,
+      seeds: [process.env.PRIVATE_KEY],
+      gas: 8000000,
+      gasPrice: 10000000000
+    }
+    // mainnet: {
+    //   url: `${process.env.NODE_URL_MAINNET}`,
+    //   accounts: [process.env.PRIVATE_KEY],
+    //   gas: 10000000 ,
+    //   gasPrice: 50000000000
+    // }
   },
   etherscan: {
     // Your API key for Etherscan

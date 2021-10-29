@@ -92,9 +92,9 @@ async function deployTellorx(_network, _pk, _nodeURL) {
 
     ////////////////Governance
     console.log("Starting deployment for governance contract...")
-    const gfac = await ethers.getContractFactory("contracts/Governance.sol:Governance", wallet)
+    const gfac = await ethers.getContractFactory("contracts/testing/TestGovernance.sol:TestGovernance", wallet)
     const gfacwithsigner = await gfac.connect(wallet)
-    const governance = await gfacwithsigner.deploy()
+    const governance = await gfacwithsigner.deploy(master.address)
     console.log("Governance contract deployed to: ", governance.address)
 
     await governance.deployed()
@@ -112,9 +112,9 @@ async function deployTellorx(_network, _pk, _nodeURL) {
 
     /////////////Oracle
     console.log("Starting deployment for Oracle contract...")
-    const ofac = await ethers.getContractFactory("contracts/Oracle.sol:Oracle", wallet)
+    const ofac = await ethers.getContractFactory("contracts//testing/TestOracle.sol:TestOracle", wallet)
     const ofacwithsigner = await ofac.connect(wallet)
-    const oracle = await ofacwithsigner.deploy()
+    const oracle = await ofacwithsigner.deploy(master.address)
     await oracle.deployed();
 
 
@@ -130,9 +130,9 @@ async function deployTellorx(_network, _pk, _nodeURL) {
 
     ///////////Treasury
     console.log("Starting deployment for Treasury contract...")
-    const tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury", wallet)
+    const tfac = await ethers.getContractFactory("contracts/testing/TestTreasury.sol:TestTreasury", wallet)
     const tfacwithsigner = await tfac.connect(wallet)
-    const treasury = await tfacwithsigner.deploy()
+    const treasury = await tfacwithsigner.deploy(master.address)
     await treasury.deployed()
 
     if (net == "mainnet") {
@@ -235,6 +235,7 @@ async function deployTellorx(_network, _pk, _nodeURL) {
     await run("verify:verify",
         {
             address: governance.address,
+            constructorArguments: [master.address]
         },
     )
     console.log("governance contract verified")
@@ -247,7 +248,9 @@ async function deployTellorx(_network, _pk, _nodeURL) {
     console.log('submitting Treasury contract for verification...');
 
     await run("verify:verify", {
+        contract: "contracts/testing/TestTreasury.sol:TestTreasury",
         address: treasury.address,
+        constructorArguments: [master.address]
     },
     )
 
@@ -260,12 +263,13 @@ async function deployTellorx(_network, _pk, _nodeURL) {
 
     await run("verify:verify",
         {
+            contract: "contracts/testing/TestOracle.sol:TestOracle",
             address: oracle.address,
+            constructorArguments: [master.address]
         },
     )
 
     console.log("Oracle contract verified")
-
 }
 
 
