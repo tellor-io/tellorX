@@ -125,7 +125,8 @@ contract Oracle is TellorVars {
         );
         require(
             address(this) ==
-                IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT)
+                IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT),
+                "can only submit to current oracle contract"
         );
         require(
             _queryId == keccak256(_queryData) ||
