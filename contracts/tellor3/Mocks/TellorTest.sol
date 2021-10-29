@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.3;
+pragma solidity 0.7.4;
 
 import "../Tellor.sol";
-import "../../TellorVars.sol";
 
-
-contract TellorTest is Tellor, TellorVars {
+contract TellorTest is Tellor {
     uint256 version = 3000;
    
     /*Functions*/
@@ -14,11 +12,6 @@ contract TellorTest is Tellor, TellorVars {
      * @param _ext Extension address
     */
     constructor(address _ext) Tellor(_ext){
-    }
-
-    function updateMaster(address m) public {
-        // For this to work need to convert the variable from constant to normal variable.
-        TELLOR_ADDRESS = m;
     }
 
     /*This is a cheat for demo purposes, is not on main Tellor*/

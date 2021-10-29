@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.3;
+pragma solidity 0.7.4;
 import "./SafeMath.sol";
 import "./TellorStorage.sol";
 import "./TellorVariables.sol";
