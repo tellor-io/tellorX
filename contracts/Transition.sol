@@ -27,10 +27,7 @@ contract Transition is TellorStorage, TellorVars {
         address _oracle,
         address _treasury
     ) {
-        require(
-            _governance != address(0),
-            "must set governance address"
-        );
+        require(_governance != address(0), "must set governance address");
         addresses[_GOVERNANCE_CONTRACT] = _governance;
         addresses[_ORACLE_CONTRACT] = _oracle;
         addresses[_TREASURY_CONTRACT] = _treasury;
@@ -57,7 +54,10 @@ contract Transition is TellorStorage, TellorVars {
         addresses[_TREASURY_CONTRACT] = _controller.addresses(
             _TREASURY_CONTRACT
         );
-        IController(TELLOR_ADDRESS).mint(addresses[_ORACLE_CONTRACT], 105120e18);
+        IController(TELLOR_ADDRESS).mint(
+            addresses[_ORACLE_CONTRACT],
+            105120e18
+        );
         // IController(TELLOR_ADDRESS).mint(TEAM_VESTING_CONTRACT, 105120e18);
     }
 
