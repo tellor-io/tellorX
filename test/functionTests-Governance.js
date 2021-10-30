@@ -344,6 +344,7 @@ describe("TellorX Function Tests - Governance", function() {
       await oracle6.submitValue( h.uintTob32(3),300,nonce,'0x');
     }
     await oracle.submitValue( h.uintTob32(1),300,0,'0x');
+    let userBal6 = await tellor.balanceOf(accounts[6].address)
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[2]);
     governance3 = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[3]);
@@ -368,7 +369,8 @@ describe("TellorX Function Tests - Governance", function() {
     h.expectThrow(governance3.vote(1,false,false));//vote has been tallied
     let voteVars = await governance.getVoteInfo(1)
     assert(voteVars[1][5] - await tellor.balanceOf(accounts[2].address) == 0, "does Support should be account 2 balance")
-    assert(voteVars[1][6] - h.to18(105) == 0, "against should be right")
+    // assert(voteVars[1][6] - h.to18(105) == 0, "against should be right")
+    assert(voteVars[1][6].eq(userBal6.add(web3.utils.toWei("5"))), "against should be right")
     assert(voteVars[1][7] - 5 == 0, "invalidQuery should be right")
     await oracle6.submitValue( h.uintTob32(44),30110,0,'0x');
     _t = await oracle.getReportTimestampByIndex(h.uintTob32(44),0);
@@ -408,7 +410,7 @@ describe("TellorX Function Tests - Governance", function() {
     vars = await governance.isApprovedGovernanceContract(accounts[1].address)
     assert(vars == false, "Address is not an approved governance contract")
 });
-it("getVoteCount()", async function() {
+  it("getVoteCount()", async function() {
   await tellor.transfer(accounts[1].address,web3.utils.toWei("200"));
   await tellor.transfer(accounts[2].address,web3.utils.toWei("2000"));
   tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);

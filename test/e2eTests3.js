@@ -244,7 +244,7 @@ describe("End-to-End Tests - Three", function() {
     assert(treasuryDetails[1] == web3.utils.toWei("1000"), "Treasury amount should be correct");
     assert(treasuryDetails[2] == 500, "Treasury rate should be correct");
   });
-  
+
   it("Upgrade Governance Contract", async function() {
     governance = await ethers.getContractAt("contracts/Governance.sol:Governance",governance.address, accounts[1]);
     await tellor.connect(bigWallet).transfer(accounts[1].address,await tellor.balanceOf(BIGWALLET));
@@ -346,7 +346,7 @@ describe("End-to-End Tests - Three", function() {
     assert(voteInfo[2][0], "Vote should be executed");
     assert(voteInfo[3] == 2, "Vote result should be correct");
     let reporterBal = await tellorUser.balanceOf(accounts[2].address);
-    assert(reporterBal == web3.utils.toWei("100"), "Reporter balance should be correct");
+    assert(reporterBal >= web3.utils.toWei("100"), "Reporter balance should be correct");
     let stakerInfo = await tellorUser.getStakerInfo(accounts[2].address);
     assert(stakerInfo[0] == 1, "Staker info should be correct");
   });
@@ -392,7 +392,7 @@ describe("End-to-End Tests - Three", function() {
     assert(voteInfo3[2][0], "Vote should be executed");
     assert(voteInfo3[3] == 2, "Vote result should be correct");
     let reporterBal = await tellorUser.balanceOf(accounts[2].address);
-    assert(reporterBal == web3.utils.toWei("100"), "Reporter balance should be correct");
+    assert(reporterBal >= web3.utils.toWei("100"), "Reporter balance should be correct");
     let stakerInfo = await tellorUser.getStakerInfo(accounts[2].address);
     assert(stakerInfo[0] == 1, "Staker info should be correct");
   });
@@ -427,6 +427,7 @@ describe("End-to-End Tests - Three", function() {
     await governance.tallyVotes(voteCount);
     await h.advanceTime(86400*3);
     let disputerBal0 = await tellorUser.balanceOf(accounts[1].address);
+    reporterBal0 = await tellor.balanceOf(accounts[2].address)
     await governance.executeVote(voteCount);
     let disputerBal1 = await tellorUser.balanceOf(accounts[1].address);
     let voteInfo1 = await governance.getVoteInfo(1);
@@ -437,8 +438,8 @@ describe("End-to-End Tests - Three", function() {
     assert(sum.eq(disputerBal1), "Disputer balance should be correct");
     assert(voteInfo3[2][0], "Vote should be executed");
     assert(voteInfo3[3] == 1, "Vote result should be correct");
-    let reporterBal = await tellorUser.balanceOf(accounts[2].address);
-    assert(reporterBal == 0, "Reporter balance should be correct");
+    let reporterBal1 = await tellorUser.balanceOf(accounts[2].address);
+    assert(reporterBal1 == reporterBal0 - web3.utils.toWei("100"), "Reporter balance should be correct");
     let stakerInfo = await tellorUser.getStakerInfo(accounts[2].address);
     assert(stakerInfo[0] == 5, "Staker info should be correct");
   });
@@ -454,6 +455,7 @@ describe("End-to-End Tests - Three", function() {
     await tellorUser.depositStake();
     await oracle.submitValue(h.uintTob32(1),300,0,'0x');
     let _t = await oracle.getReportTimestampByIndex(h.uintTob32(1),0);
+    let reporterBal0 = await tellorUser.balanceOf(accounts[2].address);
     await governance.beginDispute(h.uintTob32(1),_t);
     voteCount = await governance.voteCount();
     await h.advanceTime(604800);
@@ -468,8 +470,8 @@ describe("End-to-End Tests - Three", function() {
     assert(sum.eq(disputerBal1), "Disputer balance should be correct");
     assert(voteInfo[2][0], "Vote should be executed");
     assert(voteInfo[3] == 2, "Vote result should be correct");
-    let reporterBal = await tellorUser.balanceOf(accounts[2].address);
-    assert(reporterBal == web3.utils.toWei("100"), "Reporter balance should be correct");
+    let reporterBal1 = await tellorUser.balanceOf(accounts[2].address);
+    assert(reporterBal1.eq(reporterBal0), "Reporter balance should be correct");
     let stakerInfo = await tellorUser.getStakerInfo(accounts[2].address);
     assert(stakerInfo[0] == 1, "Staker info should be correct");
     assert(voteInfo[1][5] == 0, "Quantity of votes for should be correct");
