@@ -91,6 +91,7 @@ describe("TellorX Function Tests - Transition", function() {
     assert(await tellor.getUintVar(h.hash("_STAKE_AMOUNT")) - h.to18(100) == 0, "stake amount should peroperly change");
     await h.expectThrow(tellor.init());
     assert(await tellor.getUintVar(h.hash("_SWITCH_TIME")) > 0, "switch time should be correct")
+    assert(await tellor.balanceOf(oracle.address) - h.to18(105120) == 0, "oracle balance should be correct")
   });
   it("getTimestampbyRequestIDandIndex()", async function() {
     _index = await tellor["getNewValueCountbyRequestId(uint256)"](1);
@@ -337,7 +338,4 @@ describe("TellorX Function Tests - Transition", function() {
       idDiff = await tellor.getDisputeIdByDisputeHash(dispVars[0]) - newId
       assert(idDiff == 0, "dispute id should be retrieved correctly")
   })
-
-
-
 });

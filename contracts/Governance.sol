@@ -117,10 +117,8 @@ contract Governance is TellorVars {
             _ORACLE_CONTRACT
         );
         require(
-            IOracle(_oracle).getBlockNumberByTimestamp(
-                _queryId,
-                _timestamp
-            ) != 0,
+            IOracle(_oracle).getBlockNumberByTimestamp(_queryId, _timestamp) !=
+                0,
             "Mined block is 0"
         );
         address _reporter = IOracle(_oracle).getReporterByTimestamp(
@@ -551,7 +549,8 @@ contract Governance is TellorVars {
         bool _invalidQuery
     ) external {
         require(
-            delegateOfAt(msg.sender, voteInfo[_disputeId].blockNumber) == address(0),
+            delegateOfAt(msg.sender, voteInfo[_disputeId].blockNumber) ==
+                address(0),
             "the vote should not be delegated"
         );
         _vote(msg.sender, _disputeId, _supports, _invalidQuery);
@@ -587,7 +586,11 @@ contract Governance is TellorVars {
      * @param _voter is the address of the voter to check for
      * @return bool of whether or note the address voted for the specific vote
      */
-    function didVote(uint256 _disputeId, address _voter) external view returns (bool) {
+    function didVote(uint256 _disputeId, address _voter)
+        external
+        view
+        returns (bool)
+    {
         return voteInfo[_disputeId].voted[_voter];
     }
 
@@ -640,7 +643,11 @@ contract Governance is TellorVars {
      * @param _disputeId is the ID of a specific data feed
      * @return uint256 of the number of open disputes for the data ID
      */
-    function getOpenDisputesOnId(bytes32 _disputeId) external view returns (uint256) {
+    function getOpenDisputesOnId(bytes32 _disputeId)
+        external
+        view
+        returns (uint256)
+    {
         return openDisputesOnId[_disputeId];
     }
 
@@ -718,8 +725,9 @@ contract Governance is TellorVars {
         external
         returns (bool)
     {
-        if(
-            _contract == IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT)
+        if (
+            _contract ==
+            IController(TELLOR_ADDRESS).addresses(_GOVERNANCE_CONTRACT)
         ) {
             return true;
         } else {

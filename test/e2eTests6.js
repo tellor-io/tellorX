@@ -144,6 +144,7 @@ describe("End-to-End Tests - Six", function() {
         await oracle.connect(accounts[1]).submitValue(h.uintTob32(1),300,0,'0x')
         let blocky2 = await ethers.provider.getBlock();
         let timestamp2 = blocky2.timestamp;
+        let reporterBal0 = await tellor.balanceOf(accounts[1].address)
         await govBig.beginDispute(h.uintTob32(1),timestamp2)
         voteCount = await governance.voteCount()
         await govTeam.vote(voteCount,true,false)
@@ -152,12 +153,14 @@ describe("End-to-End Tests - Six", function() {
         await h.advanceTime(604800)
         await governance.connect(accounts[3]).tallyVotes(voteCount)
         await h.advanceTime(86400)
-        assert(await tellor.balanceOf(accounts[1].address) == web3.utils.toWei("100"), "Disputed reporter balance should be correct")
+        let reporterBal1 = await tellor.balanceOf(accounts[1].address)
+        assert(reporterBal1.eq(reporterBal0), "Disputed reporter balance should be correct")
         await governance.executeVote(voteCount)
         let voteInfo = await governance.getVoteInfo(voteCount)
         assert(voteInfo[2][0] == true, "Vote should be executed")
         assert(voteInfo[3] == 1, "Vote result should be correct")
-        assert(await tellor.balanceOf(accounts[1].address) == 0, "Disputed reporter balance should be correct")
+        let reporterBal2 = await tellor.balanceOf(accounts[1].address)
+        assert(reporterBal2.eq(reporterBal0.sub(web3.utils.toWei("100"))), "Disputed reporter balance should be correct")
     })
     it("Switch happens when multiple disputes are open", async function() {
         this.timeout(20000000)

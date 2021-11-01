@@ -33,7 +33,14 @@ contract Oracle is TellorVars {
 
     // Events
     event ReportingLockChanged(uint256 _newReportingLock);
-    event NewReport(bytes32 _queryId, uint256 _time, bytes _value, uint256 _reward, uint256 _nonce, bytes _queryData);
+    event NewReport(
+        bytes32 _queryId,
+        uint256 _time,
+        bytes _value,
+        uint256 _reward,
+        uint256 _nonce,
+        bytes _queryData
+    );
     event TimeBasedRewardsChanged(uint256 _newTimeBasedReward);
     event TipAdded(
         address indexed _user,
@@ -125,11 +132,11 @@ contract Oracle is TellorVars {
         );
         require(
             address(this) ==
-                IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT)
+                IController(TELLOR_ADDRESS).addresses(_ORACLE_CONTRACT),
+            "can only submit to current oracle contract"
         );
         require(
-            _queryId == keccak256(_queryData) ||
-                uint256(_queryId) <= 100,
+            _queryId == keccak256(_queryData) || uint256(_queryId) <= 100,
             "id must be hash of bytes data"
         );
         reporterLastTimestamp[msg.sender] = block.timestamp;
@@ -163,7 +170,14 @@ contract Oracle is TellorVars {
         // Update last oracle value and number of values submitted by a reporter
         timeOfLastNewValue = block.timestamp;
         reportsSubmittedByAddress[msg.sender]++;
-        emit NewReport(_queryId, block.timestamp, _value, _tip + _reward, _nonce, _queryData);
+        emit NewReport(
+            _queryId,
+            block.timestamp,
+            _value,
+            _tip + _reward,
+            _nonce,
+            _queryData
+        );
     }
 
     /**
@@ -243,10 +257,16 @@ contract Oracle is TellorVars {
      * @param _queryId is the ID of the specific data feed
      * @return bytes memory of the current value of data
      */
-    function getCurrentValue(bytes32 _queryId) external view returns (bytes memory) {
+    function getCurrentValue(bytes32 _queryId)
+        external
+        view
+        returns (bytes memory)
+    {
         return
             reports[_queryId].valueByTimestamp[
-                reports[_queryId].timestamps[reports[_queryId].timestamps.length - 1]
+                reports[_queryId].timestamps[
+                    reports[_queryId].timestamps.length - 1
+                ]
             ];
     }
 
@@ -273,8 +293,12 @@ contract Oracle is TellorVars {
      * @param _reporter is address of the reporter
      * @return uint256 timestamp of the reporter's last submission
      */
-    function getReporterLastTimestamp(address _reporter) external view returns (uint256) {
-      return reporterLastTimestamp[_reporter];
+    function getReporterLastTimestamp(address _reporter)
+        external
+        view
+        returns (uint256)
+    {
+        return reporterLastTimestamp[_reporter];
     }
 
     /**
@@ -324,7 +348,6 @@ contract Oracle is TellorVars {
     {
         return reports[_queryId].timestamps.length;
     }
-
 
     /**
      * @dev Returns the timestamp for the last value of any ID from the oracle
