@@ -163,6 +163,7 @@ describe("TellorX Function Tests - Oracle", function() {
     assert(await oracle.getValueByTimestamp(h.uintTob32(1),blocky.timestamp) == "0x", "value should be correct")
   });
   it("getCurrentReward()", async function() {
+    await tellor.connect(govSigner).approveAndTransferFrom(oracle.address, accounts[5].address, await tellor.balanceOf(oracle.address))
     await tellor.transfer(accounts[1].address,web3.utils.toWei("105"));
     tellorUser = await ethers.getContractAt("contracts/interfaces/ITellor.sol:ITellor",tellorMaster, accounts[1]);
     await tellorUser.depositStake();

@@ -198,8 +198,8 @@ contract Treasury is TellorVars {
             }
         }
         // Determine amount of TRB to mint for interest
-        uint256 _mintAmount = (_treas.accounts[_investor].amount * _treas.rate) /
-            10000;
+        uint256 _mintAmount = (_treas.accounts[_investor].amount *
+            _treas.rate) / 10000;
         if (votesSinceTreasury > 0) {
             _mintAmount =
                 (_mintAmount * numVotesParticipated) /
