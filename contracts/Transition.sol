@@ -91,16 +91,16 @@ contract Transition is TellorStorage, TellorVars {
      * address of reportedMiner
      * address of reportingParty
      * address of proposedForkAddress
-     * uint of requestId
-     * uint of timestamp
-     * uint of value
-     * uint of minExecutionDate
-     * uint of numberOfVotes
-     * uint of blocknumber
-     * uint of minerSlot
-     * uint of quorum
-     * uint of fee
-     * int count of the current tally
+     * uint256 of requestId
+     * uint256 of timestamp
+     * uint256 of value
+     * uint256 of minExecutionDate
+     * uint256 of numberOfVotes
+     * uint256 of blocknumber
+     * uint256 of minerSlot
+     * uint256 of quorum
+     * uint256 of fee
+     * int256 count of the current tally
      */
     function getAllDisputeVars(uint256 _disputeId)
         external
@@ -144,7 +144,7 @@ contract Transition is TellorStorage, TellorVars {
     /**
      * @dev Gets id if a given hash has been disputed
      * @param _hash is the sha256(abi.encodePacked(_miners[2],_requestId,_timestamp));
-     * @return uint disputeId
+     * @return uint256 disputeId
      */
     function getDisputeIdByDisputeHash(bytes32 _hash)
         external
@@ -160,7 +160,7 @@ contract Transition is TellorStorage, TellorVars {
      * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
      * the variables/strings used to save the data in the mapping. The variables names are
      * commented out under the disputeUintVars under the Dispute struct
-     * @return uint value for the bytes32 data submitted
+     * @return uint256 value for the bytes32 data submitted
      */
     function getDisputeUintVars(uint256 _disputeId, bytes32 _data)
         external
@@ -242,7 +242,7 @@ contract Transition is TellorStorage, TellorVars {
     /**
      * @dev Counts the number of values that have been submitted for the request.
      * @param _requestId the requestId to look up
-     * @return uint count of the number of values received for the requestId
+     * @return uint256 count of the number of values received for the requestId
      */
     function getNewValueCountbyRequestId(uint256 _requestId)
         external
@@ -288,7 +288,7 @@ contract Transition is TellorStorage, TellorVars {
      * @param _data the variable to pull from the mapping. _data = keccak256("variable_name")
      * where variable_name is the variables/strings used to save the data in the mapping.
      * The variables names in the TellorVariables contract
-     * @return uint of specified variable
+     * @return uint256 of specified variable
      */
     function getUintVar(bytes32 _data) external view returns (uint256) {
         return uints[_data];
@@ -297,7 +297,7 @@ contract Transition is TellorStorage, TellorVars {
     /**
      * @dev Getter for if the party is migrated
      * @param _addy address of party
-     * @return if the party is migrated
+     * @return bool if the party is migrated
      */
     function isMigrated(address _addy) external view returns (bool) {
         return migrated[_addy];
@@ -314,7 +314,7 @@ contract Transition is TellorStorage, TellorVars {
      * @dev Retrieve value from oracle based on timestamp
      * @param _requestId being requested
      * @param _timestamp to retrieve data/value from
-     * @return value for timestamp submitted
+     * @return uint256 value for timestamp submitted
      */
     function retrieveData(uint256 _requestId, uint256 _timestamp)
         public
@@ -341,8 +341,8 @@ contract Transition is TellorStorage, TellorVars {
     }
 
     /**
-     * @dev Getter for the total_supply of oracle tokens
-     * @return uint total supply
+     * @dev Getter for the total_supply of tokens
+     * @return uint256 total supply
      */
     function totalSupply() external view returns (uint256) {
         return uints[_TOTAL_SUPPLY];

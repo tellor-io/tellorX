@@ -68,7 +68,7 @@ interface ITellor{
     function getVoteCount() external view returns(uint256);
     function getVoteInfo(uint256 _id) external view returns(bytes32,uint256[9] memory,bool[2] memory,VoteResult,bytes memory,bytes4,address[2] memory);
     function getDisputeInfo(uint256 _id) external view returns(uint256,uint256,bytes memory, address);
-    function getOpenDisputesOnId(uint256 _id) external view returns(uint256);
+    function getOpenDisputesOnId(uint256 _queryId) external view returns(uint256);
     function didVote(uint256 _disputeId, address _voter) external view returns(bool);
     //Oracle
     function getReportTimestampByIndex(bytes32 _queryId, uint256 _index) external view returns(uint256);

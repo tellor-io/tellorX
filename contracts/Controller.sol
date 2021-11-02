@@ -14,6 +14,12 @@ import "./Getters.sol";
 */
 contract Controller is TellorStaking, Transition, Getters {
     // Functions
+    /**
+     * @dev Saves new Tellor contract addresses. Available to Transition init function after fork vote
+     * @param _governance is the address of the Governance contract
+     * @param _oracle is the address of the Oracle contract
+     * @param _treasury is the address of the Treasury contract
+     */
     constructor(
         address _governance,
         address _oracle,
@@ -106,17 +112,16 @@ contract Controller is TellorStaking, Transition, Getters {
     }
 
     /**
-     * @dev Mints TRB for a certain address
-     * Note: this function is only callable by the Governance contract.
-     * @param _receiver is the address of the contract that will receive the minted tokens
-     * @param _amount is the amount of tokens that will be minted for the _receiver address
+     * @dev Mints TRB to a given receiver address
+     * @param _receiver is the address that will receive the minted tokens
+     * @param _amount is the amount of tokens that will be minted to the _receiver address
      */
     function mint(address _receiver, uint256 _amount) external {
         require(
             msg.sender == addresses[_GOVERNANCE_CONTRACT] ||
                 msg.sender == addresses[_TREASURY_CONTRACT] ||
                 msg.sender == TELLOR_ADDRESS,
-            "Only an admin can mint tokens"
+            "Only governance, treasury, or master can mint tokens"
         );
         _doMint(_receiver, _amount);
     }
@@ -140,7 +145,7 @@ contract Controller is TellorStaking, Transition, Getters {
         );
         require(
             _success && abi.decode(_data, (uint256)) > 9000, // An arbitrary number to ensure that the contract is valid
-            "new contract is invalid"
+            "New contract is invalid"
         );
         return true;
     }

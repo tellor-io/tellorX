@@ -14,19 +14,19 @@ contract Oracle is TellorVars {
     // Storage
     uint256 public reportingLock = 12 hours; // amount of time before a reporter is able to submit a value again
     uint256 public timeBasedReward = 5e17; // time based reward for a reporter for successfully submitting a value
-    uint256 public timeOfLastNewValue = block.timestamp; // time of the last new value, originally set to the block timestamp
-    uint256 public tipsInContract; // number of tips within the contract
-    mapping(bytes32 => Report) private reports; // mapping of data IDs to a report
-    mapping(bytes32 => uint256) public tips; // mapping of data IDs to the amount of TRB they are tipped
+    uint256 public timeOfLastNewValue = block.timestamp; // time of the last new submitted value, originally set to the block timestamp
+    uint256 public tipsInContract; // amount of tips within the contract
+    mapping(bytes32 => Report) private reports; // mapping of query IDs to a report
+    mapping(bytes32 => uint256) public tips; // mapping of query IDs to the amount of TRB they are tipped
     mapping(address => uint256) private reporterLastTimestamp; // mapping of reporter addresses to the timestamp of their last reported value
     mapping(address => uint256) private reportsSubmittedByAddress; // mapping of reporter addresses to the number of reports they've submitted
     mapping(address => uint256) private tipsByUser; // mapping of a user to the amount of tips they've paid
 
     // Structs
     struct Report {
-        uint256[] timestamps; // array of all newValueTimestamps requested
-        mapping(uint256 => uint256) timestampIndex; // mapping of indices to respective timestamps
-        mapping(uint256 => uint256) timestampToBlockNum; // mapping described by [queryId][minedTimestamp]=>block.number
+        uint256[] timestamps; // array of all newValueTimestamps reported
+        mapping(uint256 => uint256) timestampIndex; // mapping of timestamps to respective indices
+        mapping(uint256 => uint256) timestampToBlockNum; // mapping of timestamp to block number
         mapping(uint256 => bytes) valueByTimestamp; // mapping of timestamps to values
         mapping(uint256 => address) reporterByTimestamp; // mapping of timestamps to reporters
     }
@@ -111,8 +111,10 @@ contract Oracle is TellorVars {
 
     /**
      * @dev Allows a reporter to submit a value to the oracle
-     * @param _queryId is ID of the specific data feed
+     * @param _queryId is ID of the specific data feed. Equals keccak256(_queryData) for non-legacy IDs
      * @param _value is the value the user submits to the oracle
+     * @param _nonce is the current value count for the query id
+     * @param _queryData is the data used to fulfill the data query
      */
     function submitValue(
         bytes32 _queryId,
@@ -223,7 +225,7 @@ contract Oracle is TellorVars {
      * @dev Returns the block number at a given timestamp
      * @param _queryId is ID of the specific data feed
      * @param _timestamp is the timestamp to find the corresponding block number for
-     * @return uint256 of the block number of the timestamp for the given data ID
+     * @return uint256 block number of the timestamp for the given data ID
      */
     function getBlockNumberByTimestamp(bytes32 _queryId, uint256 _timestamp)
         external
@@ -237,6 +239,8 @@ contract Oracle is TellorVars {
      * @dev Calculates the current reward for a reporter given tips
      * and time based reward
      * @param _queryId is ID of the specific data feed
+     * @return uint256 tips on given queryId
+     * @return uint256 time based reward
      */
     function getCurrentReward(bytes32 _queryId)
         public
@@ -270,6 +274,10 @@ contract Oracle is TellorVars {
             ];
     }
 
+    /**
+     * @dev Returns the reporting lock time, the amount of time a reporter must wait to submit again
+     * @return uint256 reporting lock time
+     */
     function getReportingLock() external view returns (uint256) {
         return reportingLock;
     }
@@ -318,7 +326,7 @@ contract Oracle is TellorVars {
      * @dev Returns the timestamp of a reported value given a data ID and timestamp index
      * @param _queryId is ID of the specific data feed
      * @param _index is the index of the timestamp
-     * @return uint256 of timestamp of the last oracle value
+     * @return uint256 timestamp of the given queryId and index
      */
     function getReportTimestampByIndex(bytes32 _queryId, uint256 _index)
         external
@@ -339,7 +347,7 @@ contract Oracle is TellorVars {
     /**
      * @dev Returns the number of timestamps/reports for a specific data ID
      * @param _queryId is ID of the specific data feed
-     * @return uint256 of the number of the timestamps/reports for the inputted data ID
+     * @return uint256 of the number of timestamps/reports for the given data ID
      */
     function getTimestampCountById(bytes32 _queryId)
         external
@@ -372,18 +380,18 @@ contract Oracle is TellorVars {
     }
 
     /**
-     * @dev Returns the number of tips made for a specific data feed ID
+     * @dev Returns the amount of tips available for a specific query ID
      * @param _queryId is ID of the specific data feed
-     * @return uint256 of the number of tips made for the specific ID
+     * @return uint256 of the amount of tips added for the specific ID
      */
     function getTipsById(bytes32 _queryId) external view returns (uint256) {
         return tips[_queryId];
     }
 
     /**
-     * @dev Returns the number of tips made by a user
+     * @dev Returns the amount of tips made by a user
      * @param _user is the address of the user
-     * @return uint256 of the number of tips made by the user
+     * @return uint256 of the amount of tips made by the user
      */
     function getTipsByUser(address _user) external view returns (uint256) {
         return tipsByUser[_user];
