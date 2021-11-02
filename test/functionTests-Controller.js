@@ -148,7 +148,7 @@ describe("TellorX Function Tests - Controller", function() {
     await tellor.mint(accounts[3].address,h.to18(500))
     assert(await tellor.balanceOf(accounts[3].address) - h.to18(500) == 0, "balance should change correctly");
     let finSupply =  await tellor.totalSupply();
-    assert(finSupply - h.to18(500) == initSupply, "Total supply should change correctly")
+    assert(finSupply.sub(h.to18(500)).eq(initSupply), "Total supply should change correctly")
   });
   it("verify()", async function() {
     assert(await tellor.verify() > 9000, "Contract should properly verify")

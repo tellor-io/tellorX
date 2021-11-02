@@ -65,7 +65,7 @@ contract Transition is TellorStorage, TellorVars {
         );
         IController(TELLOR_ADDRESS).mint(
             0x83eB2094072f6eD9F57d3F19f54820ee0BaE6084,
-            31755e18
+            18201e18
         );
     }
 
