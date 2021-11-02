@@ -39,7 +39,8 @@ contract Oracle is TellorVars {
         bytes _value,
         uint256 _reward,
         uint256 _nonce,
-        bytes _queryData
+        bytes _queryData,
+        address _reporter
     );
     event TimeBasedRewardsChanged(uint256 _newTimeBasedReward);
     event TipAdded(
@@ -178,7 +179,8 @@ contract Oracle is TellorVars {
             _value,
             _tip + _reward,
             _nonce,
-            _queryData
+            _queryData,
+            msg.sender
         );
     }
 
