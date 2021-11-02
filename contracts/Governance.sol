@@ -20,10 +20,10 @@ contract Governance is TellorVars {
     uint256 public disputeFee; // dispute fee for a vote
     mapping(address => Delegation[]) private delegateInfo; // mapping of delegate addresses to an array of their delegations
     mapping(bytes4 => bool) private functionApproved; // mapping of function hashes to bools of whether the functions are approved
-    mapping(bytes32 => uint256[]) private voteRounds; //shows if a certain vote has already started
+    mapping(bytes32 => uint256[]) private voteRounds; // mapping of vote identifier hashes to an array of dispute IDs
     mapping(uint256 => Vote) private voteInfo; // mapping of vote IDs to the details of the vote
     mapping(uint256 => Dispute) private disputeInfo; // mapping of dispute IDs to the details of the dispute
-    mapping(bytes32 => uint256) private openDisputesOnId; // mapping of a price feed ID to the number of disputes
+    mapping(bytes32 => uint256) private openDisputesOnId; // mapping of a query ID to the number of disputes on that query ID
     enum VoteResult {
         FAILED,
         PASSED,
@@ -32,20 +32,20 @@ contract Governance is TellorVars {
 
     // Structs
     struct Delegation {
-        address delegate; // address of holder delegating
-        uint256 fromBlock; // block number address started delegating
+        address delegate; // address of holder delegating their tokens
+        uint256 fromBlock; // block number when address started delegating
     }
 
     struct Dispute {
-        bytes32 requestId; // ID of the dispute
-        uint256 timestamp; // timestamp of when the dispute was initiated
-        bytes value; // the value being disputed
-        address reportedMiner; // miner who submitted the 'bad value' will get disputeFee if dispute vote fails
+        bytes32 queryId; // query ID of disputed value
+        uint256 timestamp; // timestamp of disputed value
+        bytes value; // disputed value
+        address disputedReporter; // reporter who submitted the disputed value
     }
 
     struct Vote {
         bytes32 identifierHash; // identifier hash of the vote
-        uint256 voteRound; // the round of voting associated with the vote
+        uint256 voteRound; // the round of voting on a given dispute or proposal
         uint256 startDate; // timestamp of when vote was initiated
         uint256 blockNumber; // block number of when vote was initiated
         uint256 fee; // fee associated with the vote
@@ -54,23 +54,24 @@ contract Governance is TellorVars {
         uint256 against; // number of votes against
         bool executed; // boolean of is the dispute settled
         VoteResult result; // VoteResult of did the vote pass?
-        bool isDispute; // boolean of is the vote is is still in dispute
-        uint256 invalidQuery; // whether or not the dispute is invalid
-        bytes data; // data associated with the vote
-        bytes4 voteFunction; // hash of the function associated with the vote
+        bool isDispute; // boolean of is the vote a dispute as opposed to a proposal
+        uint256 invalidQuery; // number of votes for invalid
+        bytes data; // arguments used to execute a proposal
+        bytes4 voteFunction; // hash of the function associated with a proposal vote
         address voteAddress; // address of contract to execute function on
-        address initiator; // reporting submitting the 'bad value'-pay disputeFee will get reportedMiner's stake if dispute vote passes
+        address initiator; // address which initiated dispute/proposal
         mapping(address => bool) voted; // mapping of address to whether or not they voted
     }
 
     // Events
+    event DelegateSet(address _delegate, address _delegator); // Emitted when voting delegate is set
     event NewDispute(
         uint256 _disputeId,
         bytes32 _queryId,
         uint256 _timestamp,
         address _reporter
     ); // Emitted when a new dispute is opened
-    event NewVote(address _contract, bytes4 _function, bytes _data); // Emitted when a new vote is initiated
+    event NewVote(address _contract, bytes4 _function, bytes _data); // Emitted when a new proposal vote is initiated
     event Voted(
         uint256 _voteId,
         bool _supports,
@@ -80,7 +81,6 @@ contract Governance is TellorVars {
     ); // Emitted when an address casts their vote
     event VoteExecuted(uint256 _disputeId, VoteResult _result); // Emitted when a vote is executed
     event VoteTallied(uint256 _disputeId, VoteResult _result); // Emitted when all casting for a vote is tallied
-    event DelegateSet(address _delegate, address _delegator); // Emitted when voting delegate is set
 
     // Functions
     /**
@@ -147,14 +147,14 @@ contract Governance is TellorVars {
         // Create new vote and dispute
         Vote storage _thisVote = voteInfo[_disputeId];
         Dispute storage _thisDispute = disputeInfo[_disputeId];
-        // Initialize dispute information - request ID, timestamp, value, etc.
-        _thisDispute.requestId = _queryId;
+        // Initialize dispute information - query ID, timestamp, value, etc.
+        _thisDispute.queryId = _queryId;
         _thisDispute.timestamp = _timestamp;
         _thisDispute.value = IOracle(_oracle).getValueByTimestamp(
             _queryId,
             _timestamp
         );
-        _thisDispute.reportedMiner = _reporter;
+        _thisDispute.disputedReporter = _reporter;
         // Initialize vote information - hash, initiator, block number, etc.
         _thisVote.identifierHash = _hash;
         _thisVote.initiator = msg.sender;
@@ -178,11 +178,11 @@ contract Governance is TellorVars {
                 _fee
             ),
             "Fee must be paid"
-        ); // This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
+        ); // This is the fork fee. Returned if dispute passes
         // Add an initial tip and change the current staking status of reporter
         IOracle(_oracle).tipQuery(_queryId, _fee - _thisVote.fee, bytes(""));
         (uint256 _status, ) = IController(TELLOR_ADDRESS).getStakerInfo(
-            _thisDispute.reportedMiner
+            _thisDispute.disputedReporter
         );
         if (_status == 1) {
             uint256 _stakeCount = IController(TELLOR_ADDRESS).getUintVar(
@@ -199,7 +199,7 @@ contract Governance is TellorVars {
     }
 
     /**
-     * @dev Allows the sender to set an address as a delegate to vote on disputes
+     * @dev Allows a delegate address to vote on behalf of another address
      * @param _delegate is the address the sender is delegating to
      */
     function delegate(address _delegate) external {
@@ -227,10 +227,10 @@ contract Governance is TellorVars {
     }
 
     /**
-     * @dev Queries the balance of _user at a specific _blockNumber
-     * @param _user The address from which the balance will be retrieved
-     * @param _blockNumber The block number when the balance is queried
-     * @return The balance at _blockNumber specified
+     * @dev Queries the delegate of _user at a specific _blockNumber
+     * @param _user The address delegating voting power
+     * @param _blockNumber The block number for which the delegate is retrieved
+     * @return The delegate at _blockNumber specified
      */
     function delegateOfAt(address _user, uint256 _blockNumber)
         public
@@ -302,7 +302,7 @@ contract Governance is TellorVars {
                 voteRounds[_thisVote.identifierHash].length ==
                 _thisVote.voteRound
             ) {
-                openDisputesOnId[_thisDispute.requestId]--;
+                openDisputesOnId[_thisDispute.queryId]--;
             }
             IController _controller = IController(TELLOR_ADDRESS);
             uint256 _i;
@@ -319,14 +319,14 @@ contract Governance is TellorVars {
                     // If the first vote round, also make sure to slash the reporter and send their balance to the initiator
                     if (_i == 1) {
                         _controller.slashReporter(
-                            _thisDispute.reportedMiner,
+                            _thisDispute.disputedReporter,
                             _thisVote.initiator
                         );
                     }
                     _controller.transfer(_thisVote.initiator, _thisVote.fee);
                 }
             } else if (_thisVote.result == VoteResult.INVALID) {
-                // If vote is in dispute and is invalid, iterate through each vote round and transfer the dispute to initiator
+                // If vote is in dispute and is invalid, iterate through each vote round and transfer the dispute fee to initiator
                 for (
                     _i = voteRounds[_thisVote.identifierHash].length;
                     _i > 0;
@@ -343,9 +343,9 @@ contract Governance is TellorVars {
                     _STAKE_COUNT,
                     _stakeCount + 1
                 );
-                _controller.changeStakingStatus(_thisDispute.reportedMiner, 1); // Change staking status of disputed reporter, but don't slash
+                _controller.changeStakingStatus(_thisDispute.disputedReporter, 1); // Change staking status of disputed reporter, but don't slash
             } else if (_thisVote.result == VoteResult.FAILED) {
-                // If vote is in dispute and fails, iterate through each vote round and transfer the dispute to disputed reporter
+                // If vote is in dispute and fails, iterate through each vote round and transfer the dispute fee to disputed reporter
                 uint256 _reporterReward = 0;
                 for (
                     _i = voteRounds[_thisVote.identifierHash].length;
@@ -357,7 +357,7 @@ contract Governance is TellorVars {
                     _reporterReward += _thisVote.fee;
                 }
                 _controller.transfer(
-                    _thisDispute.reportedMiner,
+                    _thisDispute.disputedReporter,
                     _reporterReward
                 );
                 uint256 _stakeCount = IController(TELLOR_ADDRESS).getUintVar(
@@ -367,7 +367,7 @@ contract Governance is TellorVars {
                     _STAKE_COUNT,
                     _stakeCount - 1
                 );
-                _controller.changeStakingStatus(_thisDispute.reportedMiner, 1);
+                _controller.changeStakingStatus(_thisDispute.disputedReporter, 1);
             }
             emit VoteExecuted(_disputeId, voteInfo[_disputeId].result);
         }
@@ -377,7 +377,7 @@ contract Governance is TellorVars {
      * @dev Proposes a vote for an associated Tellor contract and function, and defines the properties of the vote
      * @param _contract is the Tellor contract to propose a vote for -> used to calculate identifier hash
      * @param _function is the Tellor function to propose a vote for -> used to calculate identifier hash
-     * @param _data is the data associated with the vote proposaln -> used to calculate identifier hash
+     * @param _data is the function argument data associated with the vote proposal -> used to calculate identifier hash
      * @param _timestamp is the timestamp associated with the vote -> used to calculate identifier hash
      */
     function proposeVote(
@@ -494,11 +494,11 @@ contract Governance is TellorVars {
                 Dispute storage _thisDispute = disputeInfo[_disputeId];
                 // In addition, change staking status of disputed miner as appropriate
                 (uint256 _status, ) = IController(TELLOR_ADDRESS).getStakerInfo(
-                    _thisDispute.reportedMiner
+                    _thisDispute.disputedReporter
                 );
                 if (_thisVote.isDispute && _status == 3) {
                     IController(TELLOR_ADDRESS).changeStakingStatus(
-                        _thisDispute.reportedMiner,
+                        _thisDispute.disputedReporter,
                         4
                     );
                 }
@@ -635,20 +635,20 @@ contract Governance is TellorVars {
         )
     {
         Dispute storage _d = disputeInfo[_disputeId];
-        return (_d.requestId, _d.timestamp, _d.value, _d.reportedMiner);
+        return (_d.queryId, _d.timestamp, _d.value, _d.disputedReporter);
     }
 
     /**
-     * @dev Returns the number of open disputes for a specific data ID
-     * @param _disputeId is the ID of a specific data feed
-     * @return uint256 of the number of open disputes for the data ID
+     * @dev Returns the number of open disputes for a specific query ID
+     * @param _queryId is the ID of a specific data feed
+     * @return uint256 of the number of open disputes for the query ID
      */
-    function getOpenDisputesOnId(bytes32 _disputeId)
+    function getOpenDisputesOnId(bytes32 _queryId)
         external
         view
         returns (uint256)
     {
-        return openDisputesOnId[_disputeId];
+        return openDisputesOnId[_queryId];
     }
 
     /**
@@ -662,13 +662,13 @@ contract Governance is TellorVars {
     /**
      * @dev Returns info on a vote for a given vote ID
      * @param _disputeId is the ID of a specific vote
-     * @return bytes32 of the identifier hash of the vote
+     * @return bytes32 identifier hash of the vote
      * @return uint256[8] memory of the pertinent round info (vote rounds, start date, fee, etc.)
-     * @return bool[2] memory of whether or not the vote was executed and in dispute
-     * @return VoteResult of the result of the vote
-     * @return bytes memory of the data of the vote
-     * @return bytes4 of the vote function
-     * @return address[2] memory of the addresses of the vote and initiator
+     * @return bool[2] memory of both whether or not the vote was executed and is dispute
+     * @return VoteResult result of the vote
+     * @return bytes memory of the argument data of a proposal vote
+     * @return bytes4 of the function selector proposed to be called
+     * @return address[2] memory of the Tellor system contract address and vote initiator
      */
     function getVoteInfo(uint256 _disputeId)
         external
@@ -707,7 +707,7 @@ contract Governance is TellorVars {
     /**
      * @dev Returns an array of voting rounds for a given vote
      * @param _hash is the identifier hash for a vote
-     * @return uint256[] memory of the vote rounds
+     * @return uint256[] memory dispute IDs of the vote rounds
      */
     function getVoteRounds(bytes32 _hash)
         external
@@ -736,7 +736,7 @@ contract Governance is TellorVars {
     }
 
     /**
-     * @dev Returns whether or not a function is approved
+     * @dev Returns whether or not a function is approved for proposals
      * @param _func is the hash of the function to be checked
      * @return bool of whether or not the function is approved
      */
@@ -758,7 +758,7 @@ contract Governance is TellorVars {
      * @param _voter is the address casting their vote
      * @param _disputeId is the vote ID the address is casting their vote for
      * @param _supports is a boolean of whether the voter supports the dispute
-     * @param _invalidQuery is a boolean of whether the vote believes the dispute is invalid
+     * @param _invalidQuery is a boolean of whether the voter believes the dispute is invalid
      */
     function _vote(
         address _voter,

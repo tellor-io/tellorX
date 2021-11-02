@@ -29,11 +29,11 @@ contract Treasury is TellorVars {
     struct TreasuryDetails {
         uint256 dateStarted; // the date that treasury was started
         uint256 maxAmount; // the maximum amount stored in the treasury, in TRB
-        uint256 rate; // the interest rate of the treasury, in BP
+        uint256 rate; // the interest rate of the treasury (5% == 500)
         uint256 purchasedAmount; // the amount of TRB purchased from the treasury
-        uint256 duration; // the time in which the treasury locks participants
-        uint256 endVoteCount; // the end vote count for when the treasury duration is over
-        bool endVoteCountRecorded; // determines if the vote count has been calculated or not
+        uint256 duration; // the time during which the treasury locks participants
+        uint256 endVoteCount; // the end vote count when the treasury duration is over
+        bool endVoteCountRecorded; // determines whether the end vote count has been calculated or not
         address[] owners; // the owners of the treasury
         mapping(address => TreasuryUser) accounts; // a mapping of a treasury user address and corresponding details
     }
@@ -272,7 +272,7 @@ contract Treasury is TellorVars {
     }
 
     /**
-     * @dev This function returns the amount of deposited by a user into treasuries.
+     * @dev This function returns the amount of TRB deposited by a user into treasuries.
      * @param _user is the specific account within a treasury to look up
      * @return uint256 of the amount of funds the user has, in TRB
      */
@@ -308,7 +308,7 @@ contract Treasury is TellorVars {
      * @dev This function determines whether or not an investor in a treasury has paid/voted on Tellor governance proposals
      * @param _id is the ID of the treasury the account is stored in
      * @param _investor is the address of the account in the treasury
-     * @return bool of whether or not the investor has paid
+     * @return bool of whether or not the investor was paid
      */
     function wasPaid(uint256 _id, address _investor)
         external

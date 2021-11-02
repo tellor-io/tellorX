@@ -25,7 +25,7 @@ contract Token is TellorStorage, TellorVars {
      * @dev Getter function for remaining spender balance
      * @param _user address of party with the balance
      * @param _spender address of spender of parties said balance
-     * @return Returns the remaining allowance of tokens granted to the _spender from the _user
+     * @return uint256 Returns the remaining allowance of tokens granted to the _spender from the _user
      */
     function allowance(address _user, address _spender)
         external
@@ -40,7 +40,7 @@ contract Token is TellorStorage, TellorVars {
      * and removing the staked amount from their balance if they are staked
      * @param _user address of user
      * @param _amount to check if the user can spend
-     * @return true if they are allowed to spend the amount being checked
+     * @return bool true if they are allowed to spend the amount being checked
      */
     function allowedToTrade(address _user, uint256 _amount)
         public
@@ -61,7 +61,7 @@ contract Token is TellorStorage, TellorVars {
      * @dev This function approves a _spender an _amount of tokens to use
      * @param _spender address
      * @param _amount amount the spender is being approved for
-     * @return true if spender approved successfully
+     * @return bool true if spender approved successfully
      */
     function approve(address _spender, uint256 _amount)
         external
@@ -78,7 +78,7 @@ contract Token is TellorStorage, TellorVars {
      * @param _from is the address the tokens will be transferred from
      * @param _to is the address the tokens will be transferred to
      * @param _amount is the number of tokens to transfer
-     * @return true if spender approved successfully
+     * @return bool true if spender approved successfully
      */
     function approveAndTransferFrom(
         address _from,
@@ -99,7 +99,7 @@ contract Token is TellorStorage, TellorVars {
     /**
      * @dev Gets balance of owner specified
      * @param _user is the owner address used to look up the balance
-     * @return Returns the balance associated with the passed in _user
+     * @return uint256 Returns the balance associated with the passed in _user
      */
     function balanceOf(address _user) public view returns (uint256) {
         return balanceOfAt(_user, block.number);
@@ -109,7 +109,7 @@ contract Token is TellorStorage, TellorVars {
      * @dev Queries the balance of _user at a specific _blockNumber
      * @param _user The address from which the balance will be retrieved
      * @param _blockNumber The block number when the balance is queried
-     * @return The balance at _blockNumber specified
+     * @return uint256 The balance at _blockNumber specified
      */
     function balanceOfAt(address _user, uint256 _blockNumber)
         public
@@ -153,6 +153,7 @@ contract Token is TellorStorage, TellorVars {
      * @dev Allows for a transfer of tokens to _to
      * @param _to The address to send tokens to
      * @param _amount The amount of tokens to send
+     * @return success whether the transfer was successful
      */
     function transfer(address _to, uint256 _amount)
         external
@@ -168,6 +169,7 @@ contract Token is TellorStorage, TellorVars {
      * @param _from The address holding the tokens being transferred
      * @param _to The address of the recipient
      * @param _amount The amount of tokens to be transferred
+     * @return success whether the transfer was successful
      */
     function transferFrom(
         address _from,
@@ -204,7 +206,7 @@ contract Token is TellorStorage, TellorVars {
     }
 
     /**
-     * @dev Helps swap the old Tellor contract Tokens to the new one
+     * @dev Helps mint new TRB
      * @param _to is the address to send minted amount to
      * @param _amount is the amount of TRB to send
      */
@@ -250,7 +252,8 @@ contract Token is TellorStorage, TellorVars {
     }
 
     /**
-     * @dev Updates balance for from and to on the current block number via doTransfer
+     * @dev Updates balance checkpoint for from and to on the current block number via doTransfer
+     * @param _user is the address whose balance is updated
      * @param _value is the new balance
      */
     function _updateBalanceAtNow(address _user, uint128 _value) internal {
