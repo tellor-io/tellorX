@@ -153,7 +153,7 @@ contract Token is TellorStorage, TellorVars {
      * @dev Allows for a transfer of tokens to _to
      * @param _to The address to send tokens to
      * @param _amount The amount of tokens to send
-     * @return bool whether the transfer was successful
+     * @return success whether the transfer was successful
      */
     function transfer(address _to, uint256 _amount)
         external
@@ -169,7 +169,7 @@ contract Token is TellorStorage, TellorVars {
      * @param _from The address holding the tokens being transferred
      * @param _to The address of the recipient
      * @param _amount The amount of tokens to be transferred
-     * @return bool whether the transfer was successful
+     * @return success whether the transfer was successful
      */
     function transferFrom(
         address _from,
