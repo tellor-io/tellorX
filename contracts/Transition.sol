@@ -54,11 +54,19 @@ contract Transition is TellorStorage, TellorVars {
         addresses[_TREASURY_CONTRACT] = _controller.addresses(
             _TREASURY_CONTRACT
         );
+        // Mint to oracle, parachute, and team operating grant contracts
         IController(TELLOR_ADDRESS).mint(
             addresses[_ORACLE_CONTRACT],
             105120e18
         );
-        // IController(TELLOR_ADDRESS).mint(TEAM_VESTING_CONTRACT, 105120e18);
+        IController(TELLOR_ADDRESS).mint(
+            0xAa304E98f47D4a6a421F3B1cC12581511dD69C55,
+            105120e18
+        );
+        IController(TELLOR_ADDRESS).mint(
+            0x83eB2094072f6eD9F57d3F19f54820ee0BaE6084,
+            18201e18
+        );
     }
 
     //Getters
