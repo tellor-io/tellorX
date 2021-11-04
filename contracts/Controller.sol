@@ -120,7 +120,7 @@ contract Controller is TellorStaking, Transition, Getters {
         require(
             msg.sender == addresses[_GOVERNANCE_CONTRACT] ||
                 msg.sender == addresses[_TREASURY_CONTRACT] ||
-                msg.sender == TELLOR_ADDRESS,
+                msg.sender == address(this),
             "Only governance, treasury, or master can mint tokens"
         );
         _doMint(_receiver, _amount);
