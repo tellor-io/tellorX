@@ -51,9 +51,9 @@ describe("TellorX Function Tests - Oracle", function() {
     ofac = await ethers.getContractFactory("contracts/Oracle.sol:Oracle");
     tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury");
     cfac = await ethers.getContractFactory("contracts/testing/TestController.sol:TestController");
-    governance = await gfac.deploy();
-    oracle = await ofac.deploy();
-    treasury = await tfac.deploy();
+    governance = await gfac.deploy(tellorMaster);
+    oracle = await ofac.deploy(tellorMaster);
+    treasury = await tfac.deploy(tellorMaster);
     controller = await cfac.deploy(governance.address, oracle.address, treasury.address);
     await governance.deployed();
     await oracle.deployed();
