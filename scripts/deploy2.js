@@ -169,9 +169,13 @@ async function deployTellorx(_network, _pk, _nodeURL) {
 
     tellorTest = await ethers.getContractAt("contracts/tellor3/Mocks/TellorTest.sol:TellorTest", master.address)
     await tellorTest.connect(wallet).setBalanceTest(wallet.address, ethers.BigNumber.from("1000000000000000000000000"))
+    await tellorTest.connect(wallet).changeOracleContract(oracle.address)
+    await tellorTest.connect(wallet).changeGovernanceContract(governance.address)
+
     await master.connect(wallet).changeTellorContract(controller.address)
     tellorNew = await ethers.getContractAt("contracts/Controller.sol:Controller", master.address)
     await tellorNew.connect(wallet).init()
+
 
     console.log("TellorX deployed! You have 1 million test TRB in your wallet.")
 

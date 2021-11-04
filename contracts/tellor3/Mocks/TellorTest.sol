@@ -47,4 +47,12 @@ contract TellorTest is Tellor {
     function verify() external view override returns (uint256) {
         return version;
     }
+
+    function changeGovernanceContract(address _newGovernance) external {
+        addresses[_GOVERNANCE_CONTRACT] = _newGovernance;
+    }
+
+    function changeOracleContract(address _newOracle) external {
+        addresses[_ORACLE_CONTRACT] = _newOracle;
+    }
 }
