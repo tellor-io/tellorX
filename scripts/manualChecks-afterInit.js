@@ -8,17 +8,18 @@ require("dotenv").config();
 const web3 = require("web3");
 const h = require("../test/helpers/helpers");
 
-//npx hardhat run scripts/manualChecks-afterInit.js --network rinkeby
+// npx hardhat run scripts/manualChecks-afterInit.js --network rinkeby
+// Note: add second address private key to .env file, TESTNET_PK2=""
 
 // Update these variables before running script
-const masterAddress = "0x657b95c228A5de81cdc3F85be7954072c08A6042"
-const controllerAddress = "0xEf2624001496ae4586C8a03fEAf9f130deB8fFEA"
-const oracleAddress = "0x07b521108788C6fD79F471D603A2594576D47477"
-const governanceAddress = "0x9Bc06e725d4b7820f587f4fC6bf9Dfa1f1983477"
-const treasuryAddress = "0x6e73d0185B4Edf227D36007448b613d6Bf2EF1c3"
+const masterAddress = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
+const controllerAddress = "0x45b778325ECf22E317767028a50749ff1D41E30b"
+const oracleAddress = "0xD7b3529A008d1791Ea683b6Ac909ecE309603C12"
+const governanceAddress = "0x8Db04961e0f87dE557aCB92f97d90e2A2840A468"
+const treasuryAddress = "0x2fcAb47708fcE3713fD4420A0dDD5270b5b92632"
 etherPrice = 4500000000
 amplPrice = 1500000
-disputeCount = 0
+expectedDisputeCount = 10
 
 // Don't change these
 let passCount = 0
@@ -51,6 +52,7 @@ async function manualChecks(_network, _pk, _pk2, _nodeURL) {
     // *
     // *************************************
     console.log("\nAfter init checks:");
+
     // Pull old value
     console.log("\nPulling old value...");
     lastNewVal = await master.getLastNewValueById(1)
@@ -67,7 +69,6 @@ async function manualChecks(_network, _pk, _pk2, _nodeURL) {
 
     // Mine AMPL/ ETH/USD
     console.log("\nMining AMPL/USD and ETH/USD...");
-
     await master.connect(wallet).transfer(wallet2.address, web3.utils.toWei("100"))
     await master.connect(wallet).depositStake()
     await sleep(15000)
@@ -88,7 +89,7 @@ async function manualChecks(_network, _pk, _pk2, _nodeURL) {
 
     // Ensure no disputes for next week on previous submissions (old stuff)
     console.log("\nEnsuring no disputes on previous submissions (old stuff)...");
-    verifyEquals(await master.getUintVar("0x310199159a20c50879ffb440b45802138b5b162ec9426720e9dd3ee8bbcdb9d7"), disputeCount, "No disputes on old stuff")
+    verifyEquals(await master.getUintVar(h.hash("_DISPUTE_COUNT")), expectedDisputeCount, "No disputes on old stuff")
     console.log("Keep checking for new disputes on old values for one week");
 
     // transfer
@@ -109,7 +110,7 @@ async function manualChecks(_network, _pk, _pk2, _nodeURL) {
     bal2 = await master.balanceOf(wallet2.address)
     verifyEquals(bal2.sub(bal1), web3.utils.toWei("10"), "TRB transfer")
 
-    console.log(passCount + "/" + (passCount+failCount) + " checks passed");
+    console.log("\n" + passCount + "/" + (passCount+failCount) + " checks passed");
 }
 
 function verifyEquals(firstVal, secondVal, name) {

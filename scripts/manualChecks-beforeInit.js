@@ -8,7 +8,7 @@ require("dotenv").config();
 const web3 = require("web3");
 const h = require("../test/helpers/helpers");
 
-//npx hardhat run scripts/manualChecks-afterInit.js --network rinkeby
+//npx hardhat run scripts/manualChecks-beforeInit.js --network rinkeby
 
 // Update these variables before running script
 const masterAddress = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
@@ -18,7 +18,7 @@ const governanceAddress = "0x8Db04961e0f87dE557aCB92f97d90e2A2840A468"
 const treasuryAddress = "0x2fcAb47708fcE3713fD4420A0dDD5270b5b92632"
 etherPrice = 4500000000
 amplPrice = 1500000
-disputeCount = 0
+expectedDisputeCount = 10
 
 // Don't change these
 let passCount = 0
@@ -87,12 +87,12 @@ async function manualChecks(_network, _pk, _pk2, _nodeURL) {
     verifyEquals(await treasury.totalLocked(), 0, "totalLocked")
     verifyEquals(await treasury.treasuryCount(), 0, "treasuryCount")
 
-    console.log("\nNote any disputes that may be an issue after the upgrade");
+    console.log("\nNoting any disputes that may be an issue after the upgrade...");
+    verifyEquals(await master.getUintVar(h.hash("_DISPUTE_COUNT")), expectedDisputeCount, "No new disputes")
 
-    console.log("\nNote if anything has been run on contracts before init");
+    console.log("\nMANUALLY note if anything has been run on contracts before init");
 
-
-    console.log(passCount + "/" + (passCount+failCount) + " checks passed");
+    console.log("\n" + passCount + "/" + (passCount+failCount) + " checks passed");
 }
 
 function verifyEquals(firstVal, secondVal, name) {
