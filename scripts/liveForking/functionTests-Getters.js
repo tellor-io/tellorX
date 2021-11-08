@@ -5,6 +5,8 @@ var assert = require('assert');
 const web3 = require('web3');
 const fetch = require('node-fetch')
 
+// Hardhat forking tests for after TellorX is deployed, before init called
+
 describe("TellorX Function Tests - Controller", function() {
 
   const tellorMaster = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
