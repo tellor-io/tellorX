@@ -7,10 +7,9 @@
 <p align="center">
   <a href='https://twitter.com/WeAreTellor'>
     <img src= 'https://img.shields.io/twitter/url/http/shields.io.svg?style=social' alt='Twitter WeAreTellor' />
-  </a> 
+  </a>
 </p>
 
-[![Coverage Status](https://coveralls.io/repos/github/tellor-io/tellorX/badge.svg?branch=main)](https://coveralls.io/github/tellor-io/tellorX?branch=main)
 [![Linting](https://github.com/tellor-io/tellorX/actions/workflows/linting.yml/badge.svg)](https://github.com/tellor-io/tellorX/actions/workflows/linting.yml)
 [![Tests](https://github.com/tellor-io/tellorX/actions/workflows/tests.yml/badge.svg)](https://github.com/tellor-io/tellorX/actions/workflows/tests.ymli)
 
@@ -18,9 +17,9 @@
 
 <b>TellorX</b> is code for a tokenized commmunity that manages a decentralized oracle. It is a crypto-economic system that with goal of allowing smart contracts to securely interact with and obtain data from off-chain.
 
-For more indepth information about Tellor checkout our [documenation](https://docs.tellor.io/tellor/), [whitepaper](https://docs.tellor.io/tellor/whitepaper/introduction) and [website](https://tellor.io/). 
+For more indepth information about Tellor checkout our [documenation](https://docs.tellor.io/tellor/), [whitepaper](https://docs.tellor.io/tellor/whitepaper/introduction) and [website](https://tellor.io/).
 
-Quick references are included below: 
+Quick references are included below:
 
 * <b> [Reporter Documentation](https://docs.tellor.io/tellor/telliot/telliot)</b>
 
@@ -42,7 +41,7 @@ Test Locally
 npx hardhat test
 ```
 
-## Maintainers <a name="maintainers"> </a> 
+## Maintainers <a name="maintainers"> </a>
 This repository is maintained by the [Tellor team](https://github.com/orgs/tellor-io/people)
 
 
