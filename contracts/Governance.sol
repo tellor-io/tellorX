@@ -464,6 +464,7 @@ contract Governance is TellorVars {
         Vote storage _thisVote = voteInfo[_disputeId];
         require(!_thisVote.executed, "Dispute has been already executed");
         require(_thisVote.tallyDate == 0, "Vote should not already be tallied");
+        require(_disputeId <= voteCount, "Vote does not exist");
         // Determine appropriate vote duration and quorum based on dispute status
         uint256 _duration = 2 days;
         uint256 _quorum = 0;
@@ -471,10 +472,10 @@ contract Governance is TellorVars {
             _duration = 7 days;
             _quorum = 5;
         }
-        // Ensure voting is still open
+        // Ensure voting is not still open
         require(
             block.timestamp - _thisVote.startDate > _duration,
-            "Time for voting haven't elapsed"
+            "Time for voting has not elapsed"
         );
         // If there are more invalid votes than for and against, result is invalid
         if (

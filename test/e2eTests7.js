@@ -221,7 +221,7 @@ describe("End-to-End Tests - Seven", function() {
     assert(balDiff1.eq(expectedBal1), "Treasury investor 1 balance should be correct");
     assert(balDiff2.eq(expectedBal2), "Treasury investor 2 balance should be correct");
     nonce = await oracle.getTimestampCountById(h.uintTob32(1));
-    h.expectThrow(oracle.connect(accounts[1]).submitValue(h.uintTob32(1),300,nonce,'0x'));//kicked miner can't submit vals
+    await h.expectThrow(oracle.connect(accounts[1]).submitValue(h.uintTob32(1),300,nonce,'0x'));//kicked miner can't submit vals
     nonce = await oracle.getTimestampCountById(h.uintTob32(2));
     await oracle.connect(accounts[2]).submitValue(h.uintTob32(2),500,nonce,'0x');
   });
@@ -256,5 +256,10 @@ describe("End-to-End Tests - Seven", function() {
     assert(userBal2.sub(userBal1) == web3.utils.toWei("100"), "User balance should be correct");
     assert(govBal1.sub(govBal2) == web3.utils.toWei("100"), "Governance contract balance should be correct");
   });
+
+  it("Ensure can't call tally vote for unused dispute id", async function() {
+    await h.expectThrow(governance.connect(accounts[1]).tallyVotes(5)) // can't tally vote on unused id
+    await h.expectThrow(governance.connect(accounts[1]).tallyVotes(9999999999999)) // can't tally vote on unused id
+  })
 
 });
