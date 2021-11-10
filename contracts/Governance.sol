@@ -71,16 +71,26 @@ contract Governance is TellorVars {
         uint256 _timestamp,
         address _reporter
     ); // Emitted when a new dispute is opened
-    event NewVote(address _contract, bytes4 _function, bytes _data); // Emitted when a new proposal vote is initiated
+    event NewVote(
+        address _contract,
+        bytes4 _function,
+        bytes _data,
+        uint256 _disputeId
+    ); // Emitted when a new proposal vote is initiated
     event Voted(
-        uint256 _voteId,
+        uint256 _disputeId,
         bool _supports,
         address _voter,
         uint256 _voteWeight,
         bool _invalidQuery
     ); // Emitted when an address casts their vote
     event VoteExecuted(uint256 _disputeId, VoteResult _result); // Emitted when a vote is executed
-    event VoteTallied(uint256 _disputeId, VoteResult _result); // Emitted when all casting for a vote is tallied
+    event VoteTallied(
+        uint256 _disputeId,
+        VoteResult _result,
+        address _initiator,
+        address _reporter
+    ); // Emitted when all casting for a vote is tallied
 
     // Functions
     /**
@@ -343,7 +353,10 @@ contract Governance is TellorVars {
                     _STAKE_COUNT,
                     _stakeCount + 1
                 );
-                _controller.changeStakingStatus(_thisDispute.disputedReporter, 1); // Change staking status of disputed reporter, but don't slash
+                _controller.changeStakingStatus(
+                    _thisDispute.disputedReporter,
+                    1
+                ); // Change staking status of disputed reporter, but don't slash
             } else if (_thisVote.result == VoteResult.FAILED) {
                 // If vote is in dispute and fails, iterate through each vote round and transfer the dispute fee to disputed reporter
                 uint256 _reporterReward = 0;
@@ -367,7 +380,10 @@ contract Governance is TellorVars {
                     _STAKE_COUNT,
                     _stakeCount - 1
                 );
-                _controller.changeStakingStatus(_thisDispute.disputedReporter, 1);
+                _controller.changeStakingStatus(
+                    _thisDispute.disputedReporter,
+                    1
+                );
             }
             emit VoteExecuted(_disputeId, voteInfo[_disputeId].result);
         }
@@ -438,7 +454,7 @@ contract Governance is TellorVars {
             "Must interact with the Tellor system"
         );
         require(functionApproved[_function], "Function must be approved");
-        emit NewVote(_contract, _function, _data);
+        emit NewVote(_contract, _function, _data, _disputeId);
     }
 
     /**
@@ -510,7 +526,12 @@ contract Governance is TellorVars {
             _thisVote.result = VoteResult.FAILED;
         }
         _thisVote.tallyDate = block.timestamp; // Update time vote was tallied
-        emit VoteTallied(_disputeId, _thisVote.result);
+        emit VoteTallied(
+            _disputeId,
+            _thisVote.result,
+            _thisVote.initiator,
+            disputeInfo[_disputeId].disputedReporter
+        );
     }
 
     /**
