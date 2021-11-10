@@ -13,6 +13,9 @@ import "./Getters.sol";
  * changing contract addresses, as well as minting and migrating tokens
 */
 contract Controller is TellorStaking, Transition, Getters {
+    // Events
+    event NewContractAddress(address _newContract, string _contractName);
+
     // Functions
     /**
      * @dev Saves new Tellor contract addresses. Available to Transition init function after fork vote
@@ -41,6 +44,7 @@ contract Controller is TellorStaking, Transition, Getters {
         assembly {
             sstore(_EIP_SLOT, _newController)
         }
+        emit NewContractAddress(_newController, "Controller");
     }
 
     /**
@@ -55,6 +59,7 @@ contract Controller is TellorStaking, Transition, Getters {
         );
         require(_isValid(_newGovernance));
         addresses[_GOVERNANCE_CONTRACT] = _newGovernance;
+        emit NewContractAddress(_newGovernance, "Governance");
     }
 
     /**
@@ -69,6 +74,7 @@ contract Controller is TellorStaking, Transition, Getters {
         );
         require(_isValid(_newOracle));
         addresses[_ORACLE_CONTRACT] = _newOracle;
+        emit NewContractAddress(_newOracle, "Oracle");
     }
 
     /**
@@ -83,6 +89,7 @@ contract Controller is TellorStaking, Transition, Getters {
         );
         require(_isValid(_newTreasury));
         addresses[_TREASURY_CONTRACT] = _newTreasury;
+        emit NewContractAddress(_newTreasury, "Treasury");
     }
 
     /**
