@@ -14,10 +14,7 @@ import "./Getters.sol";
 */
 contract Controller is TellorStaking, Transition, Getters {
     // Events
-    event NewControllerContract(address _newController);
-    event NewGovernanceContract(address _newGovernance);
-    event NewOracleContract(address _newOracle);
-    event NewTreasuryContract(address _newTreasury);
+    event NewContractAddress(address _newContract, string _contractName);
 
     // Functions
     /**
@@ -47,7 +44,7 @@ contract Controller is TellorStaking, Transition, Getters {
         assembly {
             sstore(_EIP_SLOT, _newController)
         }
-        emit NewControllerContract(_newController);
+        emit NewContractAddress(_newController, "Controller");
     }
 
     /**
@@ -62,7 +59,7 @@ contract Controller is TellorStaking, Transition, Getters {
         );
         require(_isValid(_newGovernance));
         addresses[_GOVERNANCE_CONTRACT] = _newGovernance;
-        emit NewGovernanceContract(_newGovernance);
+        emit NewContractAddress(_newGovernance, "Governance");
     }
 
     /**
@@ -77,7 +74,7 @@ contract Controller is TellorStaking, Transition, Getters {
         );
         require(_isValid(_newOracle));
         addresses[_ORACLE_CONTRACT] = _newOracle;
-        emit NewOracleContract(_newOracle);
+        emit NewContractAddress(_newOracle, "Oracle");
     }
 
     /**
@@ -92,7 +89,7 @@ contract Controller is TellorStaking, Transition, Getters {
         );
         require(_isValid(_newTreasury));
         addresses[_TREASURY_CONTRACT] = _newTreasury;
-        emit NewTreasuryContract(_newTreasury);
+        emit NewContractAddress(_newTreasury, "Treasury");
     }
 
     /**
