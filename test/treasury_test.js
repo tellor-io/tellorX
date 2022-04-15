@@ -30,7 +30,7 @@ describe("End-to-End Tests - Treasury", function() {
       method: "hardhat_reset",
       params: [{forking: {
             jsonRpcUrl: hre.config.networks.hardhat.forking.url,
-            blockNumber: 13998326
+            blockNumber: 14584024
             //13998326 13147399
 
           },},],
@@ -90,12 +90,13 @@ describe("End-to-End Tests - Treasury", function() {
     // ****************************************
     // * issueTreasury(uint256,uint256,uint256)
     // ****************************************
-    let vars = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256', 'uint256'], [web3.utils.toWei("100000"),.025*10000,86400*90])
+    let vars = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256', 'uint256'], [web3.utils.toWei("100000"),.05*10000,86400*90])
 
     await governance.proposeVote(treasAdd, 0x6274885f,vars, 0);
 
-    //voteCount = await governance.getVoteCount();
-    voteCount = 3;
+    voteCount = await governance.getVoteCount();
+    console.log("votecount", voteCount)
+    //voteCount = 3;
     await governance.vote(voteCount, true, false);
     await h.advanceTime(604800);
     await governance.tallyVotes(voteCount);
@@ -119,11 +120,11 @@ describe("End-to-End Tests - Treasury", function() {
     let startBigWalletBal = ethers.BigNumber.from(await tellor.balanceOf(BIGWALLET));
     let voteCount;
     let treasDuration = 86400*90;
-    let treasRate = 250;
+    let treasRate = 500;
     let treasAmount = web3.utils.toWei("100000");
 
     //await treasGov.issueTreasury(web3.utils.toWei("100000"),treasRate,treasDuration);
-    let vars = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256', 'uint256'], [web3.utils.toWei("100000"),.025*10000,86400*90])
+    let vars = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256', 'uint256'], [web3.utils.toWei("100000"),.05*10000,86400*90])
    
     await governance.proposeVote(treasAdd, 0x6274885f,vars, 0);
     voteCount = await governance.getVoteCount();
@@ -152,7 +153,7 @@ describe("End-to-End Tests - Treasury", function() {
 
     //Pay treasury
     await h.advanceTime(treasDuration);
-    await treasury.payTreasury(BIGWALLET,1);
+    await treasury.payTreasury(BIGWALLET,2);
     //Get big wallet actual balance after payout
     let realBal = await tellor.balanceOf(BIGWALLET);
     realBal = realBal/1e18
@@ -182,11 +183,11 @@ describe("End-to-End Tests - Treasury", function() {
     let startBigWalletBal = ethers.BigNumber.from(await tellor.balanceOf(BIGWALLET));
     let voteCount;
     let treasDuration = 86400*90;
-    let treasRate = 250;
+    let treasRate = 500;
     let treasAmount = web3.utils.toWei("100000");
 
     //await treasGov.issueTreasury(web3.utils.toWei("100000"),treasRate,treasDuration);
-    let vars = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256', 'uint256'], [web3.utils.toWei("100000"),.025*10000,86400*90])
+    let vars = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256', 'uint256'], [web3.utils.toWei("100000"),.05*10000,86400*90])
     await governance.proposeVote(treasAdd, 0x6274885f,vars, 0);
     let voteCount1 = await governance.getVoteCount();
     await governance.connect(devWallet).vote(voteCount1, true, false);
@@ -233,7 +234,7 @@ describe("End-to-End Tests - Treasury", function() {
 
     //Pay treasury
     await h.advanceTime(treasDuration);
-    await treasury.payTreasury(BIGWALLET,1);
+    await treasury.payTreasury(BIGWALLET,2);
     //Get big wallet actual balance after payout
     let realBal = ethers.BigNumber.from(await tellor.balanceOf(BIGWALLET));
     let endBigWalletBal = ethers.BigNumber.from(await tellor.balanceOf(BIGWALLET));
