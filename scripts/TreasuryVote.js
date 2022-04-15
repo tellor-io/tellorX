@@ -59,7 +59,8 @@ async function propTreasuryVote( _network, _pk, _nodeURL) {
     console.log("vars",treasuryAddress,"0x6274885f", vars,blocky.timestamp+86400*7 )
 
     //Propose treasury
-    let proposeTreas = await gov.connect(wallet).proposeVote(treasuryAddress,0x6274885f,vars,0)
+    console.log(treasuryAddress,0x6274885f,vars,0)
+    let proposeTreas = await gov.connect(wallet).proposeVote(treasuryAddress,"0x6274885f",vars,0)
     console.log("propose tx")
     var link = "".concat(etherscanUrl, '/tx/', proposeTreas.hash)
                 console.log("Hash link: ", link)
