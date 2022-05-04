@@ -11,27 +11,23 @@ var fs = require('fs');
 //npx hardhat run scripts/TreasuryVote.js --network mainnet
 //npx hardhat run scripts/TreasuryVote.js --network rinkeby
 
-//const dotenv = require('dotenv').config()
+//Rinkeby
 //npx hardhat run scripts/TreasuryVote.js --network rinkeby
 const masterAddress = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
-const controllerAddress = "0x45b778325ECf22E317767028a50749ff1D41E30b"
-const oracleAddress = "0xD7b3529A008d1791Ea683b6Ac909ecE309603C12"
-const governanceAddress = "0x8Db04961e0f87dE557aCB92f97d90e2A2840A468"
-const treasuryAddress = "0x2fcAb47708fcE3713fD4420A0dDD5270b5b92632"
+const controllerAddress = "0x0f2B0a8fa0f60459f51E452273C879eb32555e91"
+const oracleAddress = "0x18431fd88adF138e8b979A7246eb58EA7126ea16"
+const governanceAddress = "0xa64bb0078eb80c97484f3f09adb47b9b73cbca00"
+const treasuryAddress = "0x2dB91443f2b562B8b2B2e8E4fC0A3EDD6c195147"
+
 
 //Mainnet
+//npx hardhat run scripts/TreasuryVote.js --network mainnet
 // const masterAddress = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
 // const controllerAddress = "0xf98624E9924CAA2cbD21cC6288215Ec2ef7cFE80"
 // const oracleAddress = "0xe8218cACb0a5421BC6409e498d9f8CC8869945ea"
 // const governanceAddress = "0x51d4088d4EeE00Ae4c55f46E0673e9997121DB00"
 // const treasuryAddress = "0x3b0f3eaEFaAc9f8F7FDe406919ecEb5270fE0607"
 
-
-
-// TellorX Governance	0x51d4088d4EeE00Ae4c55f46E0673e9997121DB00
-// TellorX Oracle	0xe8218cACb0a5421BC6409e498d9f8CC8869945ea
-// TellorX Treasury	0x3b0f3eaEFaAc9f8F7FDe406919ecEb5270fE0607
-// TellorX Controller	0xf98624E9924CAA2cbD21cC6288215Ec2ef7cFE80
 
 async function propTreasuryVote( _network, _pk, _nodeURL) {
 
