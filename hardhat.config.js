@@ -55,13 +55,13 @@ module.exports = {
     } ,
     rinkeby: {
          url: `${process.env.NODE_URL_RINKEBY}`,
-         seeds: [process.env.PRIVATE_KEY],
+         seeds: [process.env.TESTNET_PK],
          gas: 1000000,
          gasPrice: 40000000000
     } ,
       // mainnet: {
       //   url: `${process.env.NODE_URL_MAINNET}`,
-      //   seeds: [process.env.PRIMARY_KEY],
+      //   seeds: [process.env.PRIVATE_KEY],
       //   gas: 500000 ,
       //   gasPrice: 150000000000
       // }
