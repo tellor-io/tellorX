@@ -23,3 +23,8 @@ treasury contract deployed to: 0xf2d85424Fd4716cf91dAC1911B60E72877Cc8D1A
 https://goerli.etherscan.io/address/0xf2d85424Fd4716cf91dAC1911B60E72877Cc8D1A
 The controller contract deployed to: 0x3E2a203eD4D790Ff8159b9621c9C58a2F78Fcf51
 Thttps://goerli.etherscan.io/address/0x3E2a203eD4D790Ff8159b9621c9C58a2F78Fcf51
+
+
+
+
+In order to switch tellor3 vote period to 1 days, change TellorStake.sol line 150
