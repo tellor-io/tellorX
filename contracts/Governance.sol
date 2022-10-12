@@ -485,7 +485,7 @@ contract Governance is TellorVars {
         uint256 _duration = 2 days;
         uint256 _quorum = 0;
         if (!_thisVote.isDispute) {
-            _duration = 7 days;
+            _duration = 1 days;
             _quorum = 5;
         }
         // Ensure voting is not still open
