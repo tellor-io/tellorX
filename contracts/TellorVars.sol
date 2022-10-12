@@ -13,7 +13,7 @@ import "./tellor3/TellorVariables.sol";
 contract TellorVars is TellorVariables {
     // Storage
     address constant TELLOR_ADDRESS =
-        0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0; // Address of main Tellor Contract
+        0x51c59c6cAd28ce3693977F2feB4CfAebec30d8a2; // Address of main Tellor Contract
     // Hashes for each pertinent contract
     bytes32 constant _GOVERNANCE_CONTRACT =
         0xefa19baa864049f50491093580c5433e97e8d5e41f8db1a61108b4fa44cacd93;

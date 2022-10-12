@@ -8,7 +8,7 @@ require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
 
 //const dotenv = require('dotenv').config()
-//npx hardhat run scripts/deploy.js --network rinkeby
+//npx hardhat run scripts/deploy.js --network goerli
 
 async function deployTellorx( _network, _pk, _nodeURL) {
 
@@ -37,25 +37,14 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     if (net == "mainnet"){ 
         console.log("Governance contract deployed to:", "https://etherscan.io/address/" + governance.address);
         console.log("   Governance transaction hash:", "https://etherscan.io/tx/" + governance.deployTransaction.hash);
-    } else if (net == "rinkeby") {
-        console.log("Governance contract deployed to:", "https://rinkeby.etherscan.io/address/" + governance.address);
-        console.log("    Governance transaction hash:", "https://rinkeby.etherscan.io/tx/" + governance.deployTransaction.hash);
+    } else if (net == "goerli") {
+        console.log("Governance contract deployed to:", "https://goerli.etherscan.io/address/" + governance.address);
+        console.log("    Governance transaction hash:", "https://goerli.etherscan.io/tx/" + governance.deployTransaction.hash);
     } else {
         console.log("Please add network explorer details")
     }
 
-    // Wait for few confirmed transactions.
-    // Otherwise the etherscan api doesn't find the deployed contract.
-    console.log('waiting for governance tx confirmation...');
-    await governance.deployTransaction.wait(3)
-
-    console.log('submitting governance contract for verification...');
-    await run("verify:verify",
-      {
-      address: governance.address,
-      },
-    )
-    console.log("governance contract verified")
+   
 
     /////////////Oracle
     console.log("Starting deployment for Oracle contract...")
@@ -68,12 +57,71 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     if (net == "mainnet"){
         console.log("oracle contract deployed to:", "https://etherscan.io/address/" + oracle.address);
         console.log("    oracle transaction hash:", "https://etherscan.io/tx/" + oracle.deployTransaction.hash);
-    } else if (net == "rinkeby") {
-        console.log("oracle contract deployed to:", "https://rinkeby.etherscan.io/address/" + oracle.address);
-        console.log("    oracle transaction hash:", "https://rinkeby.etherscan.io/tx/" + oracle.deployTransaction.hash);
+    } else if (net == "goerli") {
+        console.log("oracle contract deployed to:", "https://goerli.etherscan.io/address/" + oracle.address);
+        console.log("    oracle transaction hash:", "https://goerli.etherscan.io/tx/" + oracle.deployTransaction.hash);
     } else {
         console.log("Please add network explorer details")
     }
+
+    
+
+    ///////////Treasury
+    console.log("Starting deployment for Treasury contract...")
+    const tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury", wallet)
+    const tfacwithsigner = await tfac.connect(wallet)
+    const treasury = await tfacwithsigner.deploy()
+    await treasury.deployed()
+
+    if (net == "mainnet"){
+        console.log("treasury contract deployed to:", "https://etherscan.io/address/" + treasury.address);
+        console.log("    treasury transaction hash:", "https://etherscan.io/tx/" + treasury.deployTransaction.hash);
+    } else if (net == "goerli") {
+        console.log("treasury contract deployed to:", "https://goerli.etherscan.io/address/" + treasury.address);
+        console.log("    treasury transaction hash:", "https://goerli.etherscan.io/tx/" + treasury.deployTransaction.hash);
+    } else {
+        console.log("Please add network explorer details")
+    }
+
+   
+
+    //////////////Controler
+    console.log("Starting deployment for Controller contract...")
+    const cfac = await ethers.getContractFactory("contracts/Controller.sol:Controller", wallet)
+    const cfacwithsigners = await cfac.connect(wallet)
+    const controller = await cfacwithsigners.deploy(governance.address, oracle.address, treasury.address)
+    await controller.deployed()
+
+    if (net == "mainnet"){
+        console.log("The controller contract was deployed to:", "https://etherscan.io/address/" + controller.address);
+        console.log("    transaction hash:", "https://etherscan.io/tx/" + controller.deployTransaction.hash);
+    } else if (net == "goerli") {
+        console.log("The controller contract was deployed to:", "https://goerli.etherscan.io/address/" + controller.address);
+        console.log("    transaction hash:", "https://goerli.etherscan.io/tx/" + controller.deployTransaction.hash);
+    } else {
+        console.log("Please add network explorer details")
+    }
+
+    
+
+
+
+
+    ////////////// VERIFICATIONS
+
+     // Wait for few confirmed transactions.
+    // Otherwise the etherscan api doesn't find the deployed contract.
+    console.log('waiting for governance tx confirmation...');
+    await governance.deployTransaction.wait(3)
+
+    console.log('submitting governance contract for verification...');
+    await run("verify:verify",
+      {
+      address: governance.address,
+      },
+    )
+    console.log("governance contract verified")
+
 
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
@@ -90,24 +138,8 @@ async function deployTellorx( _network, _pk, _nodeURL) {
 
     console.log("Oracle contract verified")
 
-    ///////////Treasury
-    console.log("Starting deployment for Treasury contract...")
-    const tfac = await ethers.getContractFactory("contracts/Treasury.sol:Treasury", wallet)
-    const tfacwithsigner = await tfac.connect(wallet)
-    const treasury = await tfacwithsigner.deploy()
-    await treasury.deployed()
 
-    if (net == "mainnet"){
-        console.log("treasury contract deployed to:", "https://etherscan.io/address/" + treasury.address);
-        console.log("    treasury transaction hash:", "https://etherscan.io/tx/" + treasury.deployTransaction.hash);
-    } else if (net == "rinkeby") {
-        console.log("treasury contract deployed to:", "https://rinkeby.etherscan.io/address/" + treasury.address);
-        console.log("    treasury transaction hash:", "https://rinkeby.etherscan.io/tx/" + treasury.deployTransaction.hash);
-    } else {
-        console.log("Please add network explorer details")
-    }
-
-    // Wait for few confirmed transactions.
+     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
     console.log('waiting for treasury tx confirmation...');
     await treasury.deployTransaction.wait(3)
@@ -121,22 +153,6 @@ async function deployTellorx( _network, _pk, _nodeURL) {
 
     console.log("treasury Contract verified")
 
-    //////////////Controler
-    console.log("Starting deployment for Controller contract...")
-    const cfac = await ethers.getContractFactory("contracts/Controller.sol:Controller", wallet)
-    const cfacwithsigners = await cfac.connect(wallet)
-    const controller = await cfacwithsigners.deploy()
-    await controller.deployed()
-
-    if (net == "mainnet"){
-        console.log("The controller contract was deployed to:", "https://etherscan.io/address/" + controller.address);
-        console.log("    transaction hash:", "https://etherscan.io/tx/" + controller.deployTransaction.hash);
-    } else if (net == "rinkeby") {
-        console.log("The controller contract was deployed to:", "https://rinkeby.etherscan.io/address/" + controller.address);
-        console.log("    transaction hash:", "https://rinkeby.etherscan.io/tx/" + controller.deployTransaction.hash);
-    } else {
-        console.log("Please add network explorer details")
-    }
 
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
@@ -148,17 +164,16 @@ async function deployTellorx( _network, _pk, _nodeURL) {
     await run("verify:verify",
       {
       address: controller.address,
+      constructorArguments: [governance.address, oracle.address, treasury.address]
       },
     )
 
     console.log("Controller contract verified")
     console.log("Propose a fork to the Controller address and run the init function")
-
-
 }
 
 
-deployTellorx( "rinkeby", process.env.TESTNET_PK, process.env.NODE_URL_RINKEBY)
+deployTellorx( "goerli", process.env.TESTNET_PK, process.env.NODE_URL_GOERLI)
 .then(() => process.exit(0))
 .catch(error => {
   console.error(error);

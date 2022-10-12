@@ -1,0 +1,25 @@
+
+set TELLOR_ADDRESS equal to Master address in TellorVars.sol
+
+set variables in tellor3 before tellorX deploy
+
+uint256 _stakeAmt = IController(TELLOR_ADDRESS).uints(_STAKE_AMOUNT);
+uint256 _trgtMiners = IController(TELLOR_ADDRESS).uints(_TARGET_MINERS);
+uint256 _stakeCount = IController(TELLOR_ADDRESS).uints(_STAKE_COUNT);
+uint256 _minFee = IController(TELLOR_ADDRESS).uints(
+    _MINIMUM_DISPUTE_FEE
+);
+
+- update OWNER to multisig
+
+
+
+TellorX Goerli Deployments:
+Governance contract deployed to:  0x5209A3e0582fA366a8733806Ad3d9e3b36B1478f
+https://goerli.etherscan.io/address/0x5209A3e0582fA366a8733806Ad3d9e3b36B1478f
+oracle contract deployed to: 0x30F101c2cF75E7A744B412B966330cb9F3c6824B
+https://goerli.etherscan.io/address/0x30F101c2cF75E7A744B412B966330cb9F3c6824B
+treasury contract deployed to: 0xf2d85424Fd4716cf91dAC1911B60E72877Cc8D1A
+https://goerli.etherscan.io/address/0xf2d85424Fd4716cf91dAC1911B60E72877Cc8D1A
+The controller contract deployed to: 0x3E2a203eD4D790Ff8159b9621c9C58a2F78Fcf51
+Thttps://goerli.etherscan.io/address/0x3E2a203eD4D790Ff8159b9621c9C58a2F78Fcf51
