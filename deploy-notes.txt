@@ -28,3 +28,24 @@ Thttps://goerli.etherscan.io/address/0x3E2a203eD4D790Ff8159b9621c9C58a2F78Fcf51
 
 
 In order to switch tellor3 vote period to 1 days, change TellorStake.sol line 150
+
+TellorX 1 day vote
+Governance contract deployed to:  0x45B24bd85261210e1354d203682C7127cc3D44E6
+https://goerli.etherscan.io/address/0x45B24bd85261210e1354d203682C7127cc3D44E6
+
+oracle contract deployed to: 0x6732b279E7C975B39DfFedA7173e4E426aA9a40F
+https://goerli.etherscan.io/address/0x6732b279E7C975B39DfFedA7173e4E426aA9a40F
+
+treasury contract deployed to: 0x0a453872d73C3f4122aC26D03aD58285dAee6D6A
+https://goerli.etherscan.io/address/0x0a453872d73C3f4122aC26D03aD58285dAee6D6A
+   
+The controller contract was deployed to: 0xaF8797c5C113abC7338535581243e11168326082
+https://goerli.etherscan.io/address/0xaF8797c5C113abC7338535581243e11168326082
+ 
+
+Tellor3 upgraded to TellorX 
+https://goerli.etherscan.io/tx/0xd7cbc1eaed12982fb88c30240634ab579cf4fbccbf1508856dca1f8db3cf1132
+
+Tellor X init
+https://goerli.etherscan.io/tx/0x61b3d6ab93af243a07e5155ba2f7b43a698dac89c97352f5fa473f9719bb4221
+
