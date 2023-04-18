@@ -105,8 +105,9 @@ require("dotenv").config();
   sepolia: {
     url: `${process.env.NODE_URL_SEPOLIA}`,
     seeds: [process.env.TESTNET_PK],
-    gas: 8000000 ,
-    gasPrice: 10000000000
+    gas: 9000000 ,
+    gasPrice: 5000000000
+
   }
   },
   

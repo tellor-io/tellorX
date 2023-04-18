@@ -43,10 +43,10 @@ async function deployTellorx() {
     ////////////////Governance
     console.log("Starting deployment for governance contract...")
     const gfac = await ethers.getContractFactory("Governance", wallet)
-     const governance = await gfac.deploy({gasLimit: 8000000})
+     const governance = await gfac.deploy({gasLimit: 8000000 , gasPrice: 5000000000})
     console.log("Governance contract deployed to: ", governance.address)
 
-    await governance.deployed()
+    await governance.deployed() 
     console.log("Governance contract deployed to:", explorerUrl  + governance.address);
 
 
@@ -74,11 +74,6 @@ async function deployTellorx() {
 
     console.log("The controller contract was deployed to:", explorerUrl  + controller.address);
 
-
-    tellorMaster = await ethers.getContractAt("contracts/tellor3/TellorMaster", tellormaster)
-    await master.connect(wallet).changeTellorContract(controller.address, {gasLimit: 3000000})
-    tellorNew = await ethers.getContractAt("contracts/Controller.sol:Controller", tellormaster)
-    await tellorNew.connect(wallet).init({gasLimit: 3000000})
 
   
     // Wait for few confirmed transactions.
@@ -148,6 +143,12 @@ async function deployTellorx() {
     } catch (e) {
     console.log(e)
     }
+
+
+    tellorMaster = await ethers.getContractAt("contracts/tellor3/TellorMaster.sol:TellorMaster", tellormaster)
+    await tellorMaster.connect(wallet).changeTellorContract(controller.address, {gasLimit: 3000000})
+    tellorNew = await ethers.getContractAt("contracts/Controller.sol:Controller", tellormaster)
+    await tellorNew.connect(wallet).init({gasLimit: 3000000})
 
 }
 

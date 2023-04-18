@@ -13,7 +13,8 @@ import "./tellor3/TellorVariables.sol";
 contract TellorVars is TellorVariables {
     // Storage
     address constant TELLOR_ADDRESS =
-        0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0; // Address of main Tellor Contract
+        //0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0; // Address of main Tellor Contract
+        0x80fc34a2f9FfE86F41580F47368289C402DEc660; //address of tellor token contract on sepolia
     // Hashes for each pertinent contract
     bytes32 constant _GOVERNANCE_CONTRACT =
         0xefa19baa864049f50491093580c5433e97e8d5e41f8db1a61108b4fa44cacd93;
