@@ -60,7 +60,8 @@ contract Transition is TellorStorage, TellorVars {
             105120e18
         );
         IController(TELLOR_ADDRESS).mint(
-            0xAa304E98f47D4a6a421F3B1cC12581511dD69C55,
+            //0xAa304E98f47D4a6a421F3B1cC12581511dD69C55, //multis address
+            0x34Fae97547E990ef0E05e05286c51E4645bf1A85, //multis address
             105120e18
         );
         IController(TELLOR_ADDRESS).mint(
